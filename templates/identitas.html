@@ -1,5 +1,171 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="text-2xl font-bold">Identitas Saya</h1>
+<div class="max-w-5xl mx-auto">
+    
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Identitas Saya</h1>
+        <button onclick="openModal('modal-tambah')"
+            class="bg-[#0f172a] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#1e293b] transition">
+            + Tambah Identitas
+        </button>
+    </div>
+
+    <!-- Tabel -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-left">No. Dokumen</th>
+                    <th class="px-6 py-3 text-left">Jenis</th>
+                    <th class="px-6 py-3 text-left">Negara</th>
+                    <th class="px-6 py-3 text-left">Terbit</th>
+                    <th class="px-6 py-3 text-left">Habis</th>
+                    <th class="px-6 py-3 text-left">Status</th>
+                    <th class="px-6 py-3 text-left">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <tr>
+                    <td class="px-6 py-4">A12345678</td>
+                    <td class="px-6 py-4">Paspor</td>
+                    <td class="px-6 py-4">Indonesia</td>
+                    <td class="px-6 py-4">2020-01-15</td>
+                    <td class="px-6 py-4">2030-01-15</td>
+                    <td class="px-6 py-4">
+                        <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Aktif</span>
+                    </td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="openModal('modal-edit')"
+                            class="text-blue-500 hover:text-blue-700">✏️</button>
+                        <button onclick="openModal('modal-hapus')"
+                            class="text-red-500 hover:text-red-700">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-6 py-4">3275012345678901</td>
+                    <td class="px-6 py-4">KTP</td>
+                    <td class="px-6 py-4">Indonesia</td>
+                    <td class="px-6 py-4">2019-06-01</td>
+                    <td class="px-6 py-4">2024-06-01</td>
+                    <td class="px-6 py-4">
+                        <span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">Kedaluwarsa</span>
+                    </td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="openModal('modal-edit')"
+                            class="text-blue-500 hover:text-blue-700">✏️</button>
+                        <button onclick="openModal('modal-hapus')"
+                            class="text-red-500 hover:text-red-700">🗑️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div id="modal-tambah" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-800">Tambah Identitas Baru</h2>
+            <button onclick="closeModal('modal-tambah')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div class="grid gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen *</label>
+                <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Dokumen *</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Pilih</option>
+                    <option>Paspor</option>
+                    <option>KTP</option>
+                    <option>SIM</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Negara Penerbit *</label>
+                <input type="text" placeholder="Indonesia" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Terbit *</label>
+                    <input type="date" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Habis *</label>
+                    <input type="date" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <button class="w-full bg-[#0f172a] text-white py-2 rounded-lg hover:bg-[#1e293b] transition">
+                Simpan
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div id="modal-edit" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-800">Edit Identitas</h2>
+            <button onclick="closeModal('modal-edit')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div class="grid gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
+                <input type="text" value="A12345678" disabled
+                    class="w-full border border-gray-200 rounded-lg px-4 py-2 bg-gray-50 text-gray-400 cursor-not-allowed">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Dokumen *</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>Paspor</option>
+                    <option>KTP</option>
+                    <option>SIM</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Negara Penerbit *</label>
+                <input type="text" value="Indonesia" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Terbit *</label>
+                    <input type="date" value="2020-01-15" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Habis *</label>
+                    <input type="date" value="2030-01-15" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <button class="w-full bg-[#0f172a] text-white py-2 rounded-lg hover:bg-[#1e293b] transition">
+                Simpan
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="modal-hapus" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-sm">
+        <h2 class="font-semibold text-gray-800 mb-2">Hapus Identitas?</h2>
+        <p class="text-gray-500 text-sm mb-6">Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closeModal('modal-hapus')"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+            <button class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+</script>
 {% endblock %}
