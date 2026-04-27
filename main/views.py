@@ -8,3 +8,6 @@ def dashboard(request):
 
 def identitas(request):
     return render(request, 'identitas.html', {'role': 'member'})
+
+def register(request):
+    return render(request, 'register.html', {'role': 'guest'})
