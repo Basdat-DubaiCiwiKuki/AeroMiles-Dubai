@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard</h1>
+    <p class="text-gray-500 mb-6">Selamat datang, Mr. Admin Aero</p>
+
+    <!-- Informasi Pribadi -->
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h2 class="font-semibold text-gray-700 mb-4">Informasi Pribadi</h2>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+                <p class="text-gray-400">Nama Lengkap</p>
+                <p class="font-medium">Mr. Admin Aero</p>
+            </div>
+            <div>
+                <p class="text-gray-400">Email</p>
+                <p class="font-medium">admin@aeromiles.com</p>
+            </div>
+            <div>
+                <p class="text-gray-400">Telepon</p>
+                <p class="font-medium">+62 811111111</p>
+            </div>
+            <div>
+                <p class="text-gray-400">Kewarganegaraan</p>
+                <p class="font-medium">Indonesia</p>
+            </div>
+            <div>
+                <p class="text-gray-400">Tanggal Lahir</p>
+                <p class="font-medium">1988-01-01</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">ID Staf</p>
+            <p class="font-bold text-lg">S0001</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Maskapai</p>
+            <p class="font-bold text-lg">Garuda Indonesia</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Klaim Menunggu</p>
+            <p class="font-bold text-lg text-yellow-500">2</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Disetujui/Ditolak</p>
+            <p class="font-bold text-lg text-green-500">1<span class="text-gray-400">/</span><span class="text-red-500">1</span></p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
