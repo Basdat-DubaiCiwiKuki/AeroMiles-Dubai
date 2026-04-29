@@ -55,3 +55,8 @@ def dashboard_staf(request):
     if not role:
         return redirect('login')
     return render(request, 'dashboard_staf.html', {'role': 'staf'})
+
+def landing(request):
+    if request.session.get('role'):
+        return redirect('dashboard')
+    return render(request, 'landing.html', {'role': 'guest'})

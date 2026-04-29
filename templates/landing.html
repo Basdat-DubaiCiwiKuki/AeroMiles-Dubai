@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative h-screen -mt-6 -mx-6 overflow-hidden">
+    
+    <!-- Background Image -->
+    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80" 
+        alt="Travel Destination"
+        class="w-full h-full object-cover">
+    
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+    
+    <!-- Content -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
+        <p class="text-sm uppercase tracking-widest mb-4 opacity-80">Ready to Fly?</p>
+        <h1 class="text-6xl font-bold mb-6 leading-tight">
+            Fly Further,<br>Get More.
+        </h1>
+        <p class="text-lg opacity-80 mb-10 max-w-xl">
+            Kumpulkan miles dari setiap penerbangan dan tukarkan dengan pengalaman tak terlupakan — 
+            dari Bromo hingga Iceland.
+        </p>
+        <div class="flex gap-4">
+            <a href="/register/" 
+                class="bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-100 transition text-sm uppercase tracking-wider">
+                Register Now
+            </a>
+            <a href="/login/" 
+                class="border border-white text-white px-8 py-3 rounded-full font-medium hover:bg-white hover:text-black transition text-sm uppercase tracking-wider">
+                Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white opacity-60 animate-bounce">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </div>
+</div>
+
+<!-- Destinations Section -->
+<div class="py-20 px-6 max-w-6xl mx-auto">
+    <p class="text-xs uppercase tracking-widest text-gray-400 mb-2 text-center">Your Dream Destinations, All in One</p>
+    <h2 class="text-3xl font-bold text-center mb-12">Go Anywhere with AeroMiles</h2>
+    
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Destination 1 -->
+        <div class="relative rounded-2xl overflow-hidden h-80 group cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1520769945061-0a448c463865?w=800&q=80" 
+                alt="Iceland"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 text-white">
+                <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Europe</p>
+                <p class="text-xl font-bold">Iceland</p>
+            </div>
+        </div>
+
+        <!-- Destination 2 -->
+        <div class="relative rounded-2xl overflow-hidden h-80 group cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80" 
+                alt="Bromo"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 text-white">
+                <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Indonesia</p>
+                <p class="text-xl font-bold">Bromo</p>
+            </div>
+        </div>
+
+        <!-- Destination 3 -->
+        <div class="relative rounded-2xl overflow-hidden h-80 group cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1542259009477-d625272157b7?w=800&q=80" 
+                alt="Hawaii"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 text-white">
+                <p class="text-xs uppercase tracking-widest opacity-70 mb-1">USA</p>
+                <p class="text-xl font-bold">Hawaii</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="bg-[#0f172a] text-white py-20 px-6 text-center">
+    <p class="text-xs uppercase tracking-widest opacity-60 mb-4">Mulai Perjalanan Anda</p>
+    <h2 class="text-4xl font-bold mb-6">Setiap Penerbangan<br>Adalah Langkah Menuju Impian.</h2>
+    <a href="/register/" 
+        class="inline-block bg-white text-black px-10 py-3 rounded-full font-medium hover:bg-gray-100 transition text-sm uppercase tracking-wider">
+        Bergabung Sekarang
+    </a>
+</div>
+{% endblock %}

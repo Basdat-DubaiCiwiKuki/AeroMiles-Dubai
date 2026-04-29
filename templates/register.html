@@ -1,134 +1,202 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-8">
-    <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-lg">
-        
-        <!-- Logo -->
-        <div class="text-center mb-6">
-            <div class="text-4xl mb-2">✈️</div>
-            <h1 class="text-2xl font-bold text-gray-800">Daftar Akun Baru</h1>
-            <p class="text-gray-500 text-sm">Bergabung dengan program AeroMiles</p>
+<div class="min-h-screen flex">
+    
+    <!-- Kiri: Background Image Random -->
+    <div class="hidden lg:block w-1/2 relative">
+        <img id="bg-img" src="" alt="Destination" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div id="dest-info" class="absolute bottom-12 left-10 text-white">
+            <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Destinasi Impian</p>
+            <p id="dest-name" class="text-3xl font-bold"></p>
+            <p id="dest-desc" class="text-sm opacity-70 mt-1"></p>
         </div>
+    </div>
 
-        <!-- Tab Member / Staf -->
-        <div class="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
-            <button onclick="switchTab('member')" id="tab-member"
-                class="flex-1 py-2 text-sm font-medium bg-[#0f172a] text-white transition">
-                Member
-            </button>
-            <button onclick="switchTab('staf')" id="tab-staf"
-                class="flex-1 py-2 text-sm font-medium bg-white text-gray-600 transition">
-                Staf
-            </button>
-        </div>
+    <!-- Kanan: Form Register -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center px-8 py-16 bg-white overflow-y-auto">
+        <div class="w-full max-w-md">
 
-        <!-- Form -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                <input type="email" placeholder="email@example.com"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                <input type="password"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password *</label>
-                <input type="password"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="mb-8">
+                <a href="/" class="text-sm text-gray-400 hover:text-gray-600 transition">← Kembali</a>
             </div>
 
-            <p class="col-span-2 text-sm font-semibold text-gray-700">Data Pribadi</p>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Salutation *</label>
-                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Pilih</option>
-                    <option>Mr.</option>
-                    <option>Mrs.</option>
-                    <option>Ms.</option>
-                    <option>Dr.</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Depan *</label>
-                <input type="text"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tengah</label>
-                <input type="text"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Belakang *</label>
-                <input type="text"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kewarganegaraan *</label>
-                <input type="text" placeholder="Indonesia"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
-                <input type="text" placeholder="+62"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor HP *</label>
-                <input type="text"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir *</label>
-                <input type="date"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="mb-8">
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-2">Bergabung Sekarang</p>
+                <h1 class="text-3xl font-bold text-gray-900">Daftar Akun Baru</h1>
             </div>
 
-            <!-- Field khusus Staf -->
-            <div class="col-span-2 hidden" id="field-staf">
-                <p class="text-sm font-semibold text-gray-700 mb-2">Data Staf</p>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Maskapai *</label>
-                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Pilih maskapai</option>
-                    <option>GA - Garuda Indonesia</option>
-                    <option>SQ - Singapore Airlines</option>
-                    <option>MH - Malaysia Airlines</option>
-                </select>
-            </div>
-
-            <div class="col-span-2">
-                <button class="w-full bg-[#0f172a] text-white py-2 rounded-lg hover:bg-[#1e293b] transition">
-                    Daftar
+            <!-- Tab Member / Staf -->
+            <div class="flex mb-6 border border-gray-200 rounded-xl overflow-hidden">
+                <button onclick="switchTab('member')" id="tab-member"
+                    class="flex-1 py-2.5 text-sm font-medium bg-[#0f172a] text-white transition">
+                    Member
+                </button>
+                <button onclick="switchTab('staf')" id="tab-staf"
+                    class="flex-1 py-2.5 text-sm font-medium bg-white text-gray-600 transition">
+                    Staf
                 </button>
             </div>
-        </div>
 
+            <!-- Form -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" placeholder="email@example.com"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                        <input type="password"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password *</label>
+                        <input type="password"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                </div>
+
+                <p class="text-xs uppercase tracking-widest text-gray-400 pt-2">Data Pribadi</p>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Salutation *</label>
+                    <select class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                        <option value="">Pilih</option>
+                        <option>Mr.</option>
+                        <option>Mrs.</option>
+                        <option>Ms.</option>
+                        <option>Dr.</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Depan *</label>
+                        <input type="text"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tengah</label>
+                        <input type="text"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Belakang *</label>
+                        <input type="text"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kewarganegaraan *</label>
+                        <input type="text" placeholder="Indonesia"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                        <input type="text" placeholder="+62"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor HP *</label>
+                        <input type="text"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir *</label>
+                    <input type="date"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                </div>
+
+                <!-- Field khusus Staf -->
+                <div class="hidden" id="field-staf">
+                    <p class="text-xs uppercase tracking-widest text-gray-400 pt-2 mb-3">Data Staf</p>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kode Maskapai *</label>
+                    <select class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                        <option value="">Pilih maskapai</option>
+                        <option>GA - Garuda Indonesia</option>
+                        <option>SQ - Singapore Airlines</option>
+                        <option>MH - Malaysia Airlines</option>
+                        <option>CX - Cathay Pacific</option>
+                        <option>EK - Emirates</option>
+                    </select>
+                </div>
+
+                <button class="w-full bg-[#0f172a] text-white py-3 rounded-xl hover:bg-[#1e293b] transition font-medium text-sm uppercase tracking-wider">
+                    Daftar
+                </button>
+
+                <p class="text-center text-sm text-gray-400">
+                    Sudah punya akun? 
+                    <a href="/login/" class="text-gray-900 font-medium hover:underline">Masuk di sini</a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+// Random destination images
+const destinations = [
+    {
+        url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&q=80',
+        name: 'Bali',
+        desc: 'Surga tropis yang menanti miles Anda.'
+    },
+    {
+        url: 'https://images.unsplash.com/photo-1520769945061-0a448c463865?w=1200&q=80',
+        name: 'Iceland',
+        desc: 'Aurora borealis dan keajaiban alam.'
+    },
+    {
+        url: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1200&q=80',
+        name: 'Santorini',
+        desc: 'Keindahan Mediterania yang memukau.'
+    },
+    {
+        url: 'https://images.unsplash.com/photo-1542259009477-d625272157b7?w=1200&q=80',
+        name: 'Hawaii',
+        desc: 'Pantai dan gunung berapi yang menakjubkan.'
+    },
+    {
+        url: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200&q=80',
+        name: 'Tokyo',
+        desc: 'Tradisi dan modernitas yang berpadu.'
+    },
+]
+
+const random = destinations[Math.floor(Math.random() * destinations.length)]
+document.getElementById('bg-img').src = random.url
+document.getElementById('dest-name').textContent = random.name
+document.getElementById('dest-desc').textContent = random.desc
+
+// Tab switch
 function switchTab(tab) {
-    const memberTab = document.getElementById('tab-member');
-    const stafTab = document.getElementById('tab-staf');
-    const fieldStaf = document.getElementById('field-staf');
+    const memberTab = document.getElementById('tab-member')
+    const stafTab = document.getElementById('tab-staf')
+    const fieldStaf = document.getElementById('field-staf')
 
     if (tab === 'member') {
-        memberTab.classList.add('bg-[#0f172a]', 'text-white');
-        memberTab.classList.remove('bg-white', 'text-gray-600');
-        stafTab.classList.add('bg-white', 'text-gray-600');
-        stafTab.classList.remove('bg-[#0f172a]', 'text-white');
-        fieldStaf.classList.add('hidden');
+        memberTab.classList.add('bg-[#0f172a]', 'text-white')
+        memberTab.classList.remove('bg-white', 'text-gray-600')
+        stafTab.classList.add('bg-white', 'text-gray-600')
+        stafTab.classList.remove('bg-[#0f172a]', 'text-white')
+        fieldStaf.classList.add('hidden')
     } else {
-        stafTab.classList.add('bg-[#0f172a]', 'text-white');
-        stafTab.classList.remove('bg-white', 'text-gray-600');
-        memberTab.classList.add('bg-white', 'text-gray-600');
-        memberTab.classList.remove('bg-[#0f172a]', 'text-white');
-        fieldStaf.classList.remove('hidden');
+        stafTab.classList.add('bg-[#0f172a]', 'text-white')
+        stafTab.classList.remove('bg-white', 'text-gray-600')
+        memberTab.classList.add('bg-white', 'text-gray-600')
+        memberTab.classList.remove('bg-[#0f172a]', 'text-white')
+        fieldStaf.classList.remove('hidden')
     }
 }
 </script>

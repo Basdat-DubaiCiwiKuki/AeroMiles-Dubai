@@ -9,47 +9,54 @@
 <body class="bg-gray-50">
 
     <!-- NAVBAR -->
-    <nav class="bg-[#0f172a] text-white px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-2 font-bold text-lg">
-            ✈️ AeroMiles
-        </div>
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-center transition-all duration-300 bg-transparent">
 
-        <div class="flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-8 text-sm font-medium tracking-wider">
             {% if role == 'member' %}
-                <a href="/dashboard" class="hover:text-blue-400">Dashboard</a>
-                <a href="/identitas" class="hover:text-blue-400">Identitas Saya</a>
-                <a href="#" class="hover:text-blue-400">Klaim Miles</a>
-                <a href="#" class="hover:text-blue-400">Transfer Miles</a>
-                <a href="#" class="hover:text-blue-400">Redeem Hadiah</a>
-                <a href="#" class="hover:text-blue-400">Beli Package</a>
-                <a href="#" class="hover:text-blue-400">Info Tier</a>
-
-                <a href="/profil/" class="hover:text-blue-400">Pengaturan Profil</a>
-                <a href="/logout/" class="text-red-400 hover:text-red-300">Logout</a>
-
+                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
+                <a href="/identitas/" class="text-white hover:opacity-60 transition uppercase">Identitas Saya</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Klaim Miles</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Transfer Miles</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Redeem Hadiah</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Beli Package</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Info Tier</a>
+                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
+                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
             {% elif role == 'staf' %}
-                <a href="/dashboard" class="hover:text-blue-400">Dashboard</a>
-                <a href="#" class="hover:text-blue-400">Kelola Member</a>
-                <a href="#" class="hover:text-blue-400">Kelola Klaim</a>
-                <a href="#" class="hover:text-blue-400">Kelola Hadiah & Penyedia</a>
-                <a href="#" class="hover:text-blue-400">Kelola Mitra</a>
-                <a href="#" class="hover:text-blue-400">Laporan Transaksi</a>
-
-                <a href="/profil/" class="hover:text-blue-400">Pengaturan Profil</a>
-                <a href="/logout/" class="text-red-400 hover:text-red-300">Logout</a>
-
+                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Member</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Klaim</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Hadiah</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Mitra</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Laporan</a>
+                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
+                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
             {% else %}
-                <a href="/" class="hover:text-blue-400">Login</a>
-                <a href="/register" class="hover:text-blue-400">Registrasi</a>
             {% endif %}
         </div>
     </nav>
 
     <!-- CONTENT -->
-    <main class="p-6">
+    <main>
         {% block content %}
         {% endblock %}
     </main>
+
+    <!-- Navbar scroll effect (khusus landing page) -->
+    {% if role == 'guest' %}
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-[#0f172a]');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-[#0f172a]');
+                navbar.classList.add('bg-transparent');
+            }
+        });
+    </script>
+    {% endif %}
 
 </body>
 </html>
