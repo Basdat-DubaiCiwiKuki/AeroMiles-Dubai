@@ -46,9 +46,11 @@ def profil(request):
     return render(request, 'profil.html', {'role': role})
 def identitas(request):
     role = request.session.get('role', None)
-    if not role:
+    if role != 'member':
+        if role == 'staf':
+            return redirect('dashboard')
         return redirect('login')
-    return render(request, 'identitas.html', {'role': 'member'})
+    return render(request, 'identitas.html', {'role': 'member', 'nama': request.session.get('nama', 'Member')})
 
 def dashboard_staf(request):
     role = request.session.get('role', None)

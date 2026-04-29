@@ -1,5 +1,286 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="text-2xl font-bold">Identitas Saya</h1>
+<div class="max-w-6xl mx-auto px-8 py-28">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+        <div>
+            <p class="text-sm uppercase tracking-widest text-gray-400 mb-2">Member</p>
+            <h1 class="text-3xl font-bold text-slate-900">Identitas Saya</h1>
+            <p class="mt-2 text-sm text-gray-500 max-w-2xl">Kelola semua dokumen identitas yang terdaftar atas nama Anda. Tambah, ubah, dan hapus dokumen sesuai kebutuhan.</p>
+        </div>
+        <button id="btnAddIdentity" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-400/10 transition hover:bg-slate-700">Tambah Identitas</button>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded-3xl border border-gray-100 shadow-lg shadow-slate-400/5">
+        <table class="min-w-full text-left text-sm text-slate-900">
+            <thead class="bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
+                <tr>
+                    <th class="px-6 py-4">No. Dokumen</th>
+                    <th class="px-6 py-4">Jenis</th>
+                    <th class="px-6 py-4">Negara Penerbit</th>
+                    <th class="px-6 py-4">Tanggal Terbit</th>
+                    <th class="px-6 py-4">Tanggal Habis</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-100 bg-white"></tbody>
+        </table>
+        <div id="emptyState" class="p-12 text-center text-sm text-gray-500 hidden">Belum ada dokumen identitas. Klik tombol "Tambah Identitas" untuk mulai.</div>
+    </div>
+</div>
+
+<div id="identityModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
+    <div class="w-full max-w-2xl rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <p id="modalTitle" class="text-xl font-semibold text-slate-900">Tambah Identitas Baru</p>
+                <p class="text-sm text-gray-500">Isi semua kolom untuk menambahkan dokumen identitas.</p>
+            </div>
+            <button id="closeModal" class="text-slate-400 transition hover:text-slate-900">✕</button>
+        </div>
+        <form id="identityForm" class="space-y-5">
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Nomor Dokumen</span>
+                    <input id="docNumber" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: SIM0001">
+                </label>
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Jenis Dokumen</span>
+                    <select id="docType" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                        <option value="Paspor">Paspor</option>
+                        <option value="KTP">KTP</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </label>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Negara Penerbit</span>
+                    <input id="docCountry" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: Indonesia">
+                </label>
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Tanggal Terbit</span>
+                    <input id="docIssued" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                </label>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Tanggal Habis</span>
+                    <input id="docExpiry" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                </label>
+                <div class="space-y-2 text-sm text-slate-700">
+                    <span>&nbsp;</span>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" id="cancelModal" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+                        <button type="submit" class="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Simpan</button>
+                    </div>
+                </div>
+            </div>
+            <input id="currentDocId" type="hidden" value="">
+        </form>
+        <p id="formError" class="mt-4 text-sm text-rose-600 hidden"></p>
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
+    <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
+        <p class="text-xl font-semibold text-slate-900 mb-3">Hapus Identitas?</p>
+        <p class="text-sm text-slate-600 mb-6">Tindakan ini tidak dapat dibatalkan. Pastikan dokumen yang dihapus tidak lagi diperlukan.</p>
+        <div class="flex justify-end gap-3">
+            <button id="cancelDelete" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+            <button id="confirmDelete" class="rounded-full bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const identityList = [
+        { id: 1, number: 'A12345678', type: 'Paspor', country: 'Indonesia', issued: '2020-01-15', expiry: '2030-01-15' },
+        { id: 2, number: '3275012345678901', type: 'KTP', country: 'Indonesia', issued: '2019-06-01', expiry: '2024-06-01' },
+        { id: 3, number: 'SIM0001', type: 'SIM', country: 'Indonesia', issued: '2026-04-12', expiry: '2031-04-12' }
+    ];
+
+    const tableBody = document.getElementById('tableBody');
+    const emptyState = document.getElementById('emptyState');
+    const identityModal = document.getElementById('identityModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const btnAddIdentity = document.getElementById('btnAddIdentity');
+    const closeModal = document.getElementById('closeModal');
+    const cancelModal = document.getElementById('cancelModal');
+    const identityForm = document.getElementById('identityForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const docNumber = document.getElementById('docNumber');
+    const docType = document.getElementById('docType');
+    const docCountry = document.getElementById('docCountry');
+    const docIssued = document.getElementById('docIssued');
+    const docExpiry = document.getElementById('docExpiry');
+    const currentDocId = document.getElementById('currentDocId');
+    const formError = document.getElementById('formError');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const cancelDelete = document.getElementById('cancelDelete');
+
+    let deletingId = null;
+
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
+    function getStatus(expiryDate) {
+        return new Date(expiryDate) >= new Date() ? 'Aktif' : 'Kedaluwarsa';
+    }
+
+    function renderTable() {
+        tableBody.innerHTML = '';
+        if (identityList.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        identityList.forEach(item => {
+            const status = getStatus(item.expiry);
+            tableBody.insertAdjacentHTML('beforeend', `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 font-medium text-slate-900">${item.number}</td>
+                    <td class="px-6 py-4 text-slate-600">${item.type}</td>
+                    <td class="px-6 py-4 text-slate-600">${item.country}</td>
+                    <td class="px-6 py-4 text-slate-600">${formatDate(item.issued)}</td>
+                    <td class="px-6 py-4 text-slate-600">${formatDate(item.expiry)}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase ${status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${status}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <button type="button" data-id="${item.id}" class="btn-edit text-sm font-semibold text-slate-600 hover:text-slate-900">Edit</button>
+                            <button type="button" data-id="${item.id}" class="btn-delete text-sm font-semibold text-rose-600 hover:text-rose-800">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+
+        document.querySelectorAll('.btn-edit').forEach(button => button.addEventListener('click', openEditModal));
+        document.querySelectorAll('.btn-delete').forEach(button => button.addEventListener('click', openDeleteModal));
+    }
+
+    function openModal() {
+        identityModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModalWindow() {
+        identityModal.classList.add('hidden');
+        formError.classList.add('hidden');
+        identityForm.reset();
+        currentDocId.value = '';
+        docNumber.removeAttribute('disabled');
+        document.body.style.overflow = '';
+    }
+
+    function openAddModal() {
+        modalTitle.innerText = 'Tambah Identitas Baru';
+        identityForm.reset();
+        currentDocId.value = '';
+        docNumber.removeAttribute('disabled');
+        openModal();
+    }
+
+    function openEditModal(event) {
+        const id = Number(event.target.dataset.id);
+        const item = identityList.find(i => i.id === id);
+        if (!item) return;
+
+        modalTitle.innerText = 'Edit Identitas';
+        docNumber.value = item.number;
+        docType.value = item.type;
+        docCountry.value = item.country;
+        docIssued.value = item.issued;
+        docExpiry.value = item.expiry;
+        currentDocId.value = item.id;
+        docNumber.setAttribute('disabled', 'disabled');
+        openModal();
+    }
+
+    function openDeleteModal(event) {
+        deletingId = Number(event.target.dataset.id);
+        deleteModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        deletingId = null;
+        deleteModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function validateUniqueNumber(value, ignoreId = null) {
+        return !identityList.some(item => item.number.toLowerCase() === value.toLowerCase() && item.id !== ignoreId);
+    }
+
+    identityForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const number = docNumber.value.trim();
+        const type = docType.value;
+        const country = docCountry.value.trim();
+        const issued = docIssued.value;
+        const expiry = docExpiry.value;
+        const editId = currentDocId.value ? Number(currentDocId.value) : null;
+
+        if (!number || !country || !issued || !expiry) {
+            formError.textContent = 'Semua kolom harus diisi.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (new Date(expiry) < new Date(issued)) {
+            formError.textContent = 'Tanggal habis harus lebih besar dari tanggal terbit.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (!validateUniqueNumber(number, editId)) {
+            formError.textContent = 'Nomor dokumen sudah terdaftar. Gunakan nomor lain.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (editId) {
+            const item = identityList.find(i => i.id === editId);
+            item.type = type;
+            item.country = country;
+            item.issued = issued;
+            item.expiry = expiry;
+        } else {
+            const nextId = identityList.length > 0 ? Math.max(...identityList.map(i => i.id)) + 1 : 1;
+            identityList.push({ id: nextId, number, type, country, issued, expiry });
+        }
+
+        renderTable();
+        closeModalWindow();
+    });
+
+    confirmDelete.addEventListener('click', function() {
+        if (deletingId === null) return;
+        const index = identityList.findIndex(i => i.id === deletingId);
+        if (index !== -1) {
+            identityList.splice(index, 1);
+            renderTable();
+        }
+        closeDeleteModal();
+    });
+
+    [btnAddIdentity].forEach(el => el.addEventListener('click', openAddModal));
+    closeModal.addEventListener('click', closeModalWindow);
+    cancelModal.addEventListener('click', closeModalWindow);
+    cancelDelete.addEventListener('click', closeDeleteModal);
+    identityModal.addEventListener('click', function(event) {
+        if (event.target === identityModal) closeModalWindow();
+    });
+    deleteModal.addEventListener('click', function(event) {
+        if (event.target === deleteModal) closeDeleteModal();
+    });
+
+    renderTable();
+</script>
 {% endblock %}
