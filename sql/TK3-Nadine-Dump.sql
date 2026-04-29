@@ -15,7 +15,6 @@ INSERT INTO BANDARA (iata_code, nama, kota, negara) VALUES
 ('JOG', 'Adisutjipto International Airport', 'Yogyakarta', 'Indonesia'),
 ('MDC', 'Sam Ratulangi International Airport', 'Manado', 'Indonesia'),
 ('BPN', 'Sultan Aji Muhammad Sulaiman Airport', 'Balikpapan', 'Indonesia'),
-('PLM', 'Sultan Mahmud Badaruddin II Airport', 'Palembang', 'Indonesia'),
 ('SIN', 'Singapore Changi Airport', 'Singapore', 'Singapore'),
 ('KUL', 'Kuala Lumpur International Airport', 'Kuala Lumpur', 'Malaysia'),
 ('BKK', 'Suvarnabhumi Airport', 'Bangkok', 'Thailand'),
