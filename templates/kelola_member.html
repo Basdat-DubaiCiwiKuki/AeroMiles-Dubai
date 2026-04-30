@@ -1,0 +1,508 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Full-page background — dark navy/slate ops feel, distinct from other staf pages -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=1920&q=80"
+        alt="Operations" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-70"></div>
+    <!-- Deep navy tint — authoritative, admin feel -->
+    <div class="fixed inset-0"
+        style="background: linear-gradient(135deg, rgba(8,20,50,0.55) 0%, rgba(15,23,42,0.30) 100%);"></div>
+
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- HEADER -->
+            <div class="mb-10 flex items-end justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
+                    <h1 class="text-5xl font-bold text-white">Kelola<br><span class="opacity-40">Member</span></h1>
+                </div>
+                <button id="btnAddMember"
+                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                    + Tambah Member
+                </button>
+            </div>
+
+            <!-- STATS -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Member</p>
+                    <p id="memberCount" class="text-4xl font-bold text-white">0</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Miles Beredar</p>
+                    <p id="totalMiles" class="text-4xl font-bold text-sky-300">0</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Member Platinum</p>
+                    <p id="premiumCount" class="text-4xl font-bold text-slate-300">0</p>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm"
+                style="background: rgba(255,255,255,0.03);">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <!-- Search -->
+                    <div class="flex-1 min-w-48 flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Member</label>
+                        <input id="searchInput" type="text" placeholder="nama atau email..."
+                            class="w-full bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    </div>
+                    <!-- Tier filter -->
+                    <div class="flex flex-col gap-1.5 min-w-36">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Filter Tier</label>
+                        <select id="tierFilter"
+                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                            style="background-color: transparent;">
+                            <option value="all" class="text-gray-900">Semua Tier</option>
+                            <option value="Blue" class="text-gray-900">Blue</option>
+                            <option value="Silver" class="text-gray-900">Silver</option>
+                            <option value="Gold" class="text-gray-900">Gold</option>
+                            <option value="Platinum" class="text-gray-900">Platinum</option>
+                        </select>
+                    </div>
+                    <!-- Sort -->
+                    <div class="flex flex-col gap-1.5 min-w-40">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Urutkan</label>
+                        <select id="sortBy"
+                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                            style="background-color: transparent;">
+                            <option value="registered_desc" class="text-gray-900">Terbaru</option>
+                            <option value="registered_asc" class="text-gray-900">Terlama</option>
+                            <option value="miles_desc" class="text-gray-900">Miles Tertinggi</option>
+                            <option value="miles_asc" class="text-gray-900">Miles Terendah</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden"
+                style="background: rgba(255,255,255,0.03);">
+                <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Daftar Member</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white border-opacity-10">
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Member</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Email</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tier</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Total Miles</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Award Miles</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Bergabung</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memberTableBody" class="divide-y divide-white divide-opacity-5"></tbody>
+                    </table>
+                </div>
+                <div id="memberEmpty" class="hidden py-24 text-center">
+                    <p class="text-5xl mb-6 opacity-30">👤</p>
+                    <p class="text-white opacity-40 text-sm">Tidak ada member yang sesuai pencarian.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ── MODAL: TAMBAH / EDIT MEMBER ── -->
+<div id="memberModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1" id="memberModalSub">Member Baru</p>
+                <h2 id="memberModalTitle" class="text-xl font-bold text-white">Tambah Member</h2>
+            </div>
+            <button id="closeMemberModal" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+
+        <form id="memberForm">
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Nomor Member (readonly saat edit) -->
+                <div id="wrapNomorMember" class="hidden">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nomor Member</label>
+                    <input type="text" id="memberNomor" disabled
+                        class="w-full bg-transparent border-b border-white border-opacity-10 px-0 py-2 text-white opacity-30 text-sm cursor-not-allowed">
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Email <span class="text-red-300">*</span></label>
+                    <input type="email" id="memberEmail" required placeholder="email@example.com"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+
+                <!-- Nama -->
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nama Lengkap <span class="text-red-300">*</span></label>
+                    <input type="text" id="memberName" required placeholder="cth: Mr. John William Doe"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+
+                <!-- Tier -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tier <span class="text-red-300">*</span></label>
+                    <select id="memberTier" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="Blue"     class="text-gray-900">Blue</option>
+                        <option value="Silver"   class="text-gray-900">Silver</option>
+                        <option value="Gold"     class="text-gray-900">Gold</option>
+                        <option value="Platinum" class="text-gray-900">Platinum</option>
+                    </select>
+                </div>
+
+                <!-- Total Miles -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Total Miles</label>
+                    <input type="number" id="memberMiles" min="0" value="0"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                </div>
+
+                <!-- Award Miles -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Award Miles</label>
+                    <input type="number" id="memberAward" min="0" value="0"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                </div>
+
+                <!-- Tanggal Bergabung -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tanggal Bergabung <span class="text-red-300">*</span></label>
+                    <input type="date" id="memberRegistered" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+            </div>
+
+            <!-- Error -->
+            <p id="memberFormError" class="hidden mt-4 text-sm text-red-300 border border-red-400 border-opacity-20 rounded-xl px-4 py-3 bg-red-400 bg-opacity-5"></p>
+
+            <input id="currentMemberId" type="hidden" value="">
+
+            <div class="flex gap-3 pt-8">
+                <button type="button" id="cancelMemberModal"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ── MODAL: HAPUS MEMBER ── -->
+<div id="memberDeleteModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Hapus Member?</h2>
+            </div>
+            <button id="cancelMemberDelete" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-sm text-white opacity-60 mb-6">
+            Semua data terkait (Identitas, Klaim, Transfer, Redeem) akan ikut terhapus. Tindakan ini tidak dapat dibatalkan.
+        </p>
+        <div class="border border-red-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-2 bg-red-400 bg-opacity-5">
+            <div class="flex justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Nama</span>
+                <span class="text-white text-sm font-semibold" id="deleteNameLabel"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Email</span>
+                <span class="text-white text-xs opacity-70" id="deleteEmailLabel"></span>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button id="cancelMemberDeleteBtn"
+                class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                Batal
+            </button>
+            <button id="confirmMemberDelete"
+                class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
+                Hapus
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+</style>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const members = [
+    { id: 1, nomor: 'M0001', name: 'Mr. John William Doe',   email: 'john@example.com',           tier: 'Gold',     miles: 45000, award: 32000, registered: '2024-01-15' },
+    { id: 2, nomor: 'M0002', name: 'Mrs. Siti Nurhaliza',    email: 'siti.nurhaliza@email.com',    tier: 'Silver',   miles: 20000, award: 15000, registered: '2024-03-10' },
+    { id: 3, nomor: 'M0003', name: 'Mr. Budi Santoso',       email: 'budi.santoso@email.com',      tier: 'Blue',     miles: 5000,  award: 3500,  registered: '2024-06-20' },
+    { id: 4, nomor: 'M0004', name: 'Ms. Dewi Lestari',       email: 'dewi.lestari@email.com',      tier: 'Blue',     miles: 2000,  award: 2000,  registered: '2024-09-01' },
+    { id: 5, nomor: 'M0005', name: 'Mr. Eka Putra',          email: 'eka.putra@email.com',         tier: 'Silver',   miles: 18000, award: 12000, registered: '2025-01-05' },
+];
+
+// ── TIER CONFIG ───────────────────────────────────────────
+const TIER_STYLE = {
+    'Blue':     'bg-blue-400 bg-opacity-20 text-blue-300 border border-blue-400 border-opacity-30',
+    'Silver':   'bg-gray-400 bg-opacity-20 text-gray-300 border border-gray-400 border-opacity-30',
+    'Gold':     'bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30',
+    'Platinum': 'bg-slate-400 bg-opacity-20 text-slate-200 border border-slate-400 border-opacity-30',
+};
+
+// ── HELPERS ───────────────────────────────────────────────
+function fmtDate(d) {
+    return new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+function nextId()    { return members.length ? Math.max(...members.map(m => m.id)) + 1 : 1; }
+function nextNomor() { return 'M' + String(members.length + 1).padStart(4, '0'); }
+
+// ── DOM REFS ──────────────────────────────────────────────
+const memberTableBody  = document.getElementById('memberTableBody');
+const memberEmpty      = document.getElementById('memberEmpty');
+const memberCount      = document.getElementById('memberCount');
+const totalMilesEl     = document.getElementById('totalMiles');
+const premiumCountEl   = document.getElementById('premiumCount');
+const searchInput      = document.getElementById('searchInput');
+const tierFilter       = document.getElementById('tierFilter');
+const sortBy           = document.getElementById('sortBy');
+const memberModal      = document.getElementById('memberModal');
+const memberDeleteModal= document.getElementById('memberDeleteModal');
+const memberForm       = document.getElementById('memberForm');
+const memberModalTitle = document.getElementById('memberModalTitle');
+const memberModalSub   = document.getElementById('memberModalSub');
+const memberNomor      = document.getElementById('memberNomor');
+const wrapNomor        = document.getElementById('wrapNomorMember');
+const memberName       = document.getElementById('memberName');
+const memberEmail      = document.getElementById('memberEmail');
+const memberTier       = document.getElementById('memberTier');
+const memberMiles      = document.getElementById('memberMiles');
+const memberAward      = document.getElementById('memberAward');
+const memberRegistered = document.getElementById('memberRegistered');
+const currentMemberId  = document.getElementById('currentMemberId');
+const memberFormError  = document.getElementById('memberFormError');
+const deleteNameLabel  = document.getElementById('deleteNameLabel');
+const deleteEmailLabel = document.getElementById('deleteEmailLabel');
+
+let deletingMemberId = null;
+
+// ── MODAL HELPERS ─────────────────────────────────────────
+function openModal(el) {
+    el.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(el) {
+    el.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateSummary() {
+    memberCount.textContent    = members.length;
+    totalMilesEl.textContent   = members.reduce((s, m) => s + m.miles, 0).toLocaleString('id-ID');
+    premiumCountEl.textContent = members.filter(m => m.tier === 'Platinum').length;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────
+function renderMembers() {
+    const q   = searchInput.value.trim().toLowerCase();
+    const tier= tierFilter.value;
+    let list  = members.filter(m => {
+        const matchQ = m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q) || m.nomor.toLowerCase().includes(q);
+        const matchT = tier === 'all' || m.tier === tier;
+        return matchQ && matchT;
+    });
+
+    const sv = sortBy.value;
+    if      (sv === 'registered_asc')  list.sort((a,b) => a.registered.localeCompare(b.registered));
+    else if (sv === 'registered_desc') list.sort((a,b) => b.registered.localeCompare(a.registered));
+    else if (sv === 'miles_asc')       list.sort((a,b) => a.miles - b.miles);
+    else                               list.sort((a,b) => b.miles - a.miles);
+
+    memberTableBody.innerHTML = '';
+
+    if (list.length === 0) {
+        memberEmpty.classList.remove('hidden');
+        return;
+    }
+    memberEmpty.classList.add('hidden');
+
+    list.forEach((m, i) => {
+        const tierCls = TIER_STYLE[m.tier] || TIER_STYLE['Blue'];
+        memberTableBody.insertAdjacentHTML('beforeend', `
+            <tr class="hover:bg-white hover:bg-opacity-5 transition"
+                style="animation: fadeIn 0.3s ease both; animation-delay: ${i * 20}ms;">
+                <td class="px-8 py-4">
+                    <span class="text-white text-xs font-mono opacity-50 bg-white bg-opacity-10 px-2 py-1 rounded">${m.nomor}</span>
+                </td>
+                <td class="px-4 py-4">
+                    <p class="text-white font-semibold text-sm">${m.name}</p>
+                </td>
+                <td class="px-4 py-4 text-white opacity-50 text-xs">${m.email}</td>
+                <td class="px-4 py-4">
+                    <span class="inline-block text-xs px-3 py-1 rounded-full uppercase tracking-wider font-medium ${tierCls}">${m.tier}</span>
+                </td>
+                <td class="px-4 py-4">
+                    <span class="text-white font-semibold text-sm">${m.miles.toLocaleString('id-ID')}</span>
+                </td>
+                <td class="px-4 py-4">
+                    <span class="text-sky-300 font-semibold text-sm">${m.award.toLocaleString('id-ID')}</span>
+                </td>
+                <td class="px-4 py-4 text-white opacity-40 text-xs">${fmtDate(m.registered)}</td>
+                <td class="px-4 py-4">
+                    <div class="flex items-center gap-2">
+                        <button data-id="${m.id}" class="btn-edit text-white opacity-50 hover:opacity-100 transition" title="Edit">
+                            <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button data-id="${m.id}" data-name="${m.name}" data-email="${m.email}"
+                            class="btn-delete text-red-300 opacity-50 hover:opacity-100 transition" title="Hapus">
+                            <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `);
+    });
+
+    // Re-attach listeners setiap render
+    memberTableBody.querySelectorAll('.btn-edit').forEach(b => b.addEventListener('click', openEditModal));
+    memberTableBody.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', openDeleteModal));
+}
+
+// ── OPEN ADD MODAL ────────────────────────────────────────
+function openAddModal() {
+    memberModalTitle.textContent = 'Tambah Member';
+    memberModalSub.textContent   = 'Member Baru';
+    memberForm.reset();
+    wrapNomor.classList.add('hidden');
+    memberEmail.disabled = false;
+    currentMemberId.value = '';
+    memberFormError.classList.add('hidden');
+    memberTier.value  = 'Blue';
+    memberMiles.value = 0;
+    memberAward.value = 0;
+    openModal(memberModal);
+}
+
+// ── OPEN EDIT MODAL ───────────────────────────────────────
+function openEditModal(e) {
+    const id = Number(e.currentTarget.dataset.id);
+    const m  = members.find(x => x.id === id);
+    if (!m) return;
+
+    memberModalTitle.textContent = 'Edit Member';
+    memberModalSub.textContent   = 'Ubah Data';
+    wrapNomor.classList.remove('hidden');
+    memberNomor.value       = m.nomor;
+    memberEmail.value       = m.email;
+    memberEmail.disabled    = true;   // email tidak bisa diubah (sesuai soal)
+    memberName.value        = m.name;
+    memberTier.value        = m.tier;
+    memberMiles.value       = m.miles;
+    memberAward.value       = m.award;
+    memberRegistered.value  = m.registered;
+    currentMemberId.value   = m.id;
+    memberFormError.classList.add('hidden');
+    openModal(memberModal);
+}
+
+// ── OPEN DELETE MODAL ─────────────────────────────────────
+function openDeleteModal(e) {
+    const btn = e.currentTarget;
+    deletingMemberId = Number(btn.dataset.id);
+    deleteNameLabel.textContent  = btn.dataset.name;
+    deleteEmailLabel.textContent = btn.dataset.email;
+    openModal(memberDeleteModal);
+}
+
+// ── FORM SUBMIT ───────────────────────────────────────────
+memberForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name  = memberName.value.trim();
+    const email = memberEmail.value.trim();
+    const tier  = memberTier.value;
+    const miles = Number(memberMiles.value);
+    const award = Number(memberAward.value);
+    const reg   = memberRegistered.value;
+    const editId= currentMemberId.value ? Number(currentMemberId.value) : null;
+
+    if (!name || !email || !reg) {
+        memberFormError.textContent = 'Nama, email, dan tanggal bergabung wajib diisi.';
+        memberFormError.classList.remove('hidden');
+        return;
+    }
+
+    // Cek email duplikat saat tambah
+    if (!editId && members.find(m => m.email === email)) {
+        memberFormError.textContent = 'Email sudah terdaftar.';
+        memberFormError.classList.remove('hidden');
+        return;
+    }
+
+    if (editId) {
+        const m = members.find(x => x.id === editId);
+        if (m) { m.name = name; m.tier = tier; m.miles = miles; m.award = award; m.registered = reg; }
+    } else {
+        members.push({ id: nextId(), nomor: nextNomor(), name, email, tier, miles, award, registered: reg });
+    }
+
+    updateSummary();
+    renderMembers();
+    closeModal(memberModal);
+});
+
+// ── CONFIRM DELETE ────────────────────────────────────────
+document.getElementById('confirmMemberDelete').addEventListener('click', function() {
+    if (deletingMemberId === null) return;
+    const idx = members.findIndex(m => m.id === deletingMemberId);
+    if (idx !== -1) members.splice(idx, 1);
+    deletingMemberId = null;
+    updateSummary();
+    renderMembers();
+    closeModal(memberDeleteModal);
+});
+
+// ── EVENT BINDINGS ────────────────────────────────────────
+document.getElementById('btnAddMember').addEventListener('click', openAddModal);
+document.getElementById('closeMemberModal').addEventListener('click', () => closeModal(memberModal));
+document.getElementById('cancelMemberModal').addEventListener('click', () => closeModal(memberModal));
+document.getElementById('cancelMemberDelete').addEventListener('click', () => closeModal(memberDeleteModal));
+document.getElementById('cancelMemberDeleteBtn').addEventListener('click', () => closeModal(memberDeleteModal));
+
+memberModal.addEventListener('click',       e => { if (e.target === memberModal) closeModal(memberModal); });
+memberDeleteModal.addEventListener('click', e => { if (e.target === memberDeleteModal) closeModal(memberDeleteModal); });
+
+searchInput.addEventListener('input',  renderMembers);
+tierFilter.addEventListener('change',  renderMembers);
+sortBy.addEventListener('change',      renderMembers);
+
+// ── INIT ──────────────────────────────────────────────────
+updateSummary();
+renderMembers();
+</script>
+
+{% endblock %}

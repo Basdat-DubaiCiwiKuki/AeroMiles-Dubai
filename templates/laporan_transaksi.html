@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Full-page background — data/analytics feel, deep midnight-blue tint -->
+<div class="relative min-h-screen">
+  <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1920&q=80"
+       alt="Analytics" class="fixed inset-0 w-full h-full object-cover">
+  <div class="fixed inset-0 bg-black bg-opacity-75"></div>
+  <div class="fixed inset-0"
+       style="background: linear-gradient(135deg, rgba(5,15,40,0.60) 0%, rgba(10,30,60,0.35) 100%);"></div>
+
+  <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- HEADER -->
+      <div class="mb-10 flex items-end justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
+          <h1 class="text-5xl font-bold text-white">Laporan<br><span class="opacity-40">Transaksi</span></h1>
+        </div>
+        <button onclick="window.print()"
+          class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+          ⬇ Export / Print
+        </button>
+      </div>
+
+      <!-- STATS -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Klaim</p>
+          <p class="text-4xl font-bold" style="color:#60a5fa;">{{ stats.total_klaim|default:"8" }}</p>
+        </div>
+        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Transfer</p>
+          <p class="text-4xl font-bold" style="color:#a78bfa;">{{ stats.total_transfer|default:"15" }}</p>
+        </div>
+        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Redeem</p>
+          <p class="text-4xl font-bold" style="color:#fbbf24;">{{ stats.total_redeem|default:"20" }}</p>
+        </div>
+        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Beli Package</p>
+          <p class="text-4xl font-bold" style="color:#34d399;">{{ stats.total_beli|default:"20" }}</p>
+        </div>
+      </div>
+
+      <!-- CHART + SUMMARY ROW -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+
+        <!-- Bar Chart — spans 2 cols -->
+        <div class="col-span-2 border border-white border-opacity-20 rounded-3xl p-7 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-6">Volume Transaksi per Bulan (2024)</p>
+          <div id="barChart" style="display:flex; align-items:flex-end; gap:10px; height:120px;">
+            {% for b in bar_data %}
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;">
+              <div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">{{ b.val }}</div>
+              <div style="flex:1;display:flex;align-items:flex-end;width:100%;">
+                <div style="width:100%;border-radius:6px 6px 0 0;height:{{ b.pct }}%;background:{{ b.color|default:'rgba(96,165,250,0.7)' }};min-height:4px;"></div>
+              </div>
+              <div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">{{ b.label }}</div>
+            </div>
+            {% empty %}
+            <!-- Fallback dummy bars -->
+            {% for item in "12"|make_list %}{% endfor %}
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">42</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:45%;background:rgba(96,165,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jan</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">58</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:62%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Feb</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">33</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:35%;background:rgba(96,165,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Mar</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">71</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:75%;background:rgba(251,191,36,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Apr</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">52</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:55%;background:rgba(52,211,153,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Mei</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">85</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:90%;background:rgba(96,165,250,0.8);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jun</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">64</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:67%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jul</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">90</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:95%;background:rgba(52,211,153,0.7);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Agu</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">47</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:50%;background:rgba(251,191,36,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Sep</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">73</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:77%;background:rgba(96,165,250,0.7);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Okt</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">60</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:63%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Nov</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">95</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:100%;background:rgba(52,211,153,0.8);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Des</div></div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Summary cards — 1 col -->
+        <div class="flex flex-col gap-4">
+          <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm flex-1" style="background:rgba(255,255,255,0.03);">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-4">Ringkasan Miles</p>
+            <div class="space-y-3">
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Diklaim</span><span class="text-white font-semibold">+{{ stats.miles_klaim|default:"125,000" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Ditransfer</span><span class="text-white font-semibold">{{ stats.miles_transfer|default:"28,550" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Diredeem</span><span style="color:#fbbf24;" class="font-semibold">-{{ stats.miles_redeem|default:"87,000" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Dibeli</span><span style="color:#34d399;" class="font-semibold">+{{ stats.miles_dibeli|default:"510,000" }}</span></div>
+            </div>
+          </div>
+          <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm flex-1" style="background:rgba(255,255,255,0.03);">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-4">Keuangan</p>
+            <div class="space-y-3">
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Pendapatan</span><span class="text-white font-semibold">Rp {{ stats.revenue|default:"45,350,000" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Redeem Terbanyak</span><span class="text-white font-semibold">{{ stats.redeem_top|default:"Upgrade Business" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Paket Terlaris</span><span class="text-white font-semibold">{{ stats.paket_top|default:"AMP-003" }}</span></div>
+              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Klaim Disetujui</span><span style="color:#34d399;" class="font-semibold">{{ stats.klaim_setuju|default:"7 klaim" }}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="flex gap-2 mb-6">
+        <button id="tab-btn-klaim" onclick="switchTab('klaim')"
+          class="tab-btn active-tab text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
+          ✈ Klaim ({{ stats.total_klaim|default:"8" }})
+        </button>
+        <button id="tab-btn-transfer" onclick="switchTab('transfer')"
+          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
+          ↔ Transfer ({{ stats.total_transfer|default:"15" }})
+        </button>
+        <button id="tab-btn-redeem" onclick="switchTab('redeem')"
+          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
+          🎁 Redeem ({{ stats.total_redeem|default:"20" }})
+        </button>
+        <button id="tab-btn-beli" onclick="switchTab('beli')"
+          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
+          📦 Beli Package ({{ stats.total_beli|default:"20" }})
+        </button>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
+        <form method="get" class="flex gap-6 items-end flex-wrap">
+          <div class="flex-1 min-w-48 flex flex-col gap-1.5">
+            <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Member</label>
+            <input type="text" name="search" value="{{ search|default:'' }}" placeholder="nama atau email..."
+              class="w-full bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs uppercase tracking-widest text-white opacity-40">Dari</label>
+            <input type="date" name="tgl_dari" value="{{ tgl_dari|default:'' }}"
+              class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition" style="color-scheme:dark;">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs uppercase tracking-widest text-white opacity-40">Sampai</label>
+            <input type="date" name="tgl_sampai" value="{{ tgl_sampai|default:'' }}"
+              class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition" style="color-scheme:dark;">
+          </div>
+          <input type="hidden" name="tab" id="activeTabInput" value="{{ active_tab|default:'klaim' }}">
+          <button type="submit"
+            class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition pb-2.5">
+            Filter
+          </button>
+          <a href="{% url 'laporan_transaksi' %}"
+            class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition pb-2.5">
+            Reset
+          </a>
+        </form>
+      </div>
+
+      <!-- TAB: KLAIM -->
+      <div id="tab-klaim" class="tab-panel">
+        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
+          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Klaim Miles</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white border-opacity-10">
+                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Klaim</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Maskapai</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Rute</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kelas</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Diproses Oleh</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white divide-opacity-5">
+                {% for k in klaim_list %}
+                <tr class="hover:bg-white hover:bg-opacity-5 transition">
+                  <td class="px-8 py-4 text-white font-semibold">{{ k.nomor_klaim }}</td>
+                  <td class="px-4 py-4">
+                    <div class="text-white font-medium">{{ k.nama_member }}</div>
+                    <div class="text-white opacity-30 text-xs">{{ k.email_member }}</div>
+                  </td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ k.maskapai }}</td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ k.bandara_asal }} → {{ k.bandara_tujuan }}</td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ k.kelas_kabin }}</td>
+                  <td class="px-4 py-4">
+                    {% if k.status_penerimaan == 'Disetujui' %}
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Disetujui</span>
+                    {% elif k.status_penerimaan == 'Ditolak' %}
+                    <span style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Ditolak</span>
+                    {% else %}
+                    <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);" class="text-xs px-3 py-1 rounded-full font-semibold">Menunggu</span>
+                    {% endif %}
+                  </td>
+                  <td class="px-4 py-4 text-white opacity-50 text-xs">{{ k.email_staf|default:"—" }}</td>
+                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ k.timestamp }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data klaim.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: TRANSFER -->
+      <div id="tab-transfer" class="tab-panel hidden">
+        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
+          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Transfer Miles</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white border-opacity-10">
+                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Pengirim</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Penerima</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Jumlah Miles</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Catatan</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white divide-opacity-5">
+                {% for t in transfer_list %}
+                <tr class="hover:bg-white hover:bg-opacity-5 transition">
+                  <td class="px-8 py-4 text-white opacity-80">{{ t.email_member_1 }}</td>
+                  <td class="px-4 py-4 text-white opacity-80">{{ t.email_member_2 }}</td>
+                  <td class="px-4 py-4">
+                    <span style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">{{ t.jumlah }} mi</span>
+                  </td>
+                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ t.catatan|default:"—" }}</td>
+                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ t.timestamp }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data transfer.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: REDEEM -->
+      <div id="tab-redeem" class="tab-panel hidden">
+        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
+          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Redeem Hadiah</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white border-opacity-10">
+                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kode Hadiah</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama Hadiah</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Miles Digunakan</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white divide-opacity-5">
+                {% for r in redeem_list %}
+                <tr class="hover:bg-white hover:bg-opacity-5 transition">
+                  <td class="px-8 py-4 text-white opacity-80">{{ r.email_member }}</td>
+                  <td class="px-4 py-4 text-white font-mono text-xs opacity-70">{{ r.kode_hadiah }}</td>
+                  <td class="px-4 py-4 text-white opacity-80">{{ r.nama_hadiah|default:"—" }}</td>
+                  <td class="px-4 py-4">
+                    <span style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">{{ r.miles|default:"0" }} mi</span>
+                  </td>
+                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ r.timestamp }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data redeem.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: BELI PACKAGE -->
+      <div id="tab-beli" class="tab-panel hidden">
+        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
+          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
+            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Pembelian Paket Miles</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white border-opacity-10">
+                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Paket</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Miles Diterima</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Harga</th>
+                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white divide-opacity-5">
+                {% for b in beli_list %}
+                <tr class="hover:bg-white hover:bg-opacity-5 transition">
+                  <td class="px-8 py-4 text-white opacity-80">{{ b.email_member }}</td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ b.id_award_miles_package }}</td>
+                  <td class="px-4 py-4">
+                    <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">+{{ b.jumlah_miles|default:"0" }} mi</span>
+                  </td>
+                  <td class="px-4 py-4 text-white opacity-70">Rp {{ b.harga|default:"0" }}</td>
+                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ b.timestamp }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data pembelian paket.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .tab-btn {
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.45);
+    background: transparent;
+    cursor: pointer;
+  }
+  .tab-btn:hover {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.75);
+  }
+  .tab-btn.active-tab {
+    background: white;
+    color: #111827;
+    border-color: white;
+  }
+</style>
+
+<script>
+  function switchTab(tab) {
+    const tabs = ['klaim', 'transfer', 'redeem', 'beli'];
+    tabs.forEach(t => {
+      document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+      const btn = document.getElementById('tab-btn-' + t);
+      btn.classList.toggle('active-tab', t === tab);
+    });
+    const inp = document.getElementById('activeTabInput');
+    if (inp) inp.value = tab;
+  }
+
+  // Set active tab from URL param on load
+  const urlTab = new URLSearchParams(window.location.search).get('tab');
+  if (urlTab) switchTab(urlTab);
+</script>
+
+{% endblock %}

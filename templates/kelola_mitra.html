@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Full-page background — partnership/business feel, teal-slate tint -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1920&q=80"
+        alt="Partnership" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-70"></div>
+    <div class="fixed inset-0"
+        style="background: linear-gradient(135deg, rgba(10,40,60,0.50) 0%, rgba(15,23,42,0.35) 100%);"></div>
+
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- HEADER -->
+            <div class="mb-10 flex justify-between items-end">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
+                    <h1 class="text-5xl font-bold text-white">
+                        Kelola Mitra<br><span class="opacity-40">&amp; Penyedia</span>
+                    </h1>
+                </div>
+                <button onclick="openModal('m-tambah')"
+                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                    + Tambah Mitra
+                </button>
+            </div>
+
+            <!-- FLASH -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✓ {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✕ {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <!-- STATS -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Mitra</p>
+                    <p class="text-4xl font-bold text-white">{{ stats.total }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Mitra Aktif</p>
+                    <p class="text-4xl font-bold text-teal-300">{{ stats.aktif }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Hadiah dari Mitra</p>
+                    <p class="text-4xl font-bold text-cyan-300">{{ stats.hadiah }}</p>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm"
+                style="background: rgba(255,255,255,0.03);">
+                <form method="get" class="flex gap-4 items-end">
+                    <div class="flex-1 flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Mitra</label>
+                        <input type="text" name="search" value="{{ search }}"
+                            placeholder="nama atau email mitra..."
+                            class="w-full bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    </div>
+                    <button type="submit"
+                        class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition pb-2.5">
+                        Cari
+                    </button>
+                    <a href="{% url 'kelola_mitra' %}"
+                        class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition pb-2.5">
+                        Reset
+                    </a>
+                </form>
+            </div>
+
+            <!-- TABLE -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden"
+                style="background: rgba(255,255,255,0.03);">
+
+                <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Daftar Mitra</p>
+                    <p class="text-xs text-white opacity-30">Hapus mitra akan menghapus hadiah terkait</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white border-opacity-10">
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">ID Penyedia</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Email</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama Mitra</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tgl. Kerja Sama</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white divide-opacity-5">
+                            {% for m in mitra_list %}
+                            <tr class="hover:bg-white hover:bg-opacity-5 transition"
+                                style="animation: fadeIn 0.3s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
+                                <td class="px-8 py-4">
+                                    <span class="text-white text-xs font-mono opacity-50 bg-white bg-opacity-10 px-2 py-1 rounded">P-{{ m.id_penyedia }}</span>
+                                </td>
+                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ m.email_mitra }}</td>
+                                <td class="px-4 py-4">
+                                    <p class="text-white font-semibold text-sm">{{ m.nama_mitra }}</p>
+                                </td>
+                                <td class="px-4 py-4 text-white opacity-50 text-xs">{{ m.tanggal_kerja_sama }}</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <!-- Edit — email & id_penyedia readonly sesuai soal -->
+                                        <button
+                                            data-email="{{ m.email_mitra }}"
+                                            data-idp="{{ m.id_penyedia }}"
+                                            data-nama="{{ m.nama_mitra }}"
+                                            data-tgl="{{ m.tanggal_kerja_sama }}"
+                                            onclick="openEdit(this)"
+                                            class="text-white opacity-50 hover:opacity-100 transition" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <!-- Hapus -->
+                                        <button
+                                            data-email="{{ m.email_mitra }}"
+                                            data-nama="{{ m.nama_mitra }}"
+                                            onclick="openHapus(this)"
+                                            class="text-red-300 opacity-50 hover:opacity-100 transition" title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-24 text-center">
+                                    <p class="text-5xl mb-6 opacity-30">🤝</p>
+                                    <p class="text-white opacity-40 text-sm">Belum ada mitra terdaftar.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ── MODAL: TAMBAH MITRA ── -->
+<div id="m-tambah" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Mitra Baru</p>
+                <h2 class="text-xl font-bold text-white">Tambah Mitra</h2>
+            </div>
+            <button onclick="closeModal('m-tambah')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3">
+            ID Penyedia akan di-generate otomatis. Penghapusan mitra akan menghapus hadiah terkait.
+        </p>
+        <form method="post" action="{% url 'mitra_tambah' %}">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                        Email Mitra <span class="text-red-300">*</span>
+                    </label>
+                    <input type="email" name="email_mitra" required placeholder="partner@example.com"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                        Nama Mitra <span class="text-red-300">*</span>
+                    </label>
+                    <input type="text" name="nama_mitra" required placeholder="cth: TravelokaPartner"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                        Tanggal Kerja Sama <span class="text-red-300">*</span>
+                    </label>
+                    <input type="date" name="tanggal_kerja_sama" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-tambah')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ── MODAL: EDIT MITRA ── -->
+<!-- Sesuai soal: email mitra (PK) dan ID Penyedia TIDAK bisa diubah -->
+<div id="m-edit" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Edit</p>
+                <h2 class="text-xl font-bold text-white">Ubah Informasi Mitra</h2>
+            </div>
+            <button onclick="closeModal('m-edit')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5">
+            Email mitra dan ID Penyedia <strong class="text-amber-300 opacity-100">tidak dapat diubah</strong>.
+        </p>
+        <form method="post" id="f-edit" action="">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <!-- Email readonly -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Email Mitra</label>
+                    <input type="text" id="e-email" disabled
+                        class="w-full bg-transparent border-b border-white border-opacity-10 px-0 py-2 text-white opacity-30 text-sm cursor-not-allowed">
+                </div>
+                <!-- Nama (bisa diubah) -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                        Nama Mitra <span class="text-red-300">*</span>
+                    </label>
+                    <input type="text" name="nama_mitra" id="e-nama" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                </div>
+                <!-- Tanggal (bisa diubah) -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                        Tanggal Kerja Sama <span class="text-red-300">*</span>
+                    </label>
+                    <input type="date" name="tanggal_kerja_sama" id="e-tgl" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-edit')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ── MODAL: HAPUS MITRA ── -->
+<div id="m-hapus" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Hapus Mitra?</h2>
+            </div>
+            <button onclick="closeModal('m-hapus')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-sm text-white opacity-60 mb-6">
+            Penghapusan mitra akan menghapus seluruh hadiah yang disediakan oleh mitra ini.
+        </p>
+        <div class="border border-red-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-3 bg-red-400 bg-opacity-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Email</span>
+                <span class="text-white text-xs font-mono" id="h-email"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Nama</span>
+                <span class="text-white text-sm font-semibold" id="h-nama"></span>
+            </div>
+        </div>
+        <form method="post" id="f-hapus" action="">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal('m-hapus')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
+                    Hapus Mitra
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+</style>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function openEdit(btn) {
+    var email = btn.dataset.email;
+    // Action ke URL edit dengan email sebagai identifier
+    document.getElementById('f-edit').action =
+        '/kelola-mitra/edit/' + encodeURIComponent(email) + '/';
+    // Isi field — email & idp readonly, nama & tgl bisa diubah
+    document.getElementById('e-email').value = email;
+    document.getElementById('e-nama').value  = btn.dataset.nama;
+    document.getElementById('e-tgl').value   = btn.dataset.tgl;
+    openModal('m-edit');
+}
+
+function openHapus(btn) {
+    var email = btn.dataset.email;
+    document.getElementById('f-hapus').action =
+        '/kelola-mitra/hapus/' + encodeURIComponent(email) + '/';
+    document.getElementById('h-email').textContent = email;
+    document.getElementById('h-nama').textContent  = btn.dataset.nama;
+    openModal('m-hapus');
+}
+
+// Auto-dismiss flash
+var flash = document.getElementById('flash');
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
+</script>
+
+{% endblock %}

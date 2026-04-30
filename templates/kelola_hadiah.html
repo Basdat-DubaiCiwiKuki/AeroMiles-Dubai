@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1920&q=80"
+        alt="Rewards" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-65"></div>
+    <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(49,10,80,0.40) 0%, rgba(15,23,42,0.35) 100%);"></div>
+
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Page Header -->
+            <div class="mb-10 flex items-end justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
+                    <h1 class="text-5xl font-bold text-white">Kelola Hadiah<br><span class="opacity-40">&amp; Penyedia</span></h1>
+                </div>
+                <button onclick="openModal('m-tambah')"
+                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                    + Tambah Hadiah
+                </button>
+            </div>
+
+            <!-- Flash -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">✓ {{ success_msg }}</div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">✕ {{ error_msg }}</div>
+            {% endif %}
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Hadiah</p>
+                    <p class="text-4xl font-bold text-white">{{ stats.total|default:"10" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Aktif</p>
+                    <p class="text-4xl font-bold text-violet-300">{{ stats.aktif|default:"10" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Kedaluwarsa</p>
+                    <p class="text-4xl font-bold text-red-300">{{ stats.expired|default:"0" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Penyedia</p>
+                    <p class="text-4xl font-bold text-purple-300">{{ stats.penyedia|default:"8" }}</p>
+                </div>
+            </div>
+
+            <!-- Filter Card -->
+            <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm" style="background: rgba(255,255,255,0.03);">
+                <form method="get" class="flex flex-wrap items-end gap-4">
+                    <div class="flex flex-col gap-1.5 min-w-48">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Penyedia</label>
+                        <select name="penyedia"
+                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                            style="background-color: transparent;">
+                            <option value="semua" class="text-gray-900" {% if penyedia_filter == 'semua' %}selected{% endif %}>Semua Penyedia</option>
+                            {% for p in penyedia_list %}
+                            <option value="{{ p.id }}" class="text-gray-900" {% if penyedia_filter == p.id|stringformat:"s" %}selected{% endif %}>
+                                {{ p.nama }} ({{ p.tipe }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5 min-w-36">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Status</label>
+                        <select name="status"
+                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                            style="background-color: transparent;">
+                            <option value="semua"   class="text-gray-900" {% if status_filter == 'semua' %}selected{% endif %}>Semua Status</option>
+                            <option value="aktif"   class="text-gray-900" {% if status_filter == 'aktif' %}selected{% endif %}>Aktif</option>
+                            <option value="expired" class="text-gray-900" {% if status_filter == 'expired' %}selected{% endif %}>Kedaluwarsa</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5 flex-1 min-w-48">
+                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Hadiah</label>
+                        <input type="text" name="search" value="{{ search }}" placeholder="nama hadiah..."
+                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    </div>
+                    <div class="flex gap-2 pb-0.5">
+                        <button type="submit"
+                            class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition">
+                            Filter
+                        </button>
+                        <a href="{% url 'kelola_hadiah' %}"
+                            class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition">
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table Card -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
+                <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Daftar Hadiah</p>
+                    <p class="text-xs text-white opacity-30">Hapus hanya tersedia untuk hadiah yang sudah kedaluwarsa</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white border-opacity-10">
+                                <th class="text-left px-6 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kode</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Deskripsi</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Penyedia</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Miles</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Periode</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white divide-opacity-5">
+                            {% if hadiah_list %}
+                                {% for h in hadiah_list %}
+                                <tr class="hover:bg-white hover:bg-opacity-5 transition"
+                                    style="animation: fadeIn 0.3s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
+                                    <td class="px-6 py-4">
+                                        <span class="text-white text-xs font-mono font-semibold opacity-60">{{ h.kode_hadiah }}</span>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <p class="text-white font-semibold text-sm">{{ h.nama }}</p>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <p class="text-white opacity-40 text-xs max-w-44 leading-relaxed">{{ h.deskripsi|truncatechars:40 }}</p>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-white opacity-70 text-xs">{{ h.nama_penyedia }}</span>
+                                            {% if h.tipe_penyedia == 'airline' %}
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-400 bg-opacity-20 text-blue-300 border border-blue-400 border-opacity-20">airline</span>
+                                            {% else %}
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-pink-400 bg-opacity-20 text-pink-300 border border-pink-400 border-opacity-20">partner</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <span class="text-violet-300 font-bold text-sm">{{ h.miles }}</span>
+                                        <span class="text-white opacity-30 text-xs ml-1">mi</span>
+                                    </td>
+                                    <td class="px-4 py-4 text-white opacity-40 text-xs">
+                                        {{ h.valid_start_date }}<br>
+                                        <span class="opacity-60">s/d {{ h.program_end }}</span>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        {% if h.is_active %}
+                                        <span class="inline-block bg-violet-400 bg-opacity-20 text-violet-300 border border-violet-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Aktif</span>
+                                        {% else %}
+                                        <span class="inline-block bg-red-400 bg-opacity-20 text-red-300 border border-red-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Kedaluwarsa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <button
+                                                data-kode="{{ h.kode_hadiah }}"
+                                                data-nama="{{ h.nama }}"
+                                                data-desk="{{ h.deskripsi }}"
+                                                data-pen="{{ h.id_penyedia }}"
+                                                data-miles="{{ h.miles }}"
+                                                data-start="{{ h.valid_start_date }}"
+                                                data-end="{{ h.program_end }}"
+                                                onclick="openEdit(this)"
+                                                class="text-white opacity-50 hover:opacity-100 transition" title="Edit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
+                                            {% if not h.is_active %}
+                                            <button
+                                                data-kode="{{ h.kode_hadiah }}"
+                                                data-nama="{{ h.nama }}"
+                                                onclick="openHapus(this)"
+                                                class="text-red-300 opacity-50 hover:opacity-100 transition" title="Hapus">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                            {% else %}
+                                            <span class="text-white opacity-10 cursor-not-allowed" title="Hanya hadiah kedaluwarsa yang bisa dihapus">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="py-24 text-center">
+                                        <p class="text-5xl mb-6 opacity-30">🎁</p>
+                                        <p class="text-white opacity-40 text-sm">Tidak ada hadiah yang sesuai filter.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ── MODAL: TAMBAH HADIAH ── -->
+<div id="m-tambah" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Hadiah Baru</p>
+                <h2 class="text-xl font-bold text-white">Tambah Hadiah</h2>
+            </div>
+            <button onclick="closeModal('m-tambah')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3">
+            Kode hadiah akan di-generate otomatis dengan format <strong class="text-violet-300 opacity-100">RWD-XXX</strong>.
+        </p>
+        <form method="post" action="{% url 'hadiah_tambah' %}">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-6">
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nama Hadiah <span class="text-red-300">*</span></label>
+                    <input type="text" name="nama" required maxlength="100"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20"
+                        placeholder="cth: Upgrade Business Class">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Penyedia <span class="text-red-300">*</span></label>
+                    <!-- FIX: pakai if/else, bukan for/empty di dalam select -->
+                    <select name="id_penyedia" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="" class="text-gray-900">Pilih penyedia (maskapai atau mitra)</option>
+                        {% if penyedia_list %}
+                            {% for p in penyedia_list %}
+                            <option value="{{ p.id }}" class="text-gray-900">{{ p.nama }} ({{ p.tipe }})</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="1" class="text-gray-900">Garuda Indonesia (airline)</option>
+                            <option value="2" class="text-gray-900">Singapore Airlines (airline)</option>
+                            <option value="3" class="text-gray-900">Malaysia Airlines (airline)</option>
+                            <option value="4" class="text-gray-900">Hotel Plus Indonesia (partner)</option>
+                            <option value="5" class="text-gray-900">Travel Mart Asia (partner)</option>
+                            <option value="6" class="text-gray-900">Foodies Reward (partner)</option>
+                            <option value="7" class="text-gray-900">ShopIndo Voucher (partner)</option>
+                            <option value="8" class="text-gray-900">RentCar Nusantara (partner)</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Deskripsi</label>
+                    <input type="text" name="deskripsi" maxlength="500"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20"
+                        placeholder="Deskripsi singkat hadiah...">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Miles Dibutuhkan <span class="text-red-300">*</span></label>
+                    <input type="number" name="miles" min="1" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20"
+                        placeholder="cth: 15000">
+                </div>
+                <div></div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Valid Start Date <span class="text-red-300">*</span></label>
+                    <input type="date" name="valid_start_date" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Program End <span class="text-red-300">*</span></label>
+                    <input type="date" name="program_end" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-tambah')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ── MODAL: EDIT HADIAH ── -->
+<div id="m-edit" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Edit</p>
+                <h2 class="text-xl font-bold text-white">Ubah Hadiah</h2>
+            </div>
+            <button onclick="closeModal('m-edit')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5">
+            Kode hadiah <strong class="text-amber-300 opacity-100">tidak dapat diubah</strong> karena merupakan primary key.
+        </p>
+        <form method="post" id="f-edit" action="">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Kode Hadiah</label>
+                    <input type="text" id="e-kode" disabled
+                        class="w-full bg-transparent border-b border-white border-opacity-10 px-0 py-2 text-white opacity-30 text-sm cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Miles Dibutuhkan <span class="text-red-300">*</span></label>
+                    <input type="number" name="miles" id="e-miles" min="1" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nama Hadiah <span class="text-red-300">*</span></label>
+                    <input type="text" name="nama" id="e-nama" required maxlength="100"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Penyedia <span class="text-red-300">*</span></label>
+                    <!-- FIX: pakai if/else, bukan for/empty di dalam select -->
+                    <select name="id_penyedia" id="e-pen" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        {% if penyedia_list %}
+                            {% for p in penyedia_list %}
+                            <option value="{{ p.id }}" class="text-gray-900">{{ p.nama }} ({{ p.tipe }})</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="1" class="text-gray-900">Garuda Indonesia (airline)</option>
+                            <option value="2" class="text-gray-900">Singapore Airlines (airline)</option>
+                            <option value="3" class="text-gray-900">Malaysia Airlines (airline)</option>
+                            <option value="4" class="text-gray-900">Hotel Plus Indonesia (partner)</option>
+                            <option value="5" class="text-gray-900">Travel Mart Asia (partner)</option>
+                            <option value="6" class="text-gray-900">Foodies Reward (partner)</option>
+                            <option value="7" class="text-gray-900">ShopIndo Voucher (partner)</option>
+                            <option value="8" class="text-gray-900">RentCar Nusantara (partner)</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Deskripsi</label>
+                    <input type="text" name="deskripsi" id="e-desk" maxlength="500"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Valid Start Date <span class="text-red-300">*</span></label>
+                    <input type="date" name="valid_start_date" id="e-start" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Program End <span class="text-red-300">*</span></label>
+                    <input type="date" name="program_end" id="e-end" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-edit')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ── MODAL: HAPUS HADIAH ── -->
+<div id="m-hapus" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Hapus Hadiah?</h2>
+            </div>
+            <button onclick="closeModal('m-hapus')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-sm text-white opacity-60 mb-6">Jika hadiah sudah pernah di-redeem oleh member, riwayat redeem akan terpengaruh.</p>
+        <div class="border border-red-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-3 bg-red-400 bg-opacity-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Kode</span>
+                <span class="text-white text-sm font-mono font-semibold" id="h-kode"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Nama</span>
+                <span class="text-white text-sm" id="h-nama"></span>
+            </div>
+        </div>
+        <!-- FIX: action kosong di HTML, diisi murni oleh JS -->
+        <form method="post" id="f-hapus" action="">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal('m-hapus')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
+                    Hapus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+</style>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.body.style.overflow = '';
+}
+function setSel(id, val) {
+    var s = document.getElementById(id);
+    for (var i = 0; i < s.options.length; i++) {
+        if (s.options[i].value === String(val)) { s.selectedIndex = i; break; }
+    }
+}
+function openEdit(btn) {
+    var kode = btn.getAttribute('data-kode');
+    document.getElementById('f-edit').action = '/kelola-hadiah/edit/' + kode + '/';
+    document.getElementById('e-kode').value  = kode;
+    document.getElementById('e-nama').value  = btn.getAttribute('data-nama');
+    document.getElementById('e-desk').value  = btn.getAttribute('data-desk');
+    document.getElementById('e-miles').value = btn.getAttribute('data-miles');
+    document.getElementById('e-start').value = btn.getAttribute('data-start');
+    document.getElementById('e-end').value   = btn.getAttribute('data-end');
+    setSel('e-pen', btn.getAttribute('data-pen'));
+    openModal('m-edit');
+}
+function openHapus(btn) {
+    // FIX: set action langsung tanpa placeholder string di HTML
+    document.getElementById('f-hapus').action = '/kelola-hadiah/hapus/' + btn.getAttribute('data-kode') + '/';
+    document.getElementById('h-kode').textContent = btn.getAttribute('data-kode');
+    document.getElementById('h-nama').textContent  = btn.getAttribute('data-nama');
+    openModal('m-hapus');
+}
+
+var flash = document.getElementById('flash');
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
+</script>
+
+{% endblock %}

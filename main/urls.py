@@ -46,4 +46,20 @@ urlpatterns = [
 
     # Info Tier (sudah ada, pastikan ada)
     path('tier/', views.tier, name='tier'),
+
+    # Hadiah
+    path('kelola-hadiah/', views.kelola_hadiah, name='kelola_hadiah'),
+    path('kelola-hadiah/tambah/', views.hadiah_tambah, name='hadiah_tambah'),
+    path('kelola-hadiah/edit/<str:kode>/', views.edit_hadiah, name='edit_hadiah'),
+    path('kelola-hadiah/hapus/<str:kode>/', views.hapus_hadiah, name='hapus_hadiah'),
+
+    # Mitra
+    path('kelola-mitra/',                           views.kelola_mitra,  name='kelola_mitra'),
+    path('kelola-mitra/tambah/',                    views.mitra_tambah,  name='mitra_tambah'),
+    path('kelola-mitra/edit/<str:email_mitra>/',    views.mitra_edit,    name='mitra_edit'),
+    path('kelola-mitra/hapus/<str:email_mitra>/',   views.mitra_hapus,   name='mitra_hapus'),
+
+    path('kelola-member/', views.kelola_member, name='kelola_member'),
+
+    path('laporan-transaksi/', views.laporan_transaksi, name="laporan_transaksi"),
 ]

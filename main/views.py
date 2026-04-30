@@ -1007,3 +1007,366 @@ def package_beli(request):
         )
 
     return redirect('beli_package')
+
+from django.shortcuts import render, redirect
+from datetime import datetime, date
+
+DUMMY_PENYEDIA = [
+    {'id': '1', 'nama': 'Hotel Plus Indonesia', 'tipe': 'partner'},
+    {'id': '2', 'nama': 'Garuda Indonesia', 'tipe': 'airline'},
+]
+
+DUMMY_HADIAH = []
+
+def cek_status_aktif(start, end):
+    today = date.today()
+    start = datetime.strptime(start, "%Y-%m-%d").date()
+    end = datetime.strptime(end, "%Y-%m-%d").date()
+    return start <= today <= end
+
+def get_penyedia_info(id_penyedia):
+    for p in DUMMY_PENYEDIA:
+        if p['id'] == id_penyedia:
+            return p['nama'], p['tipe']
+    return '-', '-'
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+# helper ambil data dari session
+def get_hadiah_session(request):
+    return request.session.get('hadiah_list', [])
+
+def save_hadiah_session(request, data):
+    request.session['hadiah_list'] = data
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+# helper ambil data dari session
+def get_hadiah_session(request):
+    return request.session.get('hadiah_list', [])
+
+def save_hadiah_session(request, data):
+    request.session['hadiah_list'] = data
+
+def kelola_hadiah(request):
+    hadiah_list = get_hadiah_session(request)
+
+    penyedia_filter = request.GET.get('penyedia', 'semua')
+    status_filter = request.GET.get('status', 'semua')
+    search = request.GET.get('search', '')
+
+    if penyedia_filter != 'semua':
+        hadiah_list = [h for h in hadiah_list if h['id_penyedia'] == penyedia_filter]
+
+    if status_filter == 'aktif':
+        hadiah_list = [h for h in hadiah_list if h['is_active']]
+    elif status_filter == 'expired':
+        hadiah_list = [h for h in hadiah_list if not h['is_active']]
+
+    if search:
+        hadiah_list = [h for h in hadiah_list if search.lower() in h['nama'].lower()]
+
+    stats = {
+        'total': len(get_hadiah_session(request)),
+        'aktif': len([h for h in get_hadiah_session(request) if h['is_active']]),
+        'expired': len([h for h in get_hadiah_session(request) if not h['is_active']]),
+        'penyedia': len(DUMMY_PENYEDIA),
+    }
+
+    return render(request, 'kelola_hadiah.html', {
+        'hadiah_list': hadiah_list,
+        'penyedia_list': DUMMY_PENYEDIA,
+        'penyedia_filter': penyedia_filter,
+        'status_filter': status_filter,
+        'search': search,
+        'stats': stats,
+    })
+
+def hadiah_tambah(request):
+    if request.method == 'POST':
+        hadiah_list = get_hadiah_session(request)
+
+        kode = f"RWD-{len(hadiah_list)+1:03d}"
+
+        nama = request.POST.get('nama')
+        deskripsi = request.POST.get('deskripsi')
+        id_penyedia = request.POST.get('id_penyedia')
+        miles = int(request.POST.get('miles'))
+        start = request.POST.get('valid_start_date')
+        end = request.POST.get('program_end')
+
+        nama_penyedia, tipe = get_penyedia_info(id_penyedia)
+
+        hadiah_list.append({
+            'kode_hadiah': kode,
+            'nama': nama,
+            'deskripsi': deskripsi,
+            'id_penyedia': id_penyedia,
+            'nama_penyedia': nama_penyedia,
+            'tipe_penyedia': tipe,
+            'miles': miles,
+            'valid_start_date': start,
+            'program_end': end,
+            'is_active': cek_status_aktif(start, end)
+        })
+
+        save_hadiah_session(request, hadiah_list)
+
+    return redirect('kelola_hadiah')
+
+def edit_hadiah(request, kode):
+    if request.method == 'POST':
+        hadiah_list = get_hadiah_session(request)
+
+        for h in hadiah_list:
+            if h['kode_hadiah'] == kode:
+                h['nama'] = request.POST.get('nama')
+                h['deskripsi'] = request.POST.get('deskripsi')
+                h['id_penyedia'] = request.POST.get('id_penyedia')
+                h['miles'] = int(request.POST.get('miles'))
+                h['valid_start_date'] = request.POST.get('valid_start_date')
+                h['program_end'] = request.POST.get('program_end')
+
+                nama_penyedia, tipe = get_penyedia_info(h['id_penyedia'])
+                h['nama_penyedia'] = nama_penyedia
+                h['tipe_penyedia'] = tipe
+
+                h['is_active'] = cek_status_aktif(
+                    h['valid_start_date'],
+                    h['program_end']
+                )
+                break
+
+        save_hadiah_session(request, hadiah_list)
+
+    return redirect('kelola_hadiah')
+
+def hapus_hadiah(request, kode):
+    if request.method == 'POST':
+        hadiah_list = get_hadiah_session(request)
+
+        new_list = []
+        found = False
+
+        for h in hadiah_list:
+            if h['kode_hadiah'] == kode:
+                found = True
+
+                if h['is_active']:
+                    messages.error(request, "Hadiah aktif tidak bisa dihapus.")
+                    return redirect('kelola_hadiah')
+
+                continue  # skip = delete
+            new_list.append(h)
+
+        if not found:
+            messages.error(request, "Hadiah tidak ditemukan.")
+        else:
+            save_hadiah_session(request, new_list)
+            messages.success(request, "Hadiah berhasil dihapus.")
+
+    return redirect('kelola_hadiah')
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from datetime import date
+
+# ===== DUMMY =====
+DUMMY_MITRA = [
+    {
+        "email_mitra": "hotelplus@aeromiles.id",
+        "nama_mitra": "Hotel Plus Indonesia",
+        "tanggal_kerja_sama": "2023-01-15",
+        "id_penyedia": "4"
+    },
+    {
+        "email_mitra": "travelmart@aeromiles.id",
+        "nama_mitra": "Travel Mart Asia",
+        "tanggal_kerja_sama": "2023-03-20",
+        "id_penyedia": "5"
+    },
+]
+
+# ═══════════════════════════════════════════════════════════
+# TAMBAHKAN KE views.py — bagian DUMMY DATA (atas file)
+# ═══════════════════════════════════════════════════════════
+
+DUMMY_MITRA = [
+    {
+        'id_penyedia': 4,
+        'email_mitra': 'partner@traveloka.com',
+        'nama_mitra': 'TravelokaPartner',
+        'tanggal_kerja_sama': '2023-01-15',
+    },
+    {
+        'id_penyedia': 5,
+        'email_mitra': 'partner@plazapremium.com',
+        'nama_mitra': 'Plaza Premium',
+        'tanggal_kerja_sama': '2023-06-01',
+    },
+    {
+        'id_penyedia': 6,
+        'email_mitra': 'partner@foodies.com',
+        'nama_mitra': 'Foodies Reward',
+        'tanggal_kerja_sama': '2024-01-10',
+    },
+    {
+        'id_penyedia': 7,
+        'email_mitra': 'partner@shopindo.com',
+        'nama_mitra': 'ShopIndo Voucher',
+        'tanggal_kerja_sama': '2024-03-20',
+    },
+    {
+        'id_penyedia': 8,
+        'email_mitra': 'partner@rentcar.com',
+        'nama_mitra': 'RentCar Nusantara',
+        'tanggal_kerja_sama': '2024-06-05',
+    },
+]
+
+def _next_penyedia_id():
+    """Auto-increment ID penyedia."""
+    if not DUMMY_MITRA:
+        return 10
+    return max(m['id_penyedia'] for m in DUMMY_MITRA) + 1
+
+
+# ═══════════════════════════════════════════════════════════
+# TAMBAHKAN KE views.py — bagian VIEWS (bawah file)
+# ═══════════════════════════════════════════════════════════
+
+def kelola_mitra(request):
+    """R — Staf melihat daftar mitra."""
+    role = request.session.get('role')
+    if not role or role != 'staf':
+        return redirect('login')
+
+    search = request.GET.get('search', '').lower()
+
+    filtered = list(DUMMY_MITRA)
+    if search:
+        filtered = [
+            m for m in filtered
+            if search in m['nama_mitra'].lower()
+            or search in m['email_mitra'].lower()
+        ]
+
+    # Hitung hadiah yang dimiliki mitra (dari DUMMY_HADIAH di views.py)
+    # Karena dummy, kita pakai angka statis. Ganti dengan lookup nyata jika sudah ada.
+    stats = {
+        'total':  len(DUMMY_MITRA),
+        'aktif':  len(DUMMY_MITRA),  # semua aktif untuk dummy
+        'hadiah': sum(
+            1 for h in DUMMY_HADIAH
+            if any(m['id_penyedia'] == h.get('id_penyedia') for m in DUMMY_MITRA)
+        ) if 'DUMMY_HADIAH' in dir() else 0,
+    }
+
+    context = {
+        'role':       'staf',
+        'mitra_list': filtered,
+        'search':     search,
+        'stats':      stats,
+        'success_msg': request.session.pop('success_msg', None),
+        'error_msg':   request.session.pop('error_msg', None),
+    }
+    return render(request, 'kelola_mitra.html', context)
+
+
+def mitra_tambah(request):
+    """C — Staf menambahkan mitra baru + otomatis buat entri PENYEDIA."""
+    role = request.session.get('role')
+    if not role or role != 'staf':
+        return redirect('login')
+
+    if request.method == 'POST':
+        email_mitra        = request.POST.get('email_mitra', '').strip()
+        nama_mitra         = request.POST.get('nama_mitra', '').strip()
+        tanggal_kerja_sama = request.POST.get('tanggal_kerja_sama', '').strip()
+
+        # Validasi field kosong
+        if not all([email_mitra, nama_mitra, tanggal_kerja_sama]):
+            request.session['error_msg'] = 'Semua field wajib diisi.'
+            return redirect('kelola_mitra')
+
+        # Cek email duplikat (email mitra adalah PK)
+        if any(m['email_mitra'] == email_mitra for m in DUMMY_MITRA):
+            request.session['error_msg'] = f'Email {email_mitra} sudah terdaftar sebagai mitra.'
+            return redirect('kelola_mitra')
+
+        # Auto-generate id_penyedia baru
+        new_id = _next_penyedia_id()
+
+        DUMMY_MITRA.append({
+            'id_penyedia':        new_id,
+            'email_mitra':        email_mitra,
+            'nama_mitra':         nama_mitra,
+            'tanggal_kerja_sama': tanggal_kerja_sama,
+        })
+        request.session['success_msg'] = f'Mitra "{nama_mitra}" berhasil ditambahkan (ID Penyedia: P-{new_id}).'
+
+    return redirect('kelola_mitra')
+
+
+def mitra_edit(request, email_mitra):
+    """U — Staf memperbarui nama dan tanggal kerja sama mitra.
+       Email mitra (PK) dan ID Penyedia TIDAK bisa diubah sesuai soal.
+    """
+    role = request.session.get('role')
+    if not role or role != 'staf':
+        return redirect('login')
+
+    mitra = next((m for m in DUMMY_MITRA if m['email_mitra'] == email_mitra), None)
+
+    if not mitra:
+        request.session['error_msg'] = 'Mitra tidak ditemukan.'
+        return redirect('kelola_mitra')
+
+    if request.method == 'POST':
+        nama_baru  = request.POST.get('nama_mitra', '').strip()
+        tgl_baru   = request.POST.get('tanggal_kerja_sama', '').strip()
+
+        if not nama_baru or not tgl_baru:
+            request.session['error_msg'] = 'Nama dan tanggal wajib diisi.'
+            return redirect('kelola_mitra')
+
+        mitra['nama_mitra']         = nama_baru
+        mitra['tanggal_kerja_sama'] = tgl_baru
+
+        request.session['success_msg'] = f'Mitra "{nama_baru}" berhasil diperbarui.'
+
+    return redirect('kelola_mitra')
+
+
+def mitra_hapus(request, email_mitra):
+    """D — Staf menghapus mitra. Penghapusan juga menghapus hadiah terkait."""
+    role = request.session.get('role')
+    if not role or role != 'staf':
+        return redirect('login')
+
+    mitra = next((m for m in DUMMY_MITRA if m['email_mitra'] == email_mitra), None)
+
+    if not mitra:
+        request.session['error_msg'] = 'Mitra tidak ditemukan.'
+        return redirect('kelola_mitra')
+
+    if request.method == 'POST':
+        nama = mitra['nama_mitra']
+        id_p = mitra['id_penyedia']
+
+        # Hapus hadiah terkait (ON DELETE CASCADE sesuai skema)
+        # Jika DUMMY_HADIAH ada di scope, hapus hadiah dengan id_penyedia yang sama
+        try:
+            hadiah_terhapus = [h for h in DUMMY_HADIAH if h.get('id_penyedia') == id_p]
+            for h in hadiah_terhapus:
+                DUMMY_HADIAH.remove(h)
+            cascade_info = f' ({len(hadiah_terhapus)} hadiah ikut dihapus)' if hadiah_terhapus else ''
+        except NameError:
+            cascade_info = ''
+
+        DUMMY_MITRA.remove(mitra)
+        request.session['success_msg'] = f'Mitra "{nama}" berhasil dihapus{cascade_info}.'
+
+    return redirect('kelola_mitra')
