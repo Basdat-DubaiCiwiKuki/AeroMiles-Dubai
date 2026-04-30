@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Beli Award Miles Package</h1>
+      <p class="page-subtitle">Tambah miles dengan membeli paket award miles</p>
+    </div>
+  </div>
+
+  {% if success_msg %}
+  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
+  {% endif %}
+  {% if error_msg %}
+  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Award Miles Saat Ini</div>
+      <div class="stat-value">{{ award_miles|default:"32,000" }}</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-label">Total Pembelian</div>
+      <div class="stat-value">{{ stats.total_beli|default:"0" }}</div>
+    </div>
+    <div class="stat-card wait">
+      <div class="stat-label">Miles Dibeli</div>
+      <div class="stat-value">{{ stats.miles_dibeli|default:"0" }}</div>
+    </div>
+  </div>
+
+  <!-- Paket -->
+  <div class="card">
+    <h2 class="sec-title" style="margin-bottom:16px;">Pilih Paket</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+      {% for p in paket_list %}
+      <div style="border:2px solid {% if forloop.counter == 3 %}#0d1f3c{% else %}#e5e7eb{% endif %};border-radius:14px;padding:22px 18px;text-align:center;position:relative;transition:all .2s;cursor:pointer;" onclick="openBeli('{{ p.id }}','{{ p.jumlah_award_miles }}',{{ p.harga_paket }})" onmouseover="this.style.borderColor='#0d1f3c';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='{% if forloop.counter == 3 %}#0d1f3c{% else %}#e5e7eb{% endif %}';this.style.transform='none'">
+        {% if forloop.counter == 3 %}
+        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#0d1f3c;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:12px;white-space:nowrap;">POPULER</div>
+        {% endif %}
+        <div style="font-size:32px;margin-bottom:8px;">
+          {% if forloop.counter == 1 %}✨
+          {% elif forloop.counter == 2 %}⭐
+          {% elif forloop.counter == 3 %}🌟
+          {% elif forloop.counter == 4 %}💫
+          {% else %}🏆{% endif %}
+        </div>
+        <div style="font-size:24px;font-weight:700;color:#0d1f3c;">{{ p.jumlah_award_miles|floatformat:"0" }}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">award miles</div>
+        <div style="font-size:15px;font-weight:600;color:#374151;margin-bottom:16px;">Rp {{ p.harga_paket|floatformat:"0" }}</div>
+        <button class="btn-primary" style="width:100%;padding:7px;">Beli</button>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <p>Belum ada paket tersedia.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Riwayat Pembelian -->
+  <div class="card">
+    <h2 class="sec-title" style="margin-bottom:14px;">Riwayat Pembelian</h2>
+    {% if riwayat_beli %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Paket</th>
+            <th>Miles Diterima</th>
+            <th>Harga</th>
+            <th>Tanggal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in riwayat_beli %}
+          <tr>
+            <td><span class="fcode">{{ b.id_paket }}</span></td>
+            <td><span style="color:#166534;font-weight:600;">+{{ b.jumlah_miles }} mi</span></td>
+            <td>Rp {{ b.harga|floatformat:"0" }}</td>
+            <td class="ts">{{ b.timestamp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:20px 0;">
+      <div class="empty-icon">📋</div>
+      <p>Belum ada riwayat pembelian.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI BELI -->
+<div id="m-beli" class="modal-backdrop" style="display:none" onclick="if(event.target.id==='m-beli') closeBeli()">
+  <div class="modal-box modal-sm">
+    <div class="modal-hdr">
+      <h2 class="modal-ttl">Konfirmasi Pembelian</h2>
+      <button class="modal-cls" onclick="closeBeli()">×</button>
+    </div>
+    <p class="confirm-body">Pastikan detail pembelian sudah benar sebelum melanjutkan.</p>
+    <div class="confirm-detail">
+      <div><span class="dl">Paket:</span> <span id="b-id"></span></div>
+      <div><span class="dl">Miles:</span> <span id="b-miles" style="color:#166534;font-weight:600;"></span></div>
+      <div><span class="dl">Harga:</span> <span id="b-harga" style="font-weight:600;"></span></div>
+    </div>
+    <form method="post" id="f-beli" action="{% url 'package_beli' %}">
+      {% csrf_token %}
+      <input type="hidden" name="id_paket" id="b-kode">
+      <div class="modal-ftr">
+        <button type="button" class="btn-cancel" onclick="closeBeli()">Batal</button>
+        <button type="submit" class="btn-primary">Konfirmasi Beli</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openBeli(id, miles, harga){
+  document.getElementById('b-kode').value = id;
+  document.getElementById('b-id').textContent = id;
+  document.getElementById('b-miles').textContent = '+' + miles + ' miles';
+  document.getElementById('b-harga').textContent = 'Rp ' + harga.toLocaleString('id-ID');
+  document.getElementById('m-beli').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeBeli(){
+  document.getElementById('m-beli').style.display = 'none';
+  document.body.style.overflow = '';
+}
+var flash = document.getElementById('flash');
+if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+</script>
+{% endblock %}

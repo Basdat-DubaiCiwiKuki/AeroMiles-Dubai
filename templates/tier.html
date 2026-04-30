@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Info Tier</h1>
+      <p class="page-subtitle">Status dan progress keanggotaan AeroMiles kamu</p>
+    </div>
+  </div>
+
+  <!-- Hero Tier Saat Ini -->
+  <div style="background:linear-gradient(135deg,#0d1f3c 0%,#1e3a6e 100%);border-radius:14px;padding:28px 32px;margin-bottom:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Tier Kamu Saat Ini</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:40px;">
+          {% if tier_saat_ini.nama == 'Bronze' %}🥉
+          {% elif tier_saat_ini.nama == 'Silver' %}🥈
+          {% elif tier_saat_ini.nama == 'Gold' %}🥇
+          {% else %}💎{% endif %}
+        </span>
+        <div>
+          <div style="font-size:28px;font-weight:700;">{{ tier_saat_ini.nama }}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6);">Member sejak bergabung</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px;">Total Miles</div>
+      <div style="font-size:32px;font-weight:700;">{{ progress.total_miles|default:"45,000" }}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);">{{ progress.total_penerbangan|default:"12" }} penerbangan</div>
+    </div>
+  </div>
+
+  <!-- Progress ke Tier Berikutnya -->
+  {% if tier_berikutnya %}
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div class="sec-title" style="margin-bottom:2px;">Progress ke {{ tier_berikutnya.nama }}</div>
+        <div style="font-size:12.5px;color:#6b7280;">Butuh {{ progress.miles_needed|default:"35,000" }} miles lagi untuk naik tier</div>
+      </div>
+      <span style="font-size:22px;">
+        {% if tier_berikutnya.nama == 'Silver' %}🥈
+        {% elif tier_berikutnya.nama == 'Gold' %}🥇
+        {% else %}💎{% endif %}
+      </span>
+    </div>
+    <div style="background:#f3f4f6;border-radius:99px;height:10px;overflow:hidden;">
+      <div style="background:linear-gradient(90deg,#0d1f3c,#3b82f6);height:100%;border-radius:99px;width:{{ progress.progress_percentage|default:56 }}%;transition:width .6s ease;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:#9ca3af;">
+      <span>{{ tier_saat_ini.nama }} ({{ tier_saat_ini.minimal_tier_miles|default:0 | floatformat:"0" }} mi)</span>
+      <span style="font-weight:600;color:#0d1f3c;">{{ progress.progress_percentage|default:56 }}%</span>
+      <span>{{ tier_berikutnya.nama }} ({{ tier_berikutnya.minimal_tier_miles|default:150000 | floatformat:"0" }} mi)</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Semua Tier -->
+  <div class="card">
+    <h2 class="sec-title" style="margin-bottom:16px;">Semua Tier & Benefit</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
+      {% for t in semua_tier %}
+      <div style="border:2px solid {% if t.is_current %}#0d1f3c{% else %}#e5e7eb{% endif %};border-radius:12px;padding:18px;position:relative;{% if t.is_current %}background:#f8faff;{% endif %}">
+        {% if t.is_current %}
+        <div style="position:absolute;top:-10px;right:12px;background:#0d1f3c;color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:10px;">TIER KAMU</div>
+        {% endif %}
+        <div style="font-size:28px;margin-bottom:8px;">
+          {% if t.nama == 'Bronze' %}🥉
+          {% elif t.nama == 'Silver' %}🥈
+          {% elif t.nama == 'Gold' %}🥇
+          {% else %}💎{% endif %}
+        </div>
+        <div style="font-weight:700;font-size:16px;color:#0d1f3c;margin-bottom:4px;">{{ t.nama }}</div>
+        <div style="font-size:11.5px;color:#9ca3af;margin-bottom:12px;">Min. {{ t.minimal_tier_miles }} miles</div>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;">
+          {% for b in t.benefits %}
+          <li style="font-size:12.5px;color:#374151;display:flex;align-items:center;gap:6px;">
+            <span style="color:#22c55e;font-weight:700;">✓</span> {{ b }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

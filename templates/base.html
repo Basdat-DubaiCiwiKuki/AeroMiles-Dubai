@@ -427,10 +427,10 @@
       <a href="/dashboard/"  {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
       <a href="/identitas/"  {% if request.path == '/identitas/' %}class="active"{% endif %}>Identitas Saya</a>
       <a href="/klaim/"      {% if '/klaim/' in request.path %}class="active"{% endif %}>Klaim Miles</a>
-      <a href="#">Transfer Miles</a>
-      <a href="#">Redeem Hadiah</a>
-      <a href="#">Beli Package</a>
-      <a href="#">Info Tier</a>
+        <a href="/transfer/" {% if request.path == '/transfer/' %}class="active"{% endif %}>Transfer Miles</a>
+<a href="/redeem/"   {% if request.path == '/redeem/'   %}class="active"{% endif %}>Redeem Hadiah</a>
+<a href="/package/"  {% if request.path == '/package/'  %}class="active"{% endif %}>Beli Package</a>
+<a href="/tier/"     {% if request.path == '/tier/'     %}class="active"{% endif %}>Info Tier</a>
       <a href="/profil/"     {% if request.path == '/profil/' %}class="active"{% endif %}>Pengaturan Profil</a>
     {% elif role == 'staf' %}
       <a href="/dashboard/"      {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>

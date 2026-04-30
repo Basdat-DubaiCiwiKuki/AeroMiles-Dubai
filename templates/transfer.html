@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Transfer Miles</h1>
+      <p class="page-subtitle">Kirim miles ke sesama member AeroMiles</p>
+    </div>
+  </div>
+
+  {% if success_msg %}
+  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
+  {% endif %}
+  {% if error_msg %}
+  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Miles Kamu</div>
+      <div class="stat-value">{{ total_miles|default:"45,000" }}</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-label">Transfer Keluar</div>
+      <div class="stat-value">{{ stats.total_keluar|default:"0" }}</div>
+    </div>
+    <div class="stat-card wait">
+      <div class="stat-label">Transfer Masuk</div>
+      <div class="stat-value">{{ stats.total_masuk|default:"0" }}</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+    <!-- Form Transfer -->
+    <div class="card">
+      <h2 class="sec-title">Kirim Miles</h2>
+      <div class="modal-info">
+        Minimum transfer <strong>100 miles</strong>. Transfer bersifat permanen dan tidak dapat dibatalkan.
+      </div>
+      <form method="post" action="{% url 'transfer_kirim' %}">
+        {% csrf_token %}
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Email Penerima <span class="req">*</span></label>
+          <input type="email" name="email_tujuan" placeholder="email@example.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Jumlah Miles <span class="req">*</span></label>
+          <input type="number" name="jumlah" placeholder="Minimal 100 miles" min="100" required>
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Catatan (opsional)</label>
+          <input type="text" name="catatan" placeholder="cth: untuk perjalanan bareng" maxlength="255">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;">Kirim Miles →</button>
+      </form>
+    </div>
+
+    <!-- Riwayat Transfer -->
+    <div class="card">
+      <h2 class="sec-title">Riwayat Transfer</h2>
+      {% if riwayat %}
+        {% for t in riwayat %}
+        <div class="tx-row">
+          <div>
+            {% if t.tipe == 'keluar' %}
+              <span class="tx-type" style="background:#fee2e2;color:#991b1b;">↑ Keluar</span>
+            {% else %}
+              <span class="tx-type" style="background:#dcfce7;color:#166534;">↓ Masuk</span>
+            {% endif %}
+            <span style="font-size:13px;color:#374151;">{{ t.email_lain }}</span>
+            {% if t.catatan %}<div style="font-size:11.5px;color:#9ca3af;margin-top:2px;margin-left:8px;">{{ t.catatan }}</div>{% endif %}
+          </div>
+          <div style="text-align:right;">
+            <div class="tx-amt {% if t.tipe == 'keluar' %}tx-neg{% else %}tx-pos{% endif %}">
+              {% if t.tipe == 'keluar' %}-{% else %}+{% endif %}{{ t.jumlah }} mi
+            </div>
+            <div class="tx-time">{{ t.timestamp }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state" style="padding:24px 0;">
+          <div class="empty-icon">↔</div>
+          <p>Belum ada riwayat transfer.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+var flash = document.getElementById('flash');
+if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+</script>
+{% endblock %}

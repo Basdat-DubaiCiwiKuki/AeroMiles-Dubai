@@ -612,3 +612,230 @@ def klaim_proses(request, klaim_id):
             request.session['error_msg'] = 'Aksi tidak valid.'
 
     return redirect('klaim_staf')
+
+# ─── TAMBAHKAN KE views.py (di bagian bawah) ─────────────────────────────────
+
+# ─── DUMMY DATA TAMBAHAN ─────────────────────────────────────────────────────
+
+DUMMY_PAKET = [
+    {'id': 'AMP-001', 'harga_paket': 150000,  'jumlah_award_miles': 1000},
+    {'id': 'AMP-002', 'harga_paket': 650000,  'jumlah_award_miles': 5000},
+    {'id': 'AMP-003', 'harga_paket': 1200000, 'jumlah_award_miles': 10000},
+    {'id': 'AMP-004', 'harga_paket': 2750000, 'jumlah_award_miles': 25000},
+    {'id': 'AMP-005', 'harga_paket': 5000000, 'jumlah_award_miles': 50000},
+]
+
+DUMMY_HADIAH = [
+    {'kode_hadiah': 'RWD-001', 'nama': 'Upgrade Business Class',   'miles': 15000, 'deskripsi': 'Upgrade kursi ke Business Class.',        'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-002', 'nama': 'Extra Baggage 20kg',       'miles': 8000,  'deskripsi': 'Tambahan bagasi sebesar 20kg.',           'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-003', 'nama': 'Airport Lounge Access',    'miles': 12000, 'deskripsi': 'Akses lounge bandara internasional.',     'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-004', 'nama': 'Hotel Voucher Rp500.000',  'miles': 10000, 'deskripsi': 'Voucher menginap di Hotel Plus.',         'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-005', 'nama': 'Travel Voucher Rp300.000', 'miles': 7000,  'deskripsi': 'Voucher pembelian tiket di Travel Mart.', 'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-006', 'nama': 'Dining Voucher Rp250.000', 'miles': 6000,  'deskripsi': 'Voucher makan di merchant Foodies.',      'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-007', 'nama': 'Shopping Voucher Rp400.000','miles': 9000, 'deskripsi': 'Voucher belanja di ShopIndo.',            'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-008', 'nama': 'Car Rental Discount',      'miles': 11000, 'deskripsi': 'Diskon sewa mobil dari RentCar Nusantara.','program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-009', 'nama': 'Priority Boarding',        'miles': 5000,  'deskripsi': 'Fasilitas naik pesawat lebih awal.',      'program_end': '2026-12-31'},
+    {'kode_hadiah': 'RWD-010', 'nama': 'Free Seat Selection',      'miles': 4000,  'deskripsi': 'Bebas memilih kursi penerbangan.',        'program_end': '2026-12-31'},
+]
+
+# In-memory storage untuk simulasi transaksi
+DUMMY_TRANSFER = []
+DUMMY_REDEEM   = []
+DUMMY_BELI     = []
+
+
+# ─── FITUR: TRANSFER MILES ────────────────────────────────────────────────────
+
+def transfer_miles(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    email = request.session.get('email')
+
+    riwayat = []
+    for t in DUMMY_TRANSFER:
+        if t['email_dari'] == email:
+            riwayat.append({**t, 'tipe': 'keluar', 'email_lain': t['email_ke']})
+        elif t['email_ke'] == email:
+            riwayat.append({**t, 'tipe': 'masuk', 'email_lain': t['email_dari']})
+    riwayat.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    total_keluar = sum(t['jumlah'] for t in riwayat if t['tipe'] == 'keluar')
+    total_masuk  = sum(t['jumlah'] for t in riwayat if t['tipe'] == 'masuk')
+
+    context = {
+        'role': 'member',
+        'total_miles': '45,000',
+        'riwayat': riwayat,
+        'stats': {
+            'total_keluar': total_keluar,
+            'total_masuk':  total_masuk,
+        },
+        'success_msg': request.session.pop('success_msg', None),
+        'error_msg':   request.session.pop('error_msg', None),
+    }
+    return render(request, 'transfer.html', context)
+
+
+def transfer_kirim(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    if request.method == 'POST':
+        email_dari    = request.session.get('email')
+        email_tujuan  = request.POST.get('email_tujuan', '').strip()
+        jumlah_str    = request.POST.get('jumlah', '').strip()
+        catatan       = request.POST.get('catatan', '').strip()
+
+        if not email_tujuan or not jumlah_str:
+            request.session['error_msg'] = 'Email tujuan dan jumlah wajib diisi.'
+            return redirect('transfer_miles')
+
+        if email_tujuan == email_dari:
+            request.session['error_msg'] = 'Tidak dapat transfer ke diri sendiri.'
+            return redirect('transfer_miles')
+
+        try:
+            jumlah = int(jumlah_str)
+            if jumlah < 100:
+                raise ValueError
+        except ValueError:
+            request.session['error_msg'] = 'Jumlah miles minimal 100.'
+            return redirect('transfer_miles')
+
+        DUMMY_TRANSFER.append({
+            'email_dari':  email_dari,
+            'email_ke':    email_tujuan,
+            'jumlah':      jumlah,
+            'catatan':     catatan,
+            'timestamp':   '2026-04-30 10:00:00',
+        })
+        request.session['success_msg'] = f'{jumlah} miles berhasil dikirim ke {email_tujuan}.'
+
+    return redirect('transfer_miles')
+
+
+# ─── FITUR: REDEEM HADIAH ─────────────────────────────────────────────────────
+
+def redeem_hadiah(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    email = request.session.get('email')
+    riwayat_redeem = []
+    for r in DUMMY_REDEEM:
+        if r['email_member'] == email:
+            hadiah = next((h for h in DUMMY_HADIAH if h['kode_hadiah'] == r['kode_hadiah']), {})
+            riwayat_redeem.append({
+                **r,
+                'nama_hadiah': hadiah.get('nama', '-'),
+                'miles':       hadiah.get('miles', 0),
+            })
+    riwayat_redeem.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    miles_digunakan = sum(r['miles'] for r in riwayat_redeem)
+
+    context = {
+        'role': 'member',
+        'award_miles': 32000,
+        'hadiah_list': DUMMY_HADIAH,
+        'riwayat_redeem': riwayat_redeem,
+        'stats': {
+            'total_redeem':    len(riwayat_redeem),
+            'miles_digunakan': miles_digunakan,
+        },
+        'success_msg': request.session.pop('success_msg', None),
+        'error_msg':   request.session.pop('error_msg', None),
+    }
+    return render(request, 'redeem.html', context)
+
+
+def redeem_proses(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    if request.method == 'POST':
+        email       = request.session.get('email')
+        kode_hadiah = request.POST.get('kode_hadiah', '').strip()
+
+        hadiah = next((h for h in DUMMY_HADIAH if h['kode_hadiah'] == kode_hadiah), None)
+        if not hadiah:
+            request.session['error_msg'] = 'Hadiah tidak ditemukan.'
+            return redirect('redeem_hadiah')
+
+        DUMMY_REDEEM.append({
+            'email_member': email,
+            'kode_hadiah':  kode_hadiah,
+            'timestamp':    '2026-04-30 10:00:00',
+        })
+        request.session['success_msg'] = f'Redeem "{hadiah["nama"]}" berhasil! {hadiah["miles"]} miles dikurangi.'
+
+    return redirect('redeem_hadiah')
+
+
+# ─── FITUR: BELI PACKAGE ─────────────────────────────────────────────────────
+
+def beli_package(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    email = request.session.get('email')
+    riwayat_beli = [b for b in DUMMY_BELI if b['email_member'] == email]
+    riwayat_beli.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    miles_dibeli  = sum(b['jumlah_miles'] for b in riwayat_beli)
+
+    riwayat_display = []
+    for b in riwayat_beli:
+        paket = next((p for p in DUMMY_PAKET if p['id'] == b['id_paket']), {})
+        riwayat_display.append({
+            **b,
+            'harga': paket.get('harga_paket', 0),
+        })
+
+    context = {
+        'role': 'member',
+        'award_miles': 32000,
+        'paket_list':  DUMMY_PAKET,
+        'riwayat_beli': riwayat_display,
+        'stats': {
+            'total_beli':  len(riwayat_beli),
+            'miles_dibeli': miles_dibeli,
+        },
+        'success_msg': request.session.pop('success_msg', None),
+        'error_msg':   request.session.pop('error_msg', None),
+    }
+    return render(request, 'package.html', context)
+
+
+def package_beli(request):
+    role = request.session.get('role')
+    if not role or role != 'member':
+        return redirect('login')
+
+    if request.method == 'POST':
+        email    = request.session.get('email')
+        id_paket = request.POST.get('id_paket', '').strip()
+
+        paket = next((p for p in DUMMY_PAKET if p['id'] == id_paket), None)
+        if not paket:
+            request.session['error_msg'] = 'Paket tidak ditemukan.'
+            return redirect('beli_package')
+
+        DUMMY_BELI.append({
+            'email_member': email,
+            'id_paket':     id_paket,
+            'jumlah_miles': paket['jumlah_award_miles'],
+            'timestamp':    '2026-04-30 10:00:00',
+        })
+        request.session['success_msg'] = (
+            f'Pembelian {id_paket} berhasil! '
+            f'{paket["jumlah_award_miles"]} award miles ditambahkan.'
+        )
+
+    return redirect('beli_package')

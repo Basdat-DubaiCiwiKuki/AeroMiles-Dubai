@@ -29,4 +29,19 @@ urlpatterns = [
 
     # Kelola Member - Staf
     path('kelola-member/', views.kelola_member, name='kelola_member'),
+
+    # Transfer Miles
+    path('transfer/', views.transfer_miles, name='transfer_miles'),
+    path('transfer/kirim/', views.transfer_kirim, name='transfer_kirim'),
+
+    # Redeem Hadiah
+    path('redeem/', views.redeem_hadiah, name='redeem_hadiah'),
+    path('redeem/proses/', views.redeem_proses, name='redeem_proses'),
+
+    # Beli Package
+    path('package/', views.beli_package, name='beli_package'),
+    path('package/beli/', views.package_beli, name='package_beli'),
+
+    # Info Tier (sudah ada, pastikan ada)
+    path('tier/', views.tier, name='tier'),
 ]
