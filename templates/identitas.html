@@ -1,5 +1,315 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="text-2xl font-bold">Identitas Saya</h1>
+
+<!-- Hero Section -->
+<div class="relative h-72 overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80"
+        alt="Travel" class="w-full h-full object-cover">
+    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+    <div class="absolute inset-0 flex flex-col justify-end px-12 pb-16 text-white">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Identitas Saya</p>
+        <h1 class="text-4xl font-bold">Dokumen</h1>
+        <h2 class="text-4xl font-bold opacity-60">& Identitas</h2>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="max-w-5xl mx-auto px-8 -mt-10 relative z-10 pb-12">
+
+    <!-- Header Card -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-4 flex items-center justify-between">
+        <div>
+            <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Total Dokumen</p>
+            <p class="text-2xl font-bold text-gray-900">3</p>
+        </div>
+        <button onclick="openModal('modal-tambah')"
+            class="bg-[#0f172a] text-white text-xs uppercase tracking-wider px-5 py-3 rounded-xl hover:bg-[#1e293b] transition font-medium">
+            + Tambah Identitas
+        </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 mb-4 flex items-center gap-3">
+        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Cari nomor dokumen, jenis, atau negara..."
+            oninput="filterTable()"
+            class="w-full text-sm text-gray-700 placeholder-gray-300 focus:outline-none bg-transparent">
+        <button onclick="clearSearch()" id="clear-btn"
+            class="text-gray-300 hover:text-gray-500 transition hidden text-lg leading-none">✕</button>
+    </div>
+
+    <!-- Tabel -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-50">
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">No. Dokumen</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Jenis</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Negara</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Terbit</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Habis</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Status</th>
+                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-50">
+
+                <!-- Dummy Row 1 - Aktif -->
+                <tr class="hover:bg-gray-50 transition" data-search="a12345678 paspor indonesia">
+                    <td class="px-8 py-5 font-semibold text-gray-900">A12345678</td>
+                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">Paspor</td>
+                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2020-01-15</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2030-01-15</td>
+                    <td class="px-8 py-5">
+                        <span class="inline-block bg-emerald-50 text-emerald-600 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Aktif</span>
+                    </td>
+                    <td class="px-8 py-5">
+                        <div class="flex gap-4">
+                            <button onclick="openEditModal('A12345678', 'Paspor', 'Indonesia', '2020-01-15', '2030-01-15')"
+                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
+                            <button onclick="openHapusModal('A12345678')"
+                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Dummy Row 2 - Kedaluwarsa -->
+                <tr class="hover:bg-gray-50 transition" data-search="3275012345678901 ktp indonesia">
+                    <td class="px-8 py-5 font-semibold text-gray-900">3275012345678901</td>
+                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">KTP</td>
+                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2019-06-01</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2024-06-01</td>
+                    <td class="px-8 py-5">
+                        <span class="inline-block bg-red-50 text-red-400 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Kedaluwarsa</span>
+                    </td>
+                    <td class="px-8 py-5">
+                        <div class="flex gap-4">
+                            <button onclick="openEditModal('3275012345678901', 'KTP', 'Indonesia', '2019-06-01', '2024-06-01')"
+                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
+                            <button onclick="openHapusModal('3275012345678901')"
+                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Dummy Row 3 - Aktif -->
+                <tr class="hover:bg-gray-50 transition" data-search="sim0001 sim indonesia">
+                    <td class="px-8 py-5 font-semibold text-gray-900">SIM0001</td>
+                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">SIM</td>
+                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2022-03-10</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs">2027-03-10</td>
+                    <td class="px-8 py-5">
+                        <span class="inline-block bg-emerald-50 text-emerald-600 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Aktif</span>
+                    </td>
+                    <td class="px-8 py-5">
+                        <div class="flex gap-4">
+                            <button onclick="openEditModal('SIM0001', 'SIM', 'Indonesia', '2022-03-10', '2027-03-10')"
+                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
+                            <button onclick="openHapusModal('SIM0001')"
+                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Empty state (hidden by default) -->
+                <tr id="empty-row" class="hidden">
+                    <td colspan="7" class="px-8 py-16 text-center text-gray-300 text-xs uppercase tracking-widest">
+                        Tidak ada dokumen yang cocok.
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- MODAL TAMBAH -->
+<div id="modal-tambah" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Dokumen Baru</p>
+                <h2 class="text-xl font-bold text-gray-900">Tambah Identitas</h2>
+            </div>
+            <button onclick="closeModal('modal-tambah')" class="text-gray-300 hover:text-gray-600 transition text-xl">✕</button>
+        </div>
+        <form method="POST" action="/identitas/tambah/" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nomor Dokumen *</label>
+                <input type="text" name="nomor" required
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Jenis Dokumen *</label>
+                <select name="jenis" required
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                    <option value="">Pilih jenis</option>
+                    <option value="Paspor">Paspor</option>
+                    <option value="KTP">KTP</option>
+                    <option value="SIM">SIM</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Negara Penerbit *</label>
+                <input type="text" name="negara_penerbit" placeholder="Indonesia" required
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Terbit *</label>
+                    <input type="date" name="tanggal_terbit" required
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Habis *</label>
+                    <input type="date" name="tanggal_habis" required
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('modal-tambah')"
+                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-[#0f172a] text-white rounded-xl text-sm hover:bg-[#1e293b] transition uppercase tracking-wider font-medium">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL EDIT -->
+<div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Perbarui Data</p>
+                <h2 class="text-xl font-bold text-gray-900">Edit Identitas</h2>
+            </div>
+            <button onclick="closeModal('modal-edit')" class="text-gray-300 hover:text-gray-600 transition text-xl">✕</button>
+        </div>
+        <form method="POST" action="/identitas/edit/" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nomor Dokumen</label>
+                <input type="text" id="edit-nomor" name="nomor" readonly
+                    class="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Jenis Dokumen *</label>
+                <select name="jenis" id="edit-jenis"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                    <option value="Paspor">Paspor</option>
+                    <option value="KTP">KTP</option>
+                    <option value="SIM">SIM</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Negara Penerbit *</label>
+                <input type="text" name="negara_penerbit" id="edit-negara"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Terbit *</label>
+                    <input type="date" name="tanggal_terbit" id="edit-terbit"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Habis *</label>
+                    <input type="date" name="tanggal_habis" id="edit-habis"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('modal-edit')"
+                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-[#0f172a] text-white rounded-xl text-sm hover:bg-[#1e293b] transition uppercase tracking-wider font-medium">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL HAPUS -->
+<div id="modal-hapus" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center">
+        <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">Konfirmasi</p>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Hapus Identitas?</h2>
+        <p class="text-sm text-gray-400 mb-8">Tindakan ini tidak dapat dibatalkan.</p>
+        <form method="POST" action="/identitas/hapus/">
+            {% csrf_token %}
+            <input type="hidden" name="nomor" id="hapus-nomor">
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal('modal-hapus')"
+                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition uppercase tracking-wider font-medium">
+                    Hapus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+function openEditModal(nomor, jenis, negara, terbit, habis) {
+    document.getElementById('edit-nomor').value = nomor;
+    document.getElementById('edit-jenis').value = jenis;
+    document.getElementById('edit-negara').value = negara;
+    document.getElementById('edit-terbit').value = terbit;
+    document.getElementById('edit-habis').value = habis;
+    openModal('modal-edit');
+}
+function openHapusModal(nomor) {
+    document.getElementById('hapus-nomor').value = nomor;
+    openModal('modal-hapus');
+}
+
+function filterTable() {
+    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#table-body tr[data-search]');
+    const emptyRow = document.getElementById('empty-row');
+    const clearBtn = document.getElementById('clear-btn');
+
+    clearBtn.classList.toggle('hidden', query === '');
+
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const match = row.getAttribute('data-search').includes(query);
+        row.classList.toggle('hidden', !match);
+        if (match) visibleCount++;
+    });
+
+    emptyRow.classList.toggle('hidden', visibleCount > 0);
+}
+
+function clearSearch() {
+    document.getElementById('search-input').value = '';
+    filterTable();
+}
+</script>
+
 {% endblock %}
