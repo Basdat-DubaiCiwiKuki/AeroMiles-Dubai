@@ -1,315 +1,286 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<!-- Hero Section -->
-<div class="relative h-72 overflow-hidden">
-    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80"
-        alt="Travel" class="w-full h-full object-cover">
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-    <div class="absolute inset-0 flex flex-col justify-end px-12 pb-16 text-white">
-        <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Identitas Saya</p>
-        <h1 class="text-4xl font-bold">Dokumen</h1>
-        <h2 class="text-4xl font-bold opacity-60">& Identitas</h2>
-    </div>
-</div>
-
-<!-- Content -->
-<div class="max-w-5xl mx-auto px-8 -mt-10 relative z-10 pb-12">
-
-    <!-- Header Card -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-4 flex items-center justify-between">
+<div class="max-w-6xl mx-auto px-8 py-28">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
         <div>
-            <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Total Dokumen</p>
-            <p class="text-2xl font-bold text-gray-900">3</p>
+            <p class="text-sm uppercase tracking-widest text-gray-400 mb-2">Member</p>
+            <h1 class="text-3xl font-bold text-slate-900">Identitas Saya</h1>
+            <p class="mt-2 text-sm text-gray-500 max-w-2xl">Kelola semua dokumen identitas yang terdaftar atas nama Anda. Tambah, ubah, dan hapus dokumen sesuai kebutuhan.</p>
         </div>
-        <button onclick="openModal('modal-tambah')"
-            class="bg-[#0f172a] text-white text-xs uppercase tracking-wider px-5 py-3 rounded-xl hover:bg-[#1e293b] transition font-medium">
-            + Tambah Identitas
-        </button>
+        <button id="btnAddIdentity" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-400/10 transition hover:bg-slate-700">Tambah Identitas</button>
     </div>
 
-    <!-- Search Bar -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 mb-4 flex items-center gap-3">
-        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Cari nomor dokumen, jenis, atau negara..."
-            oninput="filterTable()"
-            class="w-full text-sm text-gray-700 placeholder-gray-300 focus:outline-none bg-transparent">
-        <button onclick="clearSearch()" id="clear-btn"
-            class="text-gray-300 hover:text-gray-500 transition hidden text-lg leading-none">✕</button>
-    </div>
-
-    <!-- Tabel -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b border-gray-50">
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">No. Dokumen</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Jenis</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Negara</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Terbit</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Habis</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Status</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Aksi</th>
+    <div class="overflow-x-auto bg-white rounded-3xl border border-gray-100 shadow-lg shadow-slate-400/5">
+        <table class="min-w-full text-left text-sm text-slate-900">
+            <thead class="bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
+                <tr>
+                    <th class="px-6 py-4">No. Dokumen</th>
+                    <th class="px-6 py-4">Jenis</th>
+                    <th class="px-6 py-4">Negara Penerbit</th>
+                    <th class="px-6 py-4">Tanggal Terbit</th>
+                    <th class="px-6 py-4">Tanggal Habis</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="table-body" class="divide-y divide-gray-50">
-
-                <!-- Dummy Row 1 - Aktif -->
-                <tr class="hover:bg-gray-50 transition" data-search="a12345678 paspor indonesia">
-                    <td class="px-8 py-5 font-semibold text-gray-900">A12345678</td>
-                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">Paspor</td>
-                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2020-01-15</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2030-01-15</td>
-                    <td class="px-8 py-5">
-                        <span class="inline-block bg-emerald-50 text-emerald-600 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Aktif</span>
-                    </td>
-                    <td class="px-8 py-5">
-                        <div class="flex gap-4">
-                            <button onclick="openEditModal('A12345678', 'Paspor', 'Indonesia', '2020-01-15', '2030-01-15')"
-                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
-                            <button onclick="openHapusModal('A12345678')"
-                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Dummy Row 2 - Kedaluwarsa -->
-                <tr class="hover:bg-gray-50 transition" data-search="3275012345678901 ktp indonesia">
-                    <td class="px-8 py-5 font-semibold text-gray-900">3275012345678901</td>
-                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">KTP</td>
-                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2019-06-01</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2024-06-01</td>
-                    <td class="px-8 py-5">
-                        <span class="inline-block bg-red-50 text-red-400 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Kedaluwarsa</span>
-                    </td>
-                    <td class="px-8 py-5">
-                        <div class="flex gap-4">
-                            <button onclick="openEditModal('3275012345678901', 'KTP', 'Indonesia', '2019-06-01', '2024-06-01')"
-                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
-                            <button onclick="openHapusModal('3275012345678901')"
-                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Dummy Row 3 - Aktif -->
-                <tr class="hover:bg-gray-50 transition" data-search="sim0001 sim indonesia">
-                    <td class="px-8 py-5 font-semibold text-gray-900">SIM0001</td>
-                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">SIM</td>
-                    <td class="px-8 py-5 text-gray-600">Indonesia</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2022-03-10</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">2027-03-10</td>
-                    <td class="px-8 py-5">
-                        <span class="inline-block bg-emerald-50 text-emerald-600 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Aktif</span>
-                    </td>
-                    <td class="px-8 py-5">
-                        <div class="flex gap-4">
-                            <button onclick="openEditModal('SIM0001', 'SIM', 'Indonesia', '2022-03-10', '2027-03-10')"
-                                class="text-gray-300 hover:text-gray-700 transition text-base">✏️</button>
-                            <button onclick="openHapusModal('SIM0001')"
-                                class="text-gray-300 hover:text-red-400 transition text-base">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Empty state (hidden by default) -->
-                <tr id="empty-row" class="hidden">
-                    <td colspan="7" class="px-8 py-16 text-center text-gray-300 text-xs uppercase tracking-widest">
-                        Tidak ada dokumen yang cocok.
-                    </td>
-                </tr>
-
-            </tbody>
+            <tbody id="tableBody" class="divide-y divide-gray-100 bg-white"></tbody>
         </table>
+        <div id="emptyState" class="p-12 text-center text-sm text-gray-500 hidden">Belum ada dokumen identitas. Klik tombol "Tambah Identitas" untuk mulai.</div>
     </div>
-
 </div>
 
-<!-- MODAL TAMBAH -->
-<div id="modal-tambah" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+<div id="identityModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
+    <div class="w-full max-w-2xl rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Dokumen Baru</p>
-                <h2 class="text-xl font-bold text-gray-900">Tambah Identitas</h2>
+                <p id="modalTitle" class="text-xl font-semibold text-slate-900">Tambah Identitas Baru</p>
+                <p class="text-sm text-gray-500">Isi semua kolom untuk menambahkan dokumen identitas.</p>
             </div>
-            <button onclick="closeModal('modal-tambah')" class="text-gray-300 hover:text-gray-600 transition text-xl">✕</button>
+            <button id="closeModal" class="text-slate-400 transition hover:text-slate-900">✕</button>
         </div>
-        <form method="POST" action="/identitas/tambah/" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nomor Dokumen *</label>
-                <input type="text" name="nomor" required
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <form id="identityForm" class="space-y-5">
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Nomor Dokumen</span>
+                    <input id="docNumber" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: SIM0001">
+                </label>
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Jenis Dokumen</span>
+                    <select id="docType" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                        <option value="Paspor">Paspor</option>
+                        <option value="KTP">KTP</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </label>
             </div>
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Jenis Dokumen *</label>
-                <select name="jenis" required
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                    <option value="">Pilih jenis</option>
-                    <option value="Paspor">Paspor</option>
-                    <option value="KTP">KTP</option>
-                    <option value="SIM">SIM</option>
-                </select>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Negara Penerbit</span>
+                    <input id="docCountry" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: Indonesia">
+                </label>
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Tanggal Terbit</span>
+                    <input id="docIssued" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                </label>
             </div>
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Negara Penerbit *</label>
-                <input type="text" name="negara_penerbit" placeholder="Indonesia" required
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Terbit *</label>
-                    <input type="date" name="tanggal_terbit" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm text-slate-700">
+                    <span>Tanggal Habis</span>
+                    <input id="docExpiry" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                </label>
+                <div class="space-y-2 text-sm text-slate-700">
+                    <span>&nbsp;</span>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" id="cancelModal" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+                        <button type="submit" class="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Simpan</button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Habis *</label>
-                    <input type="date" name="tanggal_habis" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                </div>
             </div>
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeModal('modal-tambah')"
-                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-[#0f172a] text-white rounded-xl text-sm hover:bg-[#1e293b] transition uppercase tracking-wider font-medium">
-                    Simpan
-                </button>
-            </div>
+            <input id="currentDocId" type="hidden" value="">
         </form>
+        <p id="formError" class="mt-4 text-sm text-rose-600 hidden"></p>
     </div>
 </div>
 
-<!-- MODAL EDIT -->
-<div id="modal-edit" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Perbarui Data</p>
-                <h2 class="text-xl font-bold text-gray-900">Edit Identitas</h2>
-            </div>
-            <button onclick="closeModal('modal-edit')" class="text-gray-300 hover:text-gray-600 transition text-xl">✕</button>
+<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
+    <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
+        <p class="text-xl font-semibold text-slate-900 mb-3">Hapus Identitas?</p>
+        <p class="text-sm text-slate-600 mb-6">Tindakan ini tidak dapat dibatalkan. Pastikan dokumen yang dihapus tidak lagi diperlukan.</p>
+        <div class="flex justify-end gap-3">
+            <button id="cancelDelete" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+            <button id="confirmDelete" class="rounded-full bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">Hapus</button>
         </div>
-        <form method="POST" action="/identitas/edit/" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nomor Dokumen</label>
-                <input type="text" id="edit-nomor" name="nomor" readonly
-                    class="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed">
-            </div>
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Jenis Dokumen *</label>
-                <select name="jenis" id="edit-jenis"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                    <option value="Paspor">Paspor</option>
-                    <option value="KTP">KTP</option>
-                    <option value="SIM">SIM</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Negara Penerbit *</label>
-                <input type="text" name="negara_penerbit" id="edit-negara"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Terbit *</label>
-                    <input type="date" name="tanggal_terbit" id="edit-terbit"
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Habis *</label>
-                    <input type="date" name="tanggal_habis" id="edit-habis"
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                </div>
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeModal('modal-edit')"
-                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-[#0f172a] text-white rounded-xl text-sm hover:bg-[#1e293b] transition uppercase tracking-wider font-medium">
-                    Simpan
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- MODAL HAPUS -->
-<div id="modal-hapus" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center">
-        <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">Konfirmasi</p>
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Hapus Identitas?</h2>
-        <p class="text-sm text-gray-400 mb-8">Tindakan ini tidak dapat dibatalkan.</p>
-        <form method="POST" action="/identitas/hapus/">
-            {% csrf_token %}
-            <input type="hidden" name="nomor" id="hapus-nomor">
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal('modal-hapus')"
-                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition uppercase tracking-wider font-medium">
-                    Hapus
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
 <script>
-function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
-}
-function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
-}
-function openEditModal(nomor, jenis, negara, terbit, habis) {
-    document.getElementById('edit-nomor').value = nomor;
-    document.getElementById('edit-jenis').value = jenis;
-    document.getElementById('edit-negara').value = negara;
-    document.getElementById('edit-terbit').value = terbit;
-    document.getElementById('edit-habis').value = habis;
-    openModal('modal-edit');
-}
-function openHapusModal(nomor) {
-    document.getElementById('hapus-nomor').value = nomor;
-    openModal('modal-hapus');
-}
+    const identityList = [
+        { id: 1, number: 'A12345678', type: 'Paspor', country: 'Indonesia', issued: '2020-01-15', expiry: '2030-01-15' },
+        { id: 2, number: '3275012345678901', type: 'KTP', country: 'Indonesia', issued: '2019-06-01', expiry: '2024-06-01' },
+        { id: 3, number: 'SIM0001', type: 'SIM', country: 'Indonesia', issued: '2026-04-12', expiry: '2031-04-12' }
+    ];
 
-function filterTable() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim();
-    const rows = document.querySelectorAll('#table-body tr[data-search]');
-    const emptyRow = document.getElementById('empty-row');
-    const clearBtn = document.getElementById('clear-btn');
+    const tableBody = document.getElementById('tableBody');
+    const emptyState = document.getElementById('emptyState');
+    const identityModal = document.getElementById('identityModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const btnAddIdentity = document.getElementById('btnAddIdentity');
+    const closeModal = document.getElementById('closeModal');
+    const cancelModal = document.getElementById('cancelModal');
+    const identityForm = document.getElementById('identityForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const docNumber = document.getElementById('docNumber');
+    const docType = document.getElementById('docType');
+    const docCountry = document.getElementById('docCountry');
+    const docIssued = document.getElementById('docIssued');
+    const docExpiry = document.getElementById('docExpiry');
+    const currentDocId = document.getElementById('currentDocId');
+    const formError = document.getElementById('formError');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const cancelDelete = document.getElementById('cancelDelete');
 
-    clearBtn.classList.toggle('hidden', query === '');
+    let deletingId = null;
 
-    let visibleCount = 0;
-    rows.forEach(row => {
-        const match = row.getAttribute('data-search').includes(query);
-        row.classList.toggle('hidden', !match);
-        if (match) visibleCount++;
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
+    function getStatus(expiryDate) {
+        return new Date(expiryDate) >= new Date() ? 'Aktif' : 'Kedaluwarsa';
+    }
+
+    function renderTable() {
+        tableBody.innerHTML = '';
+        if (identityList.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        identityList.forEach(item => {
+            const status = getStatus(item.expiry);
+            tableBody.insertAdjacentHTML('beforeend', `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 font-medium text-slate-900">${item.number}</td>
+                    <td class="px-6 py-4 text-slate-600">${item.type}</td>
+                    <td class="px-6 py-4 text-slate-600">${item.country}</td>
+                    <td class="px-6 py-4 text-slate-600">${formatDate(item.issued)}</td>
+                    <td class="px-6 py-4 text-slate-600">${formatDate(item.expiry)}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase ${status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${status}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <button type="button" data-id="${item.id}" class="btn-edit text-sm font-semibold text-slate-600 hover:text-slate-900">Edit</button>
+                            <button type="button" data-id="${item.id}" class="btn-delete text-sm font-semibold text-rose-600 hover:text-rose-800">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+
+        document.querySelectorAll('.btn-edit').forEach(button => button.addEventListener('click', openEditModal));
+        document.querySelectorAll('.btn-delete').forEach(button => button.addEventListener('click', openDeleteModal));
+    }
+
+    function openModal() {
+        identityModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModalWindow() {
+        identityModal.classList.add('hidden');
+        formError.classList.add('hidden');
+        identityForm.reset();
+        currentDocId.value = '';
+        docNumber.removeAttribute('disabled');
+        document.body.style.overflow = '';
+    }
+
+    function openAddModal() {
+        modalTitle.innerText = 'Tambah Identitas Baru';
+        identityForm.reset();
+        currentDocId.value = '';
+        docNumber.removeAttribute('disabled');
+        openModal();
+    }
+
+    function openEditModal(event) {
+        const id = Number(event.target.dataset.id);
+        const item = identityList.find(i => i.id === id);
+        if (!item) return;
+
+        modalTitle.innerText = 'Edit Identitas';
+        docNumber.value = item.number;
+        docType.value = item.type;
+        docCountry.value = item.country;
+        docIssued.value = item.issued;
+        docExpiry.value = item.expiry;
+        currentDocId.value = item.id;
+        docNumber.setAttribute('disabled', 'disabled');
+        openModal();
+    }
+
+    function openDeleteModal(event) {
+        deletingId = Number(event.target.dataset.id);
+        deleteModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        deletingId = null;
+        deleteModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function validateUniqueNumber(value, ignoreId = null) {
+        return !identityList.some(item => item.number.toLowerCase() === value.toLowerCase() && item.id !== ignoreId);
+    }
+
+    identityForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const number = docNumber.value.trim();
+        const type = docType.value;
+        const country = docCountry.value.trim();
+        const issued = docIssued.value;
+        const expiry = docExpiry.value;
+        const editId = currentDocId.value ? Number(currentDocId.value) : null;
+
+        if (!number || !country || !issued || !expiry) {
+            formError.textContent = 'Semua kolom harus diisi.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (new Date(expiry) < new Date(issued)) {
+            formError.textContent = 'Tanggal habis harus lebih besar dari tanggal terbit.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (!validateUniqueNumber(number, editId)) {
+            formError.textContent = 'Nomor dokumen sudah terdaftar. Gunakan nomor lain.';
+            formError.classList.remove('hidden');
+            return;
+        }
+
+        if (editId) {
+            const item = identityList.find(i => i.id === editId);
+            item.type = type;
+            item.country = country;
+            item.issued = issued;
+            item.expiry = expiry;
+        } else {
+            const nextId = identityList.length > 0 ? Math.max(...identityList.map(i => i.id)) + 1 : 1;
+            identityList.push({ id: nextId, number, type, country, issued, expiry });
+        }
+
+        renderTable();
+        closeModalWindow();
     });
 
-    emptyRow.classList.toggle('hidden', visibleCount > 0);
-}
+    confirmDelete.addEventListener('click', function() {
+        if (deletingId === null) return;
+        const index = identityList.findIndex(i => i.id === deletingId);
+        if (index !== -1) {
+            identityList.splice(index, 1);
+            renderTable();
+        }
+        closeDeleteModal();
+    });
 
-function clearSearch() {
-    document.getElementById('search-input').value = '';
-    filterTable();
-}
+    [btnAddIdentity].forEach(el => el.addEventListener('click', openAddModal));
+    closeModal.addEventListener('click', closeModalWindow);
+    cancelModal.addEventListener('click', closeModalWindow);
+    cancelDelete.addEventListener('click', closeDeleteModal);
+    identityModal.addEventListener('click', function(event) {
+        if (event.target === identityModal) closeModalWindow();
+    });
+    deleteModal.addEventListener('click', function(event) {
+        if (event.target === deleteModal) closeDeleteModal();
+    });
+
+    renderTable();
 </script>
-
 {% endblock %}
