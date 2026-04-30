@@ -17,6 +17,7 @@ urlpatterns = [
     path('profil/update/',         views.profil_update,        name='profil_update'),
     path('profil/ubah-password/',  views.profil_ubah_password, name='profil_ubah_password'),
     path('identitas/', views.identitas, name='identitas'),
+<<<<<<< Updated upstream
     path('tier/', views.tier, name='tier'),
 
     # Klaim Missing Miles - Member (CRUD)
@@ -46,4 +47,10 @@ urlpatterns = [
 
     # Info Tier (sudah ada, pastikan ada)
     path('tier/', views.tier, name='tier'),
+=======
+    path('kelola-member/', views.kelola_member, name='kelola_member'),
+    path('register/', views.register, name='register'),
+    path('profil/', views.profil, name='profil'),
+    path('logout/', views.logout, name='logout'),
+>>>>>>> Stashed changes
 ]
