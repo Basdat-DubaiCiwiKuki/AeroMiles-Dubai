@@ -1,99 +1,174 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-wrapper">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Transfer Miles</h1>
-      <p class="page-subtitle">Kirim miles ke sesama member AeroMiles</p>
-    </div>
-  </div>
+<!-- Full-page background (different from klaim - city/airport night vibe) -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1920&q=80"
+        alt="Airport" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-60"></div>
+    <!-- Subtle color tint untuk beda feel -->
+    <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(30,58,138,0.25) 0%, rgba(0,0,0,0) 60%);"></div>
 
-  {% if success_msg %}
-  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
-  {% endif %}
-  {% if error_msg %}
-  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
-  {% endif %}
+    <!-- Content -->
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-5xl mx-auto">
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Total Miles Kamu</div>
-      <div class="stat-value">{{ total_miles|default:"45,000" }}</div>
-    </div>
-    <div class="stat-card ok">
-      <div class="stat-label">Transfer Keluar</div>
-      <div class="stat-value">{{ stats.total_keluar|default:"0" }}</div>
-    </div>
-    <div class="stat-card wait">
-      <div class="stat-label">Transfer Masuk</div>
-      <div class="stat-value">{{ stats.total_masuk|default:"0" }}</div>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-    <!-- Form Transfer -->
-    <div class="card">
-      <h2 class="sec-title">Kirim Miles</h2>
-      <div class="modal-info">
-        Minimum transfer <strong>100 miles</strong>. Transfer bersifat permanen dan tidak dapat dibatalkan.
-      </div>
-      <form method="post" action="{% url 'transfer_kirim' %}">
-        {% csrf_token %}
-        <div class="form-group" style="margin-bottom:14px;">
-          <label>Email Penerima <span class="req">*</span></label>
-          <input type="email" name="email_tujuan" placeholder="email@example.com" required>
-        </div>
-        <div class="form-group" style="margin-bottom:14px;">
-          <label>Jumlah Miles <span class="req">*</span></label>
-          <input type="number" name="jumlah" placeholder="Minimal 100 miles" min="100" required>
-        </div>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label>Catatan (opsional)</label>
-          <input type="text" name="catatan" placeholder="cth: untuk perjalanan bareng" maxlength="255">
-        </div>
-        <button type="submit" class="btn-primary" style="width:100%;">Kirim Miles →</button>
-      </form>
-    </div>
-
-    <!-- Riwayat Transfer -->
-    <div class="card">
-      <h2 class="sec-title">Riwayat Transfer</h2>
-      {% if riwayat %}
-        {% for t in riwayat %}
-        <div class="tx-row">
-          <div>
-            {% if t.tipe == 'keluar' %}
-              <span class="tx-type" style="background:#fee2e2;color:#991b1b;">↑ Keluar</span>
-            {% else %}
-              <span class="tx-type" style="background:#dcfce7;color:#166534;">↓ Masuk</span>
-            {% endif %}
-            <span style="font-size:13px;color:#374151;">{{ t.email_lain }}</span>
-            {% if t.catatan %}<div style="font-size:11.5px;color:#9ca3af;margin-top:2px;margin-left:8px;">{{ t.catatan }}</div>{% endif %}
-          </div>
-          <div style="text-align:right;">
-            <div class="tx-amt {% if t.tipe == 'keluar' %}tx-neg{% else %}tx-pos{% endif %}">
-              {% if t.tipe == 'keluar' %}-{% else %}+{% endif %}{{ t.jumlah }} mi
+            <!-- Page Header -->
+            <div class="mb-10">
+                <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
+                <h1 class="text-5xl font-bold text-white">Transfer<br><span class="opacity-40">Miles</span></h1>
+                <p class="text-white opacity-40 text-sm mt-3">Kirim award miles ke sesama member AeroMiles</p>
             </div>
-            <div class="tx-time">{{ t.timestamp }}</div>
-          </div>
-        </div>
-        {% endfor %}
-      {% else %}
-        <div class="empty-state" style="padding:24px 0;">
-          <div class="empty-icon">↔</div>
-          <p>Belum ada riwayat transfer.</p>
-        </div>
-      {% endif %}
-    </div>
 
-  </div>
+            <!-- Flash Messages -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✓ {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✕ {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm col-span-1">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Award Miles Tersedia</p>
+                    <p class="text-4xl font-bold text-white">{{ award_miles|default:"32,000" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Keluar</p>
+                    <p class="text-4xl font-bold text-red-300">{{ stats.total_keluar|default:"0" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Masuk</p>
+                    <p class="text-4xl font-bold text-blue-300">{{ stats.total_masuk|default:"0" }}</p>
+                </div>
+            </div>
+
+            <!-- Main Grid: Form + Riwayat -->
+            <div class="grid grid-cols-5 gap-6">
+
+                <!-- Form Transfer (2/5) -->
+                <div class="col-span-2 border border-white border-opacity-20 rounded-3xl p-8 backdrop-blur-sm h-fit" style="background: rgba(255,255,255,0.03);">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Kirim Miles</p>
+                    <h2 class="text-xl font-bold text-white mb-6">Transfer Baru</h2>
+
+                    <p class="text-xs text-white opacity-40 mb-6 border border-blue-400 border-opacity-20 rounded-xl px-4 py-3 bg-blue-400 bg-opacity-5 leading-relaxed">
+                        Minimum transfer <strong class="text-blue-300 opacity-100">100 miles</strong>.
+                        Transfer bersifat permanen dan tidak dapat dibatalkan.
+                    </p>
+
+                    <form method="post" action="{% url 'transfer_kirim' %}">
+                        {% csrf_token %}
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                                    Email Penerima <span class="text-red-300">*</span>
+                                </label>
+                                <input type="email" name="email_tujuan" placeholder="email@example.com" required
+                                    class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                                    Jumlah Miles <span class="text-red-300">*</span>
+                                </label>
+                                <input type="number" name="jumlah" placeholder="Minimal 100" min="100" required
+                                    class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
+                                    Catatan
+                                    <span class="normal-case opacity-60 ml-1">(opsional)</span>
+                                </label>
+                                <input type="text" name="catatan" placeholder="cth: untuk perjalanan bareng" maxlength="255"
+                                    class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                            </div>
+                        </div>
+                        <button type="submit"
+                            class="w-full mt-8 bg-white text-gray-900 text-xs uppercase tracking-widest py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                            Kirim Miles →
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Riwayat Transfer (3/5) -->
+                <div class="col-span-3 border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
+                    <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Histori</p>
+                        <h2 class="text-xl font-bold text-white">Riwayat Transfer</h2>
+                    </div>
+
+                    {% if riwayat %}
+                    <div class="divide-y divide-white divide-opacity-5">
+                        {% for t in riwayat %}
+                        <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition">
+                            <div class="flex items-center gap-4">
+                                <!-- Icon -->
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
+                                    {% if t.tipe == 'keluar' %}bg-red-400 bg-opacity-15 border border-red-400 border-opacity-20
+                                    {% else %}bg-blue-400 bg-opacity-15 border border-blue-400 border-opacity-20{% endif %}">
+                                    {% if t.tipe == 'keluar' %}
+                                    <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                                <!-- Info -->
+                                <div>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-xs uppercase tracking-widest font-semibold
+                                            {% if t.tipe == 'keluar' %}text-red-300{% else %}text-blue-300{% endif %}">
+                                            {% if t.tipe == 'keluar' %}Keluar{% else %}Masuk{% endif %}
+                                        </span>
+                                        <span class="text-white opacity-60 text-xs">•</span>
+                                        <span class="text-white opacity-60 text-xs">{{ t.email_lain }}</span>
+                                    </div>
+                                    {% if t.catatan %}
+                                    <p class="text-white opacity-30 text-xs italic">{{ t.catatan }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- Amount + time -->
+                            <div class="text-right flex-shrink-0">
+                                <p class="font-bold text-sm
+                                    {% if t.tipe == 'keluar' %}text-red-300{% else %}text-blue-300{% endif %}">
+                                    {% if t.tipe == 'keluar' %}−{% else %}+{% endif %}{{ t.jumlah }} mi
+                                </p>
+                                <p class="text-white opacity-30 text-xs mt-0.5">{{ t.timestamp }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="py-24 text-center">
+                        <p class="text-5xl mb-6 opacity-30">↔️</p>
+                        <p class="text-white opacity-40 text-sm">Belum ada riwayat transfer.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div><!-- /grid -->
+
+        </div>
+    </div>
 </div>
 
 <script>
 var flash = document.getElementById('flash');
-if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
 </script>
+
 {% endblock %}

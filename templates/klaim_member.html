@@ -1,307 +1,485 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="page-wrapper">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Klaim Missing Miles</h1>
-      <p class="page-subtitle">Ajukan klaim untuk miles penerbangan yang belum tercatat</p>
-    </div>
-    <button class="btn-primary" onclick="openModal('m-ajukan')">+ Ajukan Klaim</button>
-  </div>
+<!-- Full-page background -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80"
+        alt="Travel" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-55"></div>
 
-  {% if success_msg %}
-  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
-  {% endif %}
-  {% if error_msg %}
-  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
-  {% endif %}
+    <!-- Content -->
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-6xl mx-auto">
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Total Klaim</div>
-      <div class="stat-value">{{ stats.total }}</div>
-    </div>
-    <div class="stat-card wait">
-      <div class="stat-label">Menunggu</div>
-      <div class="stat-value">{{ stats.menunggu }}</div>
-    </div>
-    <div class="stat-card ok">
-      <div class="stat-label">Disetujui</div>
-      <div class="stat-value">{{ stats.disetujui }}</div>
-    </div>
-    <div class="stat-card no">
-      <div class="stat-label">Ditolak</div>
-      <div class="stat-value">{{ stats.ditolak }}</div>
-    </div>
-  </div>
+            <!-- Page Header -->
+            <div class="mb-10 flex items-end justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
+                    <h1 class="text-5xl font-bold text-white">Klaim Missing<br><span class="opacity-40">Miles</span></h1>
+                </div>
+                <button onclick="openModal('m-ajukan')"
+                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                    + Ajukan Klaim
+                </button>
+            </div>
 
-  <div class="card">
-    <!-- Status tabs -->
-    <div class="status-tabs">
-      <a href="?status=semua"    class="stab {% if status_filter == 'semua' %}active{% endif %}">Semua</a>
-      <a href="?status=Menunggu" class="stab {% if status_filter == 'Menunggu' %}active{% endif %}">Menunggu</a>
-      <a href="?status=Disetujui"class="stab {% if status_filter == 'Disetujui' %}active{% endif %}">Disetujui</a>
-      <a href="?status=Ditolak"  class="stab {% if status_filter == 'Ditolak' %}active{% endif %}">Ditolak</a>
-    </div>
+            <!-- Flash Messages -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✓ {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✕ {{ error_msg }}
+            </div>
+            {% endif %}
 
-    {% if klaim_list %}
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>No. Klaim</th>
-            <th>Maskapai</th>
-            <th>Rute</th>
-            <th>Tgl. Penerbangan</th>
-            <th>Flight</th>
-            <th>Kelas</th>
-            <th>Status</th>
-            <th>Waktu Pengajuan</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for k in klaim_list %}
-          <tr>
-            <td><span class="klaim-id">{{ k.nomor_klaim }}</span></td>
-            <td>
-              <span class="msk-badge">{{ k.maskapai }}</span>
-              <span class="msk-name">{{ k.nama_maskapai }}</span>
-            </td>
-            <td>
-              <span class="iata">{{ k.bandara_asal }}</span>
-              <span class="arrow">→</span>
-              <span class="iata">{{ k.bandara_tujuan }}</span>
-            </td>
-            <td>{{ k.tanggal_penerbangan }}</td>
-            <td><span class="fcode">{{ k.flight_number }}</span></td>
-            <td>{{ k.kelas_kabin }}</td>
-            <td>
-              {% if k.status_penerimaan == 'Menunggu' %}<span class="badge badge-wait">Menunggu</span>
-              {% elif k.status_penerimaan == 'Disetujui' %}<span class="badge badge-ok">Disetujui</span>
-              {% else %}<span class="badge badge-no">Ditolak</span>{% endif %}
-            </td>
-            <td class="ts">{{ k.timestamp }}</td>
-            <td>
-              {% if k.status_penerimaan == 'Menunggu' %}
-              <div class="action-btns">
-                    <button class="btn-edit"
-                        data-id="{{ k.id }}"
-                        data-msk="{{ k.maskapai }}"
-                        data-asl="{{ k.bandara_asal }}"
-                        data-tuj="{{ k.bandara_tujuan }}"
-                        data-tgl="{{ k.tanggal_penerbangan }}"
-                        data-flt="{{ k.flight_number }}"
-                        data-tkt="{{ k.nomor_tiket }}"
-                        data-kls="{{ k.kelas_kabin }}"
-                        data-pnr="{{ k.pnr }}"
-                        onclick="openEdit(this)">Edit</button>
-                        <button class="btn-del"
-                        data-id="{{ k.id }}"
-                        data-nom="{{ k.nomor_klaim }}"
-                        data-rut="{{ k.rute }}"
-                        onclick="openBatal(this)">Batalkan</button>
-              </div>
-              {% else %}<span class="no-action">—</span>{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Klaim</p>
+                    <p class="text-4xl font-bold text-white">{{ stats.total }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Menunggu</p>
+                    <p class="text-4xl font-bold text-amber-300">{{ stats.menunggu }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Disetujui</p>
+                    <p class="text-4xl font-bold text-emerald-300">{{ stats.disetujui }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Ditolak</p>
+                    <p class="text-4xl font-bold text-red-300">{{ stats.ditolak }}</p>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden">
+
+                <!-- Status Tabs -->
+                <div class="flex border-b border-white border-opacity-10 px-8 pt-6">
+                    <a href="?status=semua"
+                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                        {% if status_filter == 'semua' %}text-white border-white{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                        Semua
+                    </a>
+                    <a href="?status=Menunggu"
+                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                        {% if status_filter == 'Menunggu' %}text-amber-300 border-amber-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                        Menunggu
+                    </a>
+                    <a href="?status=Disetujui"
+                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                        {% if status_filter == 'Disetujui' %}text-emerald-300 border-emerald-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                        Disetujui
+                    </a>
+                    <a href="?status=Ditolak"
+                        class="text-xs uppercase tracking-widest pb-4 transition border-b-2
+                        {% if status_filter == 'Ditolak' %}text-red-300 border-red-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                        Ditolak
+                    </a>
+                </div>
+
+                {% if klaim_list %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white border-opacity-10">
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Klaim</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Maskapai</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Rute</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tgl. Terbang</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Flight</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kelas</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Pengajuan</th>
+                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white divide-opacity-5">
+                            {% for k in klaim_list %}
+                            <tr class="hover:bg-white hover:bg-opacity-5 transition">
+                                <td class="px-8 py-4">
+                                    <span class="text-white text-xs font-mono font-semibold opacity-70">{{ k.nomor_klaim }}</span>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold text-white bg-white bg-opacity-15 px-2 py-1 rounded-lg">{{ k.maskapai }}</span>
+                                        <span class="text-white opacity-50 text-xs hidden xl:block">{{ k.nama_maskapai }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2 text-white">
+                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_asal }}</span>
+                                        <span class="opacity-30 text-xs">→</span>
+                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_tujuan }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ k.tanggal_penerbangan }}</td>
+                                <td class="px-4 py-4">
+                                    <span class="text-white font-mono text-xs bg-white bg-opacity-10 px-2 py-1 rounded">{{ k.flight_number }}</span>
+                                </td>
+                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ k.kelas_kabin }}</td>
+                                <td class="px-4 py-4">
+                                    {% if k.status_penerimaan == 'Menunggu' %}
+                                    <span class="inline-block bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Menunggu</span>
+                                    {% elif k.status_penerimaan == 'Disetujui' %}
+                                    <span class="inline-block bg-emerald-400 bg-opacity-20 text-emerald-300 border border-emerald-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Disetujui</span>
+                                    {% else %}
+                                    <span class="inline-block bg-red-400 bg-opacity-20 text-red-300 border border-red-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Ditolak</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-4 text-white opacity-40 text-xs">{{ k.timestamp }}</td>
+                                <td class="px-4 py-4">
+                                    {% if k.status_penerimaan == 'Menunggu' %}
+                                    <div class="flex items-center gap-2">
+                                        <button class="text-white opacity-50 hover:opacity-100 transition"
+                                            title="Edit"
+                                            data-id="{{ k.id }}"
+                                            data-msk="{{ k.maskapai }}"
+                                            data-asl="{{ k.bandara_asal }}"
+                                            data-tuj="{{ k.bandara_tujuan }}"
+                                            data-tgl="{{ k.tanggal_penerbangan }}"
+                                            data-flt="{{ k.flight_number }}"
+                                            data-tkt="{{ k.nomor_tiket }}"
+                                            data-kls="{{ k.kelas_kabin }}"
+                                            data-pnr="{{ k.pnr }}"
+                                            onclick="openEdit(this)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="text-red-300 opacity-50 hover:opacity-100 transition"
+                                            title="Batalkan"
+                                            data-id="{{ k.id }}"
+                                            data-nom="{{ k.nomor_klaim }}"
+                                            data-rut="{{ k.bandara_asal }} → {{ k.bandara_tujuan }}"
+                                            onclick="openBatal(this)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-white opacity-20 text-xs">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="py-24 text-center">
+                    <p class="text-5xl mb-6 opacity-30">✈️</p>
+                    <p class="text-white opacity-40 text-sm mb-6">
+                        Belum ada klaim{% if status_filter != 'semua' %} dengan status <strong class="opacity-70">{{ status_filter }}</strong>{% endif %}.
+                    </p>
+                    {% if status_filter == 'semua' %}
+                    <button onclick="openModal('m-ajukan')"
+                        class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                        Ajukan Klaim Pertama
+                    </button>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            </div><!-- /table card -->
+
+        </div>
     </div>
-    {% else %}
-    <div class="empty-state">
-      <div class="empty-icon">📋</div>
-      <p>Belum ada klaim{% if status_filter != 'semua' %} dengan status <strong>{{ status_filter }}</strong>{% endif %}.</p>
-      {% if status_filter == 'semua' %}
-      <button class="btn-primary" onclick="openModal('m-ajukan')">Ajukan Klaim Pertama</button>
-      {% endif %}
-    </div>
-    {% endif %}
-  </div>
 </div>
 
-<!-- ── MODAL: AJUKAN ─────────────────────────────────────────── -->
-<div id="m-ajukan" class="modal-backdrop" style="display:none" onclick="bdClose(event,'m-ajukan')">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <h2 class="modal-ttl">Ajukan Klaim Baru</h2>
-      <button class="modal-cls" onclick="closeModal('m-ajukan')">×</button>
+
+<!-- ── MODAL: AJUKAN ──────────────────────────────────────────── -->
+<div id="m-ajukan" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Klaim Baru</p>
+                <h2 class="text-xl font-bold text-white">Ajukan Klaim Miles</h2>
+            </div>
+            <button onclick="closeModal('m-ajukan')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3">
+            Status klaim akan otomatis diset <strong class="text-amber-300 opacity-100">Menunggu</strong>.
+            Klaim duplikat (flight + tanggal + nomor tiket sama) tidak diizinkan.
+        </p>
+        <form method="post" action="{% url 'klaim_ajukan' %}">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Maskapai -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Maskapai <span class="text-red-300">*</span></label>
+                    <select name="maskapai" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="" class="text-gray-900">Pilih maskapai</option>
+                        {% for kode,nama in maskapai_list %}
+                        <option value="{{ kode }}" class="text-gray-900">{{ kode }} – {{ nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Kelas Kabin -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Kelas Kabin <span class="text-red-300">*</span></label>
+                    <select name="kelas_kabin" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="" class="text-gray-900">Pilih kelas</option>
+                        {% for k in kelas_list %}<option value="{{ k }}" class="text-gray-900">{{ k }}</option>{% endfor %}
+                    </select>
+                </div>
+                <!-- Bandara Asal -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Asal <span class="text-red-300">*</span></label>
+                    <select name="bandara_asal" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="" class="text-gray-900">Pilih bandara</option>
+                        {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
+                    </select>
+                </div>
+                <!-- Bandara Tujuan -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Tujuan <span class="text-red-300">*</span></label>
+                    <select name="bandara_tujuan" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
+                        style="background-color: transparent;">
+                        <option value="" class="text-gray-900">Pilih bandara</option>
+                        {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
+                    </select>
+                </div>
+                <!-- Tanggal Penerbangan -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tanggal Penerbangan <span class="text-red-300">*</span></label>
+                    <input type="date" name="tanggal_penerbangan" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+                <!-- Flight Number -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Flight Number <span class="text-red-300">*</span></label>
+                    <input type="text" name="flight_number" placeholder="cth: GA404" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <!-- Nomor Tiket -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nomor Tiket <span class="text-red-300">*</span></label>
+                    <input type="text" name="nomor_tiket" placeholder="cth: 001-1234567001" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <!-- PNR -->
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">PNR <span class="text-red-300">*</span></label>
+                    <input type="text" name="pnr" placeholder="cth: ABX101" maxlength="10" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-ajukan')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Ajukan Klaim
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="modal-info">
-      Status klaim akan otomatis diset <strong>Menunggu</strong>.
-      Klaim duplikat (flight + tanggal + nomor tiket sama) tidak diizinkan.
-    </div>
-    <form method="post" action="{% url 'klaim_ajukan' %}">
-      {% csrf_token %}
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Maskapai <span class="req">*</span></label>
-          <select name="maskapai" required>
-            <option value="">Pilih maskapai</option>
-            {% for kode,nama in maskapai_list %}
-            <option value="{{ kode }}">{{ kode }} – {{ nama }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Kelas Kabin <span class="req">*</span></label>
-          <select name="kelas_kabin" required>
-            <option value="">Pilih kelas</option>
-            {% for k in kelas_list %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Bandara Asal <span class="req">*</span></label>
-          <select name="bandara_asal" required>
-            <option value="">Pilih bandara</option>
-            {% for iata,nama in bandara_list %}<option value="{{ iata }}">{{ iata }} – {{ nama }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Bandara Tujuan <span class="req">*</span></label>
-          <select name="bandara_tujuan" required>
-            <option value="">Pilih bandara</option>
-            {% for iata,nama in bandara_list %}<option value="{{ iata }}">{{ iata }} – {{ nama }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Tanggal Penerbangan <span class="req">*</span></label>
-          <input type="date" name="tanggal_penerbangan" required>
-        </div>
-        <div class="form-group">
-          <label>Flight Number <span class="req">*</span></label>
-          <input type="text" name="flight_number" placeholder="cth: GA404" required>
-        </div>
-        <div class="form-group">
-          <label>Nomor Tiket <span class="req">*</span></label>
-          <input type="text" name="nomor_tiket" placeholder="cth: 001-1234567001" required>
-        </div>
-        <div class="form-group">
-          <label>PNR <span class="req">*</span></label>
-          <input type="text" name="pnr" placeholder="cth: ABX101" maxlength="10" required>
-        </div>
-      </div>
-      <div class="modal-ftr">
-        <button type="button" class="btn-cancel" onclick="closeModal('m-ajukan')">Batal</button>
-        <button type="submit" class="btn-primary">Ajukan Klaim</button>
-      </div>
-    </form>
-  </div>
 </div>
 
-<!-- ── MODAL: EDIT ───────────────────────────────────────────── -->
-<div id="m-edit" class="modal-backdrop" style="display:none" onclick="bdClose(event,'m-edit')">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <h2 class="modal-ttl">Edit Klaim</h2>
-      <button class="modal-cls" onclick="closeModal('m-edit')">×</button>
+
+<!-- ── MODAL: EDIT ────────────────────────────────────────────── -->
+<div id="m-edit" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Edit Klaim</p>
+                <h2 class="text-xl font-bold text-white">Ubah Data Klaim</h2>
+            </div>
+            <button onclick="closeModal('m-edit')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5">
+            Hanya klaim berstatus <strong class="text-amber-300 opacity-100">Menunggu</strong> yang dapat diedit.
+        </p>
+        <form method="post" id="f-edit" action="">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Maskapai <span class="text-red-300">*</span></label>
+                    <select name="maskapai" id="e-msk" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
+                        style="background-color: transparent;">
+                        {% for kode,nama in maskapai_list %}<option value="{{ kode }}" class="text-gray-900">{{ kode }} – {{ nama }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Kelas Kabin <span class="text-red-300">*</span></label>
+                    <select name="kelas_kabin" id="e-kls" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
+                        style="background-color: transparent;">
+                        {% for k in kelas_list %}<option value="{{ k }}" class="text-gray-900">{{ k }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Asal <span class="text-red-300">*</span></label>
+                    <select name="bandara_asal" id="e-asl" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
+                        style="background-color: transparent;">
+                        {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Tujuan <span class="text-red-300">*</span></label>
+                    <select name="bandara_tujuan" id="e-tuj" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
+                        style="background-color: transparent;">
+                        {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tanggal Penerbangan <span class="text-red-300">*</span></label>
+                    <input type="date" name="tanggal_penerbangan" id="e-tgl" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
+                        style="color-scheme: dark;">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Flight Number <span class="text-red-300">*</span></label>
+                    <input type="text" name="flight_number" id="e-flt" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nomor Tiket <span class="text-red-300">*</span></label>
+                    <input type="text" name="nomor_tiket" id="e-tkt" required
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">PNR <span class="text-red-300">*</span></label>
+                    <input type="text" name="pnr" id="e-pnr" required maxlength="10"
+                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-8">
+                <button type="button" onclick="closeModal('m-edit')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="modal-info warn">
-      Hanya klaim berstatus <strong>Menunggu</strong> yang dapat diedit.
-    </div>
-    <form method="post" id="f-edit" action="">
-      {% csrf_token %}
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Maskapai <span class="req">*</span></label>
-          <select name="maskapai" id="e-msk" required>
-            {% for kode,nama in maskapai_list %}<option value="{{ kode }}">{{ kode }} – {{ nama }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Kelas Kabin <span class="req">*</span></label>
-          <select name="kelas_kabin" id="e-kls" required>
-            {% for k in kelas_list %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Bandara Asal <span class="req">*</span></label>
-          <select name="bandara_asal" id="e-asl" required>
-            {% for iata,nama in bandara_list %}<option value="{{ iata }}">{{ iata }} – {{ nama }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Bandara Tujuan <span class="req">*</span></label>
-          <select name="bandara_tujuan" id="e-tuj" required>
-            {% for iata,nama in bandara_list %}<option value="{{ iata }}">{{ iata }} – {{ nama }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Tanggal Penerbangan <span class="req">*</span></label>
-          <input type="date" name="tanggal_penerbangan" id="e-tgl" required>
-        </div>
-        <div class="form-group">
-          <label>Flight Number <span class="req">*</span></label>
-          <input type="text" name="flight_number" id="e-flt" required>
-        </div>
-        <div class="form-group">
-          <label>Nomor Tiket <span class="req">*</span></label>
-          <input type="text" name="nomor_tiket" id="e-tkt" required>
-        </div>
-        <div class="form-group">
-          <label>PNR <span class="req">*</span></label>
-          <input type="text" name="pnr" id="e-pnr" required maxlength="10">
-        </div>
-      </div>
-      <div class="modal-ftr">
-        <button type="button" class="btn-cancel" onclick="closeModal('m-edit')">Batal</button>
-        <button type="submit" class="btn-primary">Simpan Perubahan</button>
-      </div>
-    </form>
-  </div>
 </div>
+
 
 <!-- ── MODAL: BATALKAN ───────────────────────────────────────── -->
-<div id="m-batal" class="modal-backdrop" style="display:none" onclick="bdClose(event,'m-batal')">
-  <div class="modal-box modal-sm">
-    <div class="modal-hdr">
-      <h2 class="modal-ttl">Batalkan Klaim?</h2>
-      <button class="modal-cls" onclick="closeModal('m-batal')">×</button>
+<div id="m-batal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Batalkan Klaim?</h2>
+            </div>
+            <button onclick="closeModal('m-batal')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+        <p class="text-sm text-white opacity-60 mb-6">Klaim akan dihapus secara permanen dan tidak dapat dikembalikan.</p>
+        <div class="border border-white border-opacity-10 rounded-2xl p-4 mb-6 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">No. Klaim</span>
+                <span class="text-white text-sm font-mono font-semibold" id="b-nom"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Rute</span>
+                <span class="text-white text-sm font-mono" id="b-rut"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Status</span>
+                <span class="inline-block bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Menunggu</span>
+            </div>
+        </div>
+        <form method="post" id="f-batal" action="">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal('m-batal')"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
+                    Hapus Klaim
+                </button>
+            </div>
+        </form>
     </div>
-    <p class="confirm-body">Klaim akan dihapus secara permanen dan tidak dapat dikembalikan.</p>
-    <div class="confirm-detail">
-      <div><span class="dl">No. Klaim:</span> <span id="b-nom"></span></div>
-      <div><span class="dl">Rute:</span>      <span id="b-rut"></span></div>
-      <div><span class="dl">Status:</span>    <span class="badge badge-wait">Menunggu</span></div>
-    </div>
-    <form method="post" id="f-batal" action="">
-      {% csrf_token %}
-      <div class="modal-ftr">
-        <button type="button" class="btn-cancel" onclick="closeModal('m-batal')">Batal</button>
-        <button type="submit" class="btn-danger">Hapus Klaim</button>
-      </div>
-    </form>
-  </div>
 </div>
 
+
 <script>
-function openModal(id){ document.getElementById(id).style.display='flex'; document.body.style.overflow='hidden'; }
-function closeModal(id){ document.getElementById(id).style.display='none'; document.body.style.overflow=''; }
-function bdClose(e,id){ if(e.target.id===id) closeModal(id); }
-function setSel(id,val){ var s=document.getElementById(id); for(var i=0;i<s.options.length;i++) if(s.options[i].value===val){s.selectedIndex=i;break;} }
-
-function openEdit(id,msk,asl,tuj,tgl,flt,tkt,kls,pnr){
-  document.getElementById('f-edit').action='/klaim/edit/'+id+'/';
-  setSel('e-msk',msk); setSel('e-asl',asl); setSel('e-tuj',tuj); setSel('e-kls',kls);
-  document.getElementById('e-tgl').value=tgl;
-  document.getElementById('e-flt').value=flt;
-  document.getElementById('e-tkt').value=tkt;
-  document.getElementById('e-pnr').value=pnr;
-  openModal('m-edit');
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
-function openBatal(id,nom,rut){
-  document.getElementById('f-batal').action='/klaim/batalkan/'+id+'/';
-  document.getElementById('b-nom').textContent=nom;
-  document.getElementById('b-rut').textContent=rut;
-  openModal('m-batal');
+function setSel(id, val) {
+    var s = document.getElementById(id);
+    for (var i = 0; i < s.options.length; i++) {
+        if (s.options[i].value === val) { s.selectedIndex = i; break; }
+    }
 }
 
-// Auto-dismiss flash alert
-var flash=document.getElementById('flash');
-if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+function openEdit(btn) {
+    var id  = btn.dataset.id;
+    var msk = btn.dataset.msk;
+    var asl = btn.dataset.asl;
+    var tuj = btn.dataset.tuj;
+    var tgl = btn.dataset.tgl;
+    var flt = btn.dataset.flt;
+    var tkt = btn.dataset.tkt;
+    var kls = btn.dataset.kls;
+    var pnr = btn.dataset.pnr;
+
+    document.getElementById('f-edit').action = '/klaim/edit/' + id + '/';
+    setSel('e-msk', msk);
+    setSel('e-asl', asl);
+    setSel('e-tuj', tuj);
+    setSel('e-kls', kls);
+    document.getElementById('e-tgl').value = tgl;
+    document.getElementById('e-flt').value = flt;
+    document.getElementById('e-tkt').value = tkt;
+    document.getElementById('e-pnr').value = pnr;
+    openModal('m-edit');
+}
+
+function openBatal(btn) {
+    document.getElementById('f-batal').action = '/klaim/batalkan/' + btn.dataset.id + '/';
+    document.getElementById('b-nom').textContent = btn.dataset.nom;
+    document.getElementById('b-rut').textContent = btn.dataset.rut;
+    openModal('m-batal');
+}
+
+// Auto-dismiss flash
+var flash = document.getElementById('flash');
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
 </script>
+
 {% endblock %}

@@ -316,11 +316,179 @@ def dashboard(request):
     return render(request, 'dashboard.html', {'role': 'member'})
 
 
+# ─── DUMMY DATA PROFIL ───────────────────────────────────────────────────────
+# Tambahkan ini di bagian DUMMY DATA (atas views.py, setelah DUMMY_MEMBER_INFO)
+
+DUMMY_USERS = {
+    'john@example.com': {
+        'email':           'john@example.com',
+        'salutation':      'Mr.',
+        'first_mid_name':  'John William',
+        'last_name':       'Doe',
+        'kewarganegaraan': 'Indonesia',
+        'country_code':    '+62',
+        'mobile_number':   '81234567890',
+        'tanggal_lahir':   '1990-05-15',
+        # password disimpan plaintext untuk dummy (di production harus di-hash)
+        'password':        'password',
+    },
+    'admin@aeromiles.com': {
+        'email':           'admin@aeromiles.com',
+        'salutation':      'Mr.',
+        'first_mid_name':  'Admin',
+        'last_name':       'Aero',
+        'kewarganegaraan': 'Indonesia',
+        'country_code':    '+62',
+        'mobile_number':   '81111111111',
+        'tanggal_lahir':   '1988-01-01',
+        'password':        'password',
+    },
+}
+
+DUMMY_MEMBERS = {
+    'john@example.com': {
+        'nomor_member':      'M0001',
+        'tanggal_bergabung': '15 Januari 2024',
+        'id_tier':           'Gold',
+    },
+}
+
+DUMMY_STAFS = {
+    'admin@aeromiles.com': {
+        'id_staf':       'S0001',
+        'kode_maskapai': 'GA',
+    },
+}
+
+
+# ─── VIEWS PROFIL ─────────────────────────────────────────────────────────────
+# Ganti fungsi profil() yang sudah ada dengan versi ini:
+
 def profil(request):
     role = request.session.get('role')
     if not role:
         return redirect('login')
-    return render(request, 'profil.html', {'role': role})
+
+    email = request.session.get('email')
+    user  = DUMMY_USERS.get(email, {})
+
+    # Ambil data member/staf jika ada
+    member = DUMMY_MEMBERS.get(email) if role == 'member' else None
+    staf   = DUMMY_STAFS.get(email)   if role == 'staf'   else None
+
+    # Flash dari update sebelumnya
+    success_msg = request.session.pop('success_msg', None)
+    error_msg   = request.session.pop('error_msg', None)
+
+    context = {
+        'role':           role,
+        'user':           user,
+        'member':         member,
+        'staf':           staf,
+        'maskapai_list':  DUMMY_MASKAPAI,   # sudah ada di views.py
+        'success_msg':    success_msg,
+        'error_msg':      error_msg,
+    }
+    return render(request, 'profil.html', context)
+
+
+def profil_update(request):
+    role = request.session.get('role')
+    if not role:
+        return redirect('login')
+
+    if request.method != 'POST':
+        return redirect('profil')
+
+    email = request.session.get('email')
+    user  = DUMMY_USERS.get(email)
+
+    if not user:
+        return redirect('login')
+
+    # Ambil data dari form
+    salutation      = request.POST.get('salutation', '').strip()
+    first_name      = request.POST.get('first_name', '').strip()
+    middle_name     = request.POST.get('middle_name', '').strip()
+    last_name       = request.POST.get('last_name', '').strip()
+    kewarganegaraan = request.POST.get('kewarganegaraan', '').strip()
+    country_code    = request.POST.get('country_code', '').strip()
+    mobile_number   = request.POST.get('mobile_number', '').strip()
+    tanggal_lahir   = request.POST.get('tanggal_lahir', '').strip()
+
+    # Validasi field wajib
+    if not all([salutation, first_name, last_name, kewarganegaraan,
+                country_code, mobile_number, tanggal_lahir]):
+        request.session['error_msg'] = 'Semua field wajib diisi.'
+        return redirect('profil')
+
+    # Gabungkan first + middle name jadi first_mid_name
+    first_mid = f"{first_name} {middle_name}".strip() if middle_name else first_name
+
+    # Update dummy data (in-memory)
+    user['salutation']      = salutation
+    user['first_mid_name']  = first_mid
+    user['last_name']       = last_name
+    user['kewarganegaraan'] = kewarganegaraan
+    user['country_code']    = country_code
+    user['mobile_number']   = mobile_number
+    user['tanggal_lahir']   = tanggal_lahir
+
+    # Khusus staf: update kode maskapai
+    if role == 'staf':
+        staf = DUMMY_STAFS.get(email)
+        if staf:
+            kode_maskapai = request.POST.get('kode_maskapai', '').strip()
+            if kode_maskapai:
+                staf['kode_maskapai'] = kode_maskapai
+
+    # Update nama di session supaya navbar ikut berubah
+    request.session['nama'] = f"{salutation} {first_mid} {last_name}".strip()
+
+    request.session['success_msg'] = 'Perubahan berhasil disimpan.'
+    return redirect('profil')
+
+
+def profil_ubah_password(request):
+    role = request.session.get('role')
+    if not role:
+        return redirect('login')
+
+    if request.method != 'POST':
+        return redirect('profil')
+
+    email = request.session.get('email')
+    user  = DUMMY_USERS.get(email)
+
+    if not user:
+        return redirect('login')
+
+    password_lama  = request.POST.get('password_lama', '')
+    password_baru  = request.POST.get('password_baru', '')
+    konfirmasi     = request.POST.get('konfirmasi_password', '')
+
+    # Validasi password lama (dummy: plaintext)
+    if password_lama != user['password']:
+        request.session['error_msg'] = 'Password lama tidak sesuai.'
+        return redirect('profil')
+
+    if not password_baru:
+        request.session['error_msg'] = 'Password baru tidak boleh kosong.'
+        return redirect('profil')
+
+    if password_baru != konfirmasi:
+        request.session['error_msg'] = 'Konfirmasi password tidak cocok.'
+        return redirect('profil')
+
+    if len(password_baru) < 8:
+        request.session['error_msg'] = 'Password baru minimal 8 karakter.'
+        return redirect('profil')
+
+    # Update password di dummy data
+    user['password'] = password_baru
+
+    request.session['success_msg'] = 'Password berhasil diubah.'
+    return redirect('profil')
 
 
 def identitas(request):

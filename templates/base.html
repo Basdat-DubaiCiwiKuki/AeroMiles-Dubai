@@ -1,464 +1,62 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroMiles</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* ── Reset ──────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      font-size: 14px;
-      background: #f0f2f5;
-      color: #1a1d23;
-      line-height: 1.5;
-    }
-    a { text-decoration: none; color: inherit; }
-
-    /* ── Navbar ─────────────────────────────────────── */
-    .navbar {
-      background: #0d1f3c;
-      color: #fff;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    }
-    .nav-brand {
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-right: 28px;
-      white-space: nowrap;
-      color: #fff;
-    }
-    .nav-links {
-      display: flex;
-      gap: 2px;
-      flex: 1;
-      overflow-x: auto;
-    }
-    .nav-links::-webkit-scrollbar { display: none; }
-    .nav-links a {
-      color: rgba(255,255,255,0.6);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      white-space: nowrap;
-      transition: all 0.15s;
-    }
-    .nav-links a:hover  { background: rgba(255,255,255,0.1); color: #fff; }
-    .nav-links a.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
-    .nav-right a {
-      color: rgba(255,255,255,0.55);
-      font-size: 12.5px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      white-space: nowrap;
-      margin-left: 8px;
-      transition: all 0.15s;
-    }
-    .nav-right a:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-    .role-bar {
-      background: #111d33;
-      color: rgba(255,255,255,0.38);
-      font-size: 11.5px;
-      padding: 3px 24px;
-    }
-    .role-bar span { color: #60a5fa; }
-
-    /* ── Layout ─────────────────────────────────────── */
-    .page-wrapper {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 24px 24px 60px;
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 20px;
-    }
-    .page-title    { font-size: 22px; font-weight: 600; color: #0d1f3c; }
-    .page-subtitle { font-size: 13px; color: #6b7280; margin-top: 3px; }
-
-    /* ── Cards ──────────────────────────────────────── */
-    .card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    /* ── Stat row ───────────────────────────────────── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .stat-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 16px 18px;
-      border-left: 4px solid #cbd5e1;
-    }
-    .stat-label { font-size: 11.5px; color: #6b7280; margin-bottom: 4px; }
-    .stat-value { font-size: 26px; font-weight: 700; color: #0d1f3c; }
-    .stat-card.wait { border-left-color: #f59e0b; }
-    .stat-card.wait .stat-value { color: #92400e; }
-    .stat-card.ok   { border-left-color: #22c55e; }
-    .stat-card.ok   .stat-value { color: #166534; }
-    .stat-card.no   { border-left-color: #ef4444; }
-    .stat-card.no   .stat-value { color: #991b1b; }
-
-    /* ── Status tabs ────────────────────────────────── */
-    .status-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 16px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #f3f4f6;
-      flex-wrap: wrap;
-    }
-    .stab {
-      padding: 5px 16px;
-      border-radius: 20px;
-      font-size: 12.5px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      color: #6b7280;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .stab:hover  { background: #f3f4f6; }
-    .stab.active { background: #0d1f3c; color: #fff; border-color: #0d1f3c; font-weight: 500; }
-
-    /* ── Filter bar ─────────────────────────────────── */
-    .filter-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .filter-bar select,
-    .filter-bar input {
-      padding: 7px 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 12.5px;
-      color: #374151;
-      background: #fff;
-    }
-    .filter-bar input[type="text"] { min-width: 180px; }
-    .filter-label { font-size: 12px; color: #6b7280; white-space: nowrap; }
-    .filter-group { display: flex; align-items: center; gap: 5px; }
-
-    /* ── Table ──────────────────────────────────────── */
-    .table-wrap  { overflow-x: auto; }
-    .data-table  { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .data-table th {
-      text-align: left;
-      padding: 10px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #9ca3af;
-      border-bottom: 1px solid #f3f4f6;
-      white-space: nowrap;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .data-table td {
-      padding: 11px 12px;
-      border-bottom: 1px solid #f9fafb;
-      vertical-align: middle;
-    }
-    .data-table tbody tr:last-child td { border-bottom: none; }
-    .data-table tbody tr:hover td     { background: #fafafa; }
-
-    /* table cell helpers */
-    .klaim-id      { font-weight: 700; color: #1d4ed8; font-size: 12px; }
-    .msk-badge     { display:inline-block; background:#eff6ff; color:#1d4ed8; font-weight:700;
-                     font-size:11px; padding:2px 7px; border-radius:5px; margin-right:4px; }
-    .msk-name      { font-size:12px; color:#374151; }
-    .iata          { font-weight:700; font-size:12.5px; color:#0d1f3c; }
-    .arrow         { color:#9ca3af; margin:0 4px; }
-    .fcode         { background:#f3f4f6; padding:2px 7px; border-radius:4px;
-                     font-family:monospace; font-size:12px; color:#374151; }
-    .ts            { font-size:11.5px; color:#9ca3af; white-space:nowrap; }
-    .mem-name      { font-weight:500; font-size:13px; }
-    .mem-email     { font-size:11.5px; color:#9ca3af; }
-    .no-action     { color:#d1d5db; }
-
-    /* ── Badges ─────────────────────────────────────── */
-    .badge       { display:inline-block; padding:3px 10px; border-radius:12px;
-                   font-size:11.5px; font-weight:500; white-space:nowrap; }
-    .badge-wait  { background:#fef3c7; color:#92400e; }
-    .badge-ok    { background:#dcfce7; color:#166534; }
-    .badge-no    { background:#fee2e2; color:#991b1b; }
-
-    /* ── Buttons ────────────────────────────────────── */
-    .btn-primary {
-      background:#0d1f3c; color:#fff; border:none; border-radius:8px;
-      padding:8px 18px; font-size:13px; font-weight:500; cursor:pointer;
-      white-space:nowrap; transition:background .15s;
-    }
-    .btn-primary:hover { background:#1a3560; }
-
-    .btn-cancel {
-      background:transparent; color:#6b7280; border:1px solid #d1d5db;
-      border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer;
-      transition:background .15s; white-space:nowrap;
-    }
-    .btn-cancel:hover { background:#f9fafb; }
-
-    .btn-danger {
-      background:#991b1b; color:#fff; border:none; border-radius:8px;
-      padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer;
-    }
-    .btn-danger:hover { background:#7f1d1d; }
-
-    .btn-edit {
-      background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;
-      border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;
-      transition:background .15s;
-    }
-    .btn-edit:hover { background:#dbeafe; }
-
-    .btn-del {
-      background:#fee2e2; color:#991b1b; border:1px solid #fecaca;
-      border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;
-    }
-    .btn-del:hover { background:#fecaca; }
-
-    .btn-approve {
-      background:#dcfce7; color:#166534; border:1px solid #bbf7d0;
-      border-radius:6px; padding:4px 10px; font-size:12px; font-weight:500; cursor:pointer;
-    }
-    .btn-approve:hover { background:#bbf7d0; }
-
-    .btn-reject {
-      background:#fee2e2; color:#991b1b; border:1px solid #fecaca;
-      border-radius:6px; padding:4px 10px; font-size:12px; font-weight:500; cursor:pointer;
-    }
-    .btn-reject:hover { background:#fecaca; }
-
-    .btn-approve-lg {
-      background:#16a34a; color:#fff; border:none; border-radius:8px;
-      padding:8px 20px; font-size:13px; font-weight:500; cursor:pointer;
-    }
-    .btn-approve-lg:hover { background:#15803d; }
-
-    .action-btns { display:flex; gap:5px; }
-
-    /* ── Alerts ─────────────────────────────────────── */
-    .alert {
-      display:flex; align-items:center; gap:10px;
-      padding:12px 16px; border-radius:9px; font-size:13.5px; margin-bottom:16px;
-    }
-    .alert-ok  { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
-    .alert-err { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
-
-    /* ── Empty state ────────────────────────────────── */
-    .empty-state { text-align:center; padding:40px 20px; color:#9ca3af; }
-    .empty-icon  { font-size:40px; margin-bottom:12px; }
-    .empty-state p { margin-bottom:16px; font-size:14px; }
-
-    /* ── Modals ─────────────────────────────────────── */
-    .modal-backdrop {
-      position:fixed; inset:0; background:rgba(0,0,0,0.5);
-      z-index:1000; display:flex; align-items:center;
-      justify-content:center; padding:16px;
-    }
-    .modal-box {
-      background:#fff; border-radius:14px; padding:24px;
-      width:100%; max-width:560px; max-height:90vh;
-      overflow-y:auto;
-      box-shadow:0 20px 50px rgba(0,0,0,0.18);
-    }
-    .modal-sm  { max-width:420px; }
-    .modal-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-    .modal-ttl { font-size:16px; font-weight:600; color:#0d1f3c; }
-    .modal-cls { background:none; border:none; font-size:22px; cursor:pointer; color:#9ca3af; padding:0 4px; }
-    .modal-cls:hover { color:#374151; }
-    .modal-info {
-      background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;
-      border-radius:8px; padding:10px 14px; font-size:12.5px; margin-bottom:16px;
-    }
-    .modal-info.warn { background:#fef3c7; color:#92400e; border-color:#fde68a; }
-    .modal-ftr { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
-
-    /* ── Forms ──────────────────────────────────────── */
-    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .form-group { display:flex; flex-direction:column; gap:5px; }
-    label { font-size:12px; color:#6b7280; font-weight:500; }
-    .req  { color:#ef4444; }
-    .form-group select,
-    .form-group input {
-      padding:8px 10px;
-      border:1px solid #d1d5db;
-      border-radius:8px;
-      font-size:13px;
-      color:#374151;
-      background:#fff;
-      transition:border-color .15s;
-    }
-    .form-group select:focus,
-    .form-group input:focus {
-      outline:none;
-      border-color:#6366f1;
-      box-shadow:0 0 0 3px rgba(99,102,241,.1);
-    }
-
-    /* ── Confirm detail ─────────────────────────────── */
-    .confirm-body   { font-size:13.5px; color:#6b7280; margin-bottom:16px; }
-    .confirm-detail {
-      background:#f9fafb; border:1px solid #e5e7eb;
-      border-radius:9px; padding:12px 16px;
-      font-size:13px; line-height:2;
-    }
-    .dl { color:#9ca3af; font-weight:500; display:inline-block; min-width:100px; }
-
-    /* ── Dashboard specific ─────────────────────────── */
-    .db-wrap  { max-width:960px; margin:0 auto; padding:24px; }
-    .db-hero  {
-      background: linear-gradient(135deg,#0d1f3c 0%,#1e3a6e 100%);
-      color:#fff; border-radius:14px; padding:28px 32px;
-      margin-bottom:16px; position:relative; overflow:hidden;
-    }
-    .db-hero::after {
-      content:'✈'; position:absolute; right:28px; top:50%;
-      transform:translateY(-50%) rotate(10deg);
-      font-size:80px; opacity:0.08; pointer-events:none;
-    }
-    .db-role  { font-size:11px; color:rgba(255,255,255,.5); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; }
-    .db-name  { font-size:22px; font-weight:700; }
-    .db-sub   { font-size:13px; color:rgba(255,255,255,.6); margin-top:4px; }
-    .db-metrics {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      gap:12px; margin-bottom:16px;
-    }
-    .db-metric {
-      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-      padding:16px 18px;
-    }
-    .db-ml { font-size:11.5px; color:#6b7280; margin-bottom:4px; }
-    .db-mv { font-size:20px; font-weight:700; color:#0d1f3c; }
-    .tier-pill {
-      display:inline-block; font-size:12px; font-weight:700;
-      padding:2px 12px; border-radius:12px;
-      background:#fef3c7; color:#92400e;
-    }
-    .info-grid  { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
-    .info-item .il { font-size:11.5px; color:#9ca3af; margin-bottom:1px; }
-    .info-item .iv { font-size:14px; font-weight:500; }
-    .tx-row {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:10px 0; border-bottom:1px solid #f3f4f6;
-    }
-    .tx-row:last-child { border-bottom:none; }
-    .tx-type {
-      display:inline-block; font-size:11px; font-weight:600;
-      padding:2px 8px; border-radius:5px; background:#f3f4f6;
-      color:#6b7280; margin-right:10px;
-    }
-    .tx-time { font-size:12px; color:#9ca3af; }
-    .tx-amt  { font-weight:700; font-size:13px; }
-    .tx-pos  { color:#166534; }
-    .tx-neg  { color:#991b1b; }
-    .sec-title { font-size:14px; font-weight:600; color:#0d1f3c; margin-bottom:14px; }
-
-    /* ── Auth pages ─────────────────────────────────── */
-    .auth-page {
-      min-height:calc(100vh - 52px);
-      display:flex; align-items:center; justify-content:center; padding:24px;
-      background:linear-gradient(135deg,#0d1f3c 0%,#1e3a6e 60%,#2d5299 100%);
-    }
-    .auth-card {
-      background:#fff; border-radius:16px; padding:36px 32px;
-      width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.3);
-    }
-    .auth-icon  { font-size:36px; margin-bottom:8px; }
-    .auth-title { font-size:22px; font-weight:700; color:#0d1f3c; margin-bottom:4px; }
-    .auth-sub   { font-size:13px; color:#9ca3af; margin-bottom:24px; }
-    .auth-err   {
-      background:#fee2e2; color:#991b1b; border:1px solid #fecaca;
-      border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px;
-    }
-    .auth-demo  {
-      background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px;
-      padding:12px 14px; font-size:12px; color:#6b7280; margin-top:16px;
-    }
-    .auth-demo strong { color:#374151; display:block; margin-bottom:4px; }
-    .reg-toggle { display:flex; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; margin-bottom:20px; }
-    .reg-toggle button {
-      flex:1; padding:10px; font-size:13.5px; font-weight:500;
-      border:none; background:#f9fafb; color:#6b7280; cursor:pointer; transition:all .15s;
-    }
-    .reg-toggle button.active { background:#0d1f3c; color:#fff; }
-
-    /* profile page */
-    .profil-wrap { max-width:640px; margin:0 auto; padding:24px; }
-    .profil-sec  { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:24px; margin-bottom:16px; }
-    .profil-ttl  { font-size:15px; font-weight:600; color:#0d1f3c; margin-bottom:18px; }
-    .profil-row  { display:flex; gap:16px; }
-    .profil-row .form-group { flex:1; }
-    .profil-full { margin-bottom:14px; }
-    .profil-ro   { background:#f9fafb; color:#6b7280; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroMiles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-50">
 
-<nav class="navbar">
-  <div class="nav-brand">✈ AeroMiles</div>
-  <div class="nav-links">
-    {% if role == 'member' %}
-      <a href="/dashboard/"  {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
-      <a href="/identitas/"  {% if request.path == '/identitas/' %}class="active"{% endif %}>Identitas Saya</a>
-      <a href="/klaim/"      {% if '/klaim/' in request.path %}class="active"{% endif %}>Klaim Miles</a>
-        <a href="/transfer/" {% if request.path == '/transfer/' %}class="active"{% endif %}>Transfer Miles</a>
-<a href="/redeem/"   {% if request.path == '/redeem/'   %}class="active"{% endif %}>Redeem Hadiah</a>
-<a href="/package/"  {% if request.path == '/package/'  %}class="active"{% endif %}>Beli Package</a>
-<a href="/tier/"     {% if request.path == '/tier/'     %}class="active"{% endif %}>Info Tier</a>
-      <a href="/profil/"     {% if request.path == '/profil/' %}class="active"{% endif %}>Pengaturan Profil</a>
-    {% elif role == 'staf' %}
-      <a href="/dashboard/"      {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
-      <a href="#">Kelola Member</a>
-      <a href="/kelola-klaim/"   {% if '/kelola-klaim/' in request.path %}class="active"{% endif %}>Kelola Klaim</a>
-      <a href="#">Kelola Hadiah & Penyedia</a>
-      <a href="#">Kelola Mitra</a>
-      <a href="#">Laporan Transaksi</a>
-      <a href="/profil/"         {% if request.path == '/profil/' %}class="active"{% endif %}>Pengaturan Profil</a>
-    {% else %}
-      <a href="/"         {% if request.path == '/' %}class="active"{% endif %}>Login</a>
-      <a href="/register/" {% if request.path == '/register/' %}class="active"{% endif %}>Registrasi</a>
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-center transition-all duration-300 bg-transparent">
+
+        <div class="flex items-center gap-8 text-sm font-medium tracking-wider">
+            {% if role == 'member' %}
+                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
+                <a href="/identitas/" class="text-white hover:opacity-60 transition uppercase">Identitas Saya</a>
+                <a href="/klaim/" class="text-white hover:opacity-60 transition uppercase">Klaim Miles</a>
+                <a href="/transfer/" class="text-white hover:opacity-60 transition uppercase">Transfer Miles</a>
+                <a href="/redeem/" class="text-white hover:opacity-60 transition uppercase">Redeem Hadiah</a>
+                <a href="/package/" class="text-white hover:opacity-60 transition uppercase">Beli Package</a>
+                <a href="/tier/" class="text-white hover:opacity-60 transition uppercase">Info Tier</a>
+                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
+                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
+            {% elif role == 'staf' %}
+                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Member</a>
+                <a href="/kelola-klaim/" class="text-white hover:opacity-60 transition uppercase">Kelola Klaim</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Hadiah</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Kelola Mitra</a>
+                <a href="#" class="text-white hover:opacity-60 transition uppercase">Laporan</a>
+                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
+                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
+            {% else %}
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Navbar scroll effect (khusus landing page) -->
+    {% if role == 'guest' %}
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-[#0f172a]');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-[#0f172a]');
+                navbar.classList.add('bg-transparent');
+            }
+        });
+    </script>
     {% endif %}
-  </div>
-  <div class="nav-right">
-    {% if role and role != 'guest' %}
-      <a href="/logout/">Logout</a>
-    {% endif %}
-  </div>
-</nav>
-
-{% if role == 'member' %}
-  <div class="role-bar">Masuk sebagai <span>{{ request.session.nama|default:"Member" }} – Member</span></div>
-{% elif role == 'staf' %}
-  <div class="role-bar">Masuk sebagai <span>{{ request.session.nama|default:"Staf" }} – Staf</span></div>
-{% endif %}
-
-{% block content %}{% endblock %}
 
 </body>
 </html>

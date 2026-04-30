@@ -13,7 +13,9 @@ urlpatterns = [
     path('dashboard/staf/', views.dashboard_staf, name='dashboard_staf'),
 
     # Profil & Identitas
-    path('profil/', views.profil, name='profil'),
+    path('profil/',                views.profil,               name='profil'),
+    path('profil/update/',         views.profil_update,        name='profil_update'),
+    path('profil/ubah-password/',  views.profil_ubah_password, name='profil_ubah_password'),
     path('identitas/', views.identitas, name='identitas'),
     path('tier/', views.tier, name='tier'),
 

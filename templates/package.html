@@ -1,140 +1,255 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-wrapper">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Beli Award Miles Package</h1>
-      <p class="page-subtitle">Tambah miles dengan membeli paket award miles</p>
-    </div>
-  </div>
+<!-- Full-page background — futuristic city / premium night sky feel -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1920&q=80"
+        alt="Premium" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-65"></div>
+    <!-- Deep teal/indigo tint — beda dari amber (redeem), biru (transfer), netral (klaim) -->
+    <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(15,23,42,0.55) 0%, rgba(6,78,59,0.20) 100%);"></div>
 
-  {% if success_msg %}
-  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
-  {% endif %}
-  {% if error_msg %}
-  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
-  {% endif %}
+    <!-- Content -->
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-5xl mx-auto">
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Award Miles Saat Ini</div>
-      <div class="stat-value">{{ award_miles|default:"32,000" }}</div>
-    </div>
-    <div class="stat-card ok">
-      <div class="stat-label">Total Pembelian</div>
-      <div class="stat-value">{{ stats.total_beli|default:"0" }}</div>
-    </div>
-    <div class="stat-card wait">
-      <div class="stat-label">Miles Dibeli</div>
-      <div class="stat-value">{{ stats.miles_dibeli|default:"0" }}</div>
-    </div>
-  </div>
+            <!-- Page Header -->
+            <div class="mb-10 flex items-end justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
+                    <h1 class="text-5xl font-bold text-white">Beli Package<br><span class="opacity-40">Award Miles</span></h1>
+                    <p class="text-white opacity-40 text-sm mt-3">Tambah award miles instan dengan paket pilihan</p>
+                </div>
+                <!-- Miles counter badge -->
+                <div class="border border-white border-opacity-20 rounded-2xl px-6 py-3 backdrop-blur-sm text-right" style="background: rgba(255,255,255,0.05);">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Award Miles Saat Ini</p>
+                    <p class="text-2xl font-bold text-emerald-300">{{ award_miles|default:"32,000" }}</p>
+                </div>
+            </div>
 
-  <!-- Paket -->
-  <div class="card">
-    <h2 class="sec-title" style="margin-bottom:16px;">Pilih Paket</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
-      {% for p in paket_list %}
-      <div style="border:2px solid {% if forloop.counter == 3 %}#0d1f3c{% else %}#e5e7eb{% endif %};border-radius:14px;padding:22px 18px;text-align:center;position:relative;transition:all .2s;cursor:pointer;" onclick="openBeli('{{ p.id }}','{{ p.jumlah_award_miles }}',{{ p.harga_paket }})" onmouseover="this.style.borderColor='#0d1f3c';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='{% if forloop.counter == 3 %}#0d1f3c{% else %}#e5e7eb{% endif %}';this.style.transform='none'">
-        {% if forloop.counter == 3 %}
-        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#0d1f3c;color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:12px;white-space:nowrap;">POPULER</div>
-        {% endif %}
-        <div style="font-size:32px;margin-bottom:8px;">
-          {% if forloop.counter == 1 %}✨
-          {% elif forloop.counter == 2 %}⭐
-          {% elif forloop.counter == 3 %}🌟
-          {% elif forloop.counter == 4 %}💫
-          {% else %}🏆{% endif %}
+            <!-- Flash Messages -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✓ {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✕ {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-4 mb-10">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Award Miles Saat Ini</p>
+                    <p class="text-4xl font-bold text-white">{{ award_miles|default:"32,000" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Pembelian</p>
+                    <p class="text-4xl font-bold text-emerald-300">{{ stats.total_beli|default:"0" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Miles Dibeli</p>
+                    <p class="text-4xl font-bold text-teal-300">{{ stats.miles_dibeli|default:"0" }}</p>
+                </div>
+            </div>
+
+            <!-- Section label -->
+            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-6">Pilih Paket</p>
+
+            <!-- Package Grid -->
+            {% if paket_list %}
+            <div class="grid grid-cols-5 gap-4 mb-10" id="paket-grid">
+                {% for p in paket_list %}
+                <div class="paket-card relative border rounded-3xl p-6 flex flex-col items-center text-center cursor-pointer
+                    {% if forloop.counter == 3 %}border-emerald-400 border-opacity-60 paket-popular
+                    {% else %}border-white border-opacity-20{% endif %}"
+                    style="background: rgba(255,255,255,0.04);
+                           animation: fadeUp 0.45s ease both;
+                           animation-delay: {{ forloop.counter0 }}00ms;"
+                    onclick="openBeli('{{ p.id }}','{{ p.jumlah_award_miles }}',{{ p.harga_paket }})">
+
+                    <!-- Popular badge -->
+                    {% if forloop.counter == 3 %}
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-400 text-gray-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                        Populer
+                    </div>
+                    {% endif %}
+
+                    <!-- Icon -->
+                    <div class="text-3xl mb-4 mt-2">
+                        {% if forloop.counter == 1 %}✨
+                        {% elif forloop.counter == 2 %}⭐
+                        {% elif forloop.counter == 3 %}🌟
+                        {% elif forloop.counter == 4 %}💫
+                        {% else %}🏆{% endif %}
+                    </div>
+
+                    <!-- ID Paket -->
+                    <p class="text-xs font-mono text-white opacity-30 mb-2">{{ p.id }}</p>
+
+                    <!-- Miles -->
+                    <p class="text-3xl font-bold text-white mb-1">{{ p.jumlah_award_miles|floatformat:"0" }}</p>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-4">award miles</p>
+
+                    <!-- Harga -->
+                    <p class="text-sm font-semibold text-white opacity-70 mb-5">
+                        Rp {{ p.harga_paket|floatformat:"0" }}
+                    </p>
+
+                    <!-- CTA -->
+                    <button type="button"
+                        class="w-full py-2.5 rounded-full text-xs uppercase tracking-widest font-semibold transition
+                        {% if forloop.counter == 3 %}bg-emerald-400 text-gray-900 hover:bg-emerald-300
+                        {% else %}bg-white bg-opacity-15 text-white hover:bg-opacity-25{% endif %}">
+                        Beli
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm py-24 text-center mb-10">
+                <p class="text-5xl mb-6 opacity-30">📦</p>
+                <p class="text-white opacity-40 text-sm">Belum ada paket tersedia.</p>
+            </div>
+            {% endif %}
+
+            <!-- Riwayat Pembelian -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
+                <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Histori</p>
+                    <h2 class="text-xl font-bold text-white">Riwayat Pembelian</h2>
+                </div>
+
+                {% if riwayat_beli %}
+                <div class="divide-y divide-white divide-opacity-5">
+                    {% for b in riwayat_beli %}
+                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-400 bg-opacity-15 border border-emerald-400 border-opacity-20">
+                                <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="text-white text-sm font-medium font-mono">{{ b.id_paket }}</span>
+                                    <span class="text-white opacity-30 text-xs">•</span>
+                                    <span class="text-white opacity-50 text-xs">Rp {{ b.harga|floatformat:"0" }}</span>
+                                </div>
+                                <p class="text-white opacity-30 text-xs">{{ b.timestamp }}</p>
+                            </div>
+                        </div>
+                        <p class="text-emerald-300 font-bold text-sm">+{{ b.jumlah_miles }} mi</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="py-20 text-center">
+                    <p class="text-5xl mb-6 opacity-30">📋</p>
+                    <p class="text-white opacity-40 text-sm">Belum ada riwayat pembelian.</p>
+                </div>
+                {% endif %}
+            </div>
+
         </div>
-        <div style="font-size:24px;font-weight:700;color:#0d1f3c;">{{ p.jumlah_award_miles|floatformat:"0" }}</div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">award miles</div>
-        <div style="font-size:15px;font-weight:600;color:#374151;margin-bottom:16px;">Rp {{ p.harga_paket|floatformat:"0" }}</div>
-        <button class="btn-primary" style="width:100%;padding:7px;">Beli</button>
-      </div>
-      {% empty %}
-      <div class="empty-state">
-        <div class="empty-icon">📦</div>
-        <p>Belum ada paket tersedia.</p>
-      </div>
-      {% endfor %}
     </div>
-  </div>
-
-  <!-- Riwayat Pembelian -->
-  <div class="card">
-    <h2 class="sec-title" style="margin-bottom:14px;">Riwayat Pembelian</h2>
-    {% if riwayat_beli %}
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Paket</th>
-            <th>Miles Diterima</th>
-            <th>Harga</th>
-            <th>Tanggal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for b in riwayat_beli %}
-          <tr>
-            <td><span class="fcode">{{ b.id_paket }}</span></td>
-            <td><span style="color:#166534;font-weight:600;">+{{ b.jumlah_miles }} mi</span></td>
-            <td>Rp {{ b.harga|floatformat:"0" }}</td>
-            <td class="ts">{{ b.timestamp }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state" style="padding:20px 0;">
-      <div class="empty-icon">📋</div>
-      <p>Belum ada riwayat pembelian.</p>
-    </div>
-    {% endif %}
-  </div>
 </div>
 
-<!-- MODAL KONFIRMASI BELI -->
-<div id="m-beli" class="modal-backdrop" style="display:none" onclick="if(event.target.id==='m-beli') closeBeli()">
-  <div class="modal-box modal-sm">
-    <div class="modal-hdr">
-      <h2 class="modal-ttl">Konfirmasi Pembelian</h2>
-      <button class="modal-cls" onclick="closeBeli()">×</button>
+
+<!-- ── MODAL KONFIRMASI BELI ── -->
+<div id="m-beli" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Pembelian Paket</h2>
+            </div>
+            <button onclick="closeBeli()" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+
+        <p class="text-sm text-white opacity-60 mb-6">Pastikan detail pembelian sudah benar sebelum melanjutkan.</p>
+
+        <div class="border border-white border-opacity-10 rounded-2xl p-4 mb-6 space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Paket</span>
+                <span class="text-white text-sm font-mono font-semibold" id="b-id"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Miles Diterima</span>
+                <span class="text-emerald-300 font-bold text-sm" id="b-miles"></span>
+            </div>
+            <div class="flex items-center justify-between border-t border-white border-opacity-10 pt-3">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Harga</span>
+                <span class="text-white font-semibold text-sm" id="b-harga"></span>
+            </div>
+        </div>
+
+        <form method="post" id="f-beli" action="{% url 'package_beli' %}">
+            {% csrf_token %}
+            <input type="hidden" name="id_paket" id="b-kode">
+            <div class="flex gap-3">
+                <button type="button" onclick="closeBeli()"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Konfirmasi Beli
+                </button>
+            </div>
+        </form>
     </div>
-    <p class="confirm-body">Pastikan detail pembelian sudah benar sebelum melanjutkan.</p>
-    <div class="confirm-detail">
-      <div><span class="dl">Paket:</span> <span id="b-id"></span></div>
-      <div><span class="dl">Miles:</span> <span id="b-miles" style="color:#166534;font-weight:600;"></span></div>
-      <div><span class="dl">Harga:</span> <span id="b-harga" style="font-weight:600;"></span></div>
-    </div>
-    <form method="post" id="f-beli" action="{% url 'package_beli' %}">
-      {% csrf_token %}
-      <input type="hidden" name="id_paket" id="b-kode">
-      <div class="modal-ftr">
-        <button type="button" class="btn-cancel" onclick="closeBeli()">Batal</button>
-        <button type="submit" class="btn-primary">Konfirmasi Beli</button>
-      </div>
-    </form>
-  </div>
 </div>
+
+
+<style>
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.paket-card {
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.paket-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(255,255,255,0.09) !important;
+    box-shadow: 0 20px 48px rgba(0,0,0,0.35);
+}
+.paket-popular {
+    background: rgba(52,211,153,0.07) !important;
+    box-shadow: 0 8px 32px rgba(52,211,153,0.12);
+}
+.paket-popular:hover {
+    border-color: rgba(52,211,153,0.85) !important;
+    box-shadow: 0 20px 48px rgba(52,211,153,0.2);
+}
+</style>
 
 <script>
-function openBeli(id, miles, harga){
-  document.getElementById('b-kode').value = id;
-  document.getElementById('b-id').textContent = id;
-  document.getElementById('b-miles').textContent = '+' + miles + ' miles';
-  document.getElementById('b-harga').textContent = 'Rp ' + harga.toLocaleString('id-ID');
-  document.getElementById('m-beli').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+function openBeli(id, miles, harga) {
+    document.getElementById('b-kode').value  = id;
+    document.getElementById('b-id').textContent    = id;
+    document.getElementById('b-miles').textContent = '+' + Number(miles).toLocaleString('id-ID') + ' miles';
+    document.getElementById('b-harga').textContent = 'Rp ' + Number(harga).toLocaleString('id-ID');
+    document.getElementById('m-beli').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
-function closeBeli(){
-  document.getElementById('m-beli').style.display = 'none';
-  document.body.style.overflow = '';
+function closeBeli() {
+    document.getElementById('m-beli').classList.add('hidden');
+    document.body.style.overflow = '';
 }
+
 var flash = document.getElementById('flash');
-if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
 </script>
+
 {% endblock %}

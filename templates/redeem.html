@@ -1,145 +1,271 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-wrapper">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Redeem Hadiah</h1>
-      <p class="page-subtitle">Tukarkan miles kamu dengan hadiah eksklusif</p>
-    </div>
-  </div>
+<!-- Full-page background — warm golden hour / destination feel -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80"
+        alt="Destination" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-60"></div>
+    <!-- Warm amber tint beda dari blue (transfer) dan neutral (klaim) -->
+    <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(120,53,15,0.30) 0%, rgba(0,0,0,0) 55%);"></div>
 
-  {% if success_msg %}
-  <div class="alert alert-ok" id="flash">✓ {{ success_msg }}</div>
-  {% endif %}
-  {% if error_msg %}
-  <div class="alert alert-err" id="flash">✕ {{ error_msg }}</div>
-  {% endif %}
+    <!-- Content -->
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-6xl mx-auto">
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Award Miles Tersedia</div>
-      <div class="stat-value">{{ award_miles|default:"32,000" }}</div>
-    </div>
-    <div class="stat-card ok">
-      <div class="stat-label">Total Redeem</div>
-      <div class="stat-value">{{ stats.total_redeem|default:"0" }}</div>
-    </div>
-    <div class="stat-card no">
-      <div class="stat-label">Miles Digunakan</div>
-      <div class="stat-value">{{ stats.miles_digunakan|default:"0" }}</div>
-    </div>
-  </div>
+            <!-- Page Header -->
+            <div class="mb-10 flex items-end justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
+                    <h1 class="text-5xl font-bold text-white">Redeem<br><span class="opacity-40">Hadiah</span></h1>
+                    <p class="text-white opacity-40 text-sm mt-3">Tukarkan award miles dengan pengalaman tak terlupakan</p>
+                </div>
+                <!-- Tab switcher -->
+                <div class="flex items-center border border-white border-opacity-20 rounded-full p-1 backdrop-blur-sm" style="background: rgba(255,255,255,0.05);">
+                    <button id="tab-katalog" onclick="switchTab('katalog')"
+                        class="text-xs uppercase tracking-widest px-6 py-2 rounded-full transition font-semibold tab-active">
+                        Katalog
+                    </button>
+                    <button id="tab-riwayat" onclick="switchTab('riwayat')"
+                        class="text-xs uppercase tracking-widest px-6 py-2 rounded-full transition font-semibold tab-inactive">
+                        Riwayat
+                    </button>
+                </div>
+            </div>
 
-  <!-- Katalog Hadiah -->
-  <div class="card">
-    <h2 class="sec-title" style="margin-bottom:16px;">Katalog Hadiah</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
-      {% for h in hadiah_list %}
-      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
-        <div style="font-size:28px;">
-          {% if 'upgrade' in h.nama|lower %}✈️
-          {% elif 'lounge' in h.nama|lower %}🛋️
-          {% elif 'hotel' in h.nama|lower %}🏨
-          {% elif 'dining' in h.nama|lower or 'food' in h.nama|lower %}🍽️
-          {% elif 'shopping' in h.nama|lower %}🛍️
-          {% elif 'car' in h.nama|lower %}🚗
-          {% elif 'baggage' in h.nama|lower or 'bagasi' in h.nama|lower %}🧳
-          {% elif 'seat' in h.nama|lower %}💺
-          {% else %}🎁{% endif %}
+            <!-- Flash Messages -->
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✓ {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                ✕ {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Award Miles Tersedia</p>
+                    <p class="text-4xl font-bold text-white">{{ award_miles|default:"32,000" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Redeem</p>
+                    <p class="text-4xl font-bold text-amber-300">{{ stats.total_redeem|default:"0" }}</p>
+                </div>
+                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Miles Digunakan</p>
+                    <p class="text-4xl font-bold text-orange-300">{{ stats.miles_digunakan|default:"0" }}</p>
+                </div>
+            </div>
+
+            <!-- ── KATALOG TAB ── -->
+            <div id="panel-katalog">
+                {% if hadiah_list %}
+                <div class="grid grid-cols-3 gap-5" id="hadiah-grid">
+                    {% for h in hadiah_list %}
+                    <div class="hadiah-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm flex flex-col cursor-pointer group"
+                         style="background: rgba(255,255,255,0.04); animation: fadeUp 0.4s ease both; animation-delay: {{ forloop.counter0 }}00ms;">
+
+                        <!-- Emoji icon -->
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4 border border-white border-opacity-10 flex-shrink-0"
+                            style="background: rgba(255,255,255,0.06);">
+                            {% if 'upgrade' in h.nama|lower %}✈️
+                            {% elif 'lounge' in h.nama|lower %}🛋️
+                            {% elif 'hotel' in h.nama|lower %}🏨
+                            {% elif 'dining' in h.nama|lower or 'food' in h.nama|lower %}🍽️
+                            {% elif 'shopping' in h.nama|lower %}🛍️
+                            {% elif 'car' in h.nama|lower %}🚗
+                            {% elif 'baggage' in h.nama|lower or 'bagasi' in h.nama|lower %}🧳
+                            {% elif 'seat' in h.nama|lower %}💺
+                            {% else %}🎁{% endif %}
+                        </div>
+
+                        <!-- Kode badge -->
+                        <div class="mb-2">
+                            <span class="text-xs font-mono text-white opacity-30">{{ h.kode_hadiah }}</span>
+                        </div>
+
+                        <!-- Nama & deskripsi -->
+                        <h3 class="text-white font-bold text-base mb-1 leading-snug">{{ h.nama }}</h3>
+                        <p class="text-white opacity-50 text-xs leading-relaxed mb-4 flex-1">{{ h.deskripsi }}</p>
+
+                        <!-- Footer -->
+                        <div class="mt-auto">
+                            <p class="text-white opacity-30 text-xs mb-3">Berlaku s/d {{ h.program_end }}</p>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-2xl font-bold text-amber-300">{{ h.miles }}</span>
+                                    <span class="text-white opacity-40 text-xs ml-1">miles</span>
+                                </div>
+                                <button
+                                    onclick="openRedeem('{{ h.kode_hadiah }}','{{ h.nama }}',{{ h.miles }})"
+                                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 active:scale-95 transition-all duration-150">
+                                    Redeem
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm py-24 text-center">
+                    <p class="text-5xl mb-6 opacity-30">🎁</p>
+                    <p class="text-white opacity-40 text-sm">Belum ada hadiah tersedia.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ── RIWAYAT TAB ── -->
+            <div id="panel-riwayat" class="hidden">
+                <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
+                    <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Histori</p>
+                        <h2 class="text-xl font-bold text-white">Riwayat Redeem</h2>
+                    </div>
+
+                    {% if riwayat_redeem %}
+                    <div class="divide-y divide-white divide-opacity-5">
+                        {% for r in riwayat_redeem %}
+                        <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition">
+                            <div class="flex items-center gap-4">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-400 bg-opacity-15 border border-amber-400 border-opacity-20">
+                                    <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-medium">{{ r.nama_hadiah }}</p>
+                                    <p class="text-white opacity-30 text-xs mt-0.5">{{ r.timestamp }}</p>
+                                </div>
+                            </div>
+                            <p class="text-orange-300 font-bold text-sm">−{{ r.miles }} mi</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="py-24 text-center">
+                        <p class="text-5xl mb-6 opacity-30">📋</p>
+                        <p class="text-white opacity-40 text-sm">Belum ada riwayat redeem.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
-        <div style="font-weight:600;font-size:14px;color:#0d1f3c;">{{ h.nama }}</div>
-        <div style="font-size:12px;color:#6b7280;">{{ h.deskripsi }}</div>
-        <div style="margin-top:auto;">
-          <div style="font-size:13px;color:#9ca3af;margin-bottom:2px;">Berlaku s/d {{ h.program_end }}</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-            <span style="font-weight:700;font-size:16px;color:#0d1f3c;">{{ h.miles }} <span style="font-size:12px;font-weight:400;color:#6b7280;">miles</span></span>
-            <button class="btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openRedeem('{{ h.kode_hadiah }}','{{ h.nama }}',{{ h.miles }})">Redeem</button>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="empty-state">
-        <div class="empty-icon">🎁</div>
-        <p>Belum ada hadiah tersedia.</p>
-      </div>
-      {% endfor %}
     </div>
-  </div>
-
-  <!-- Riwayat Redeem -->
-  <div class="card">
-    <h2 class="sec-title" style="margin-bottom:14px;">Riwayat Redeem</h2>
-    {% if riwayat_redeem %}
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Hadiah</th>
-            <th>Miles</th>
-            <th>Tanggal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in riwayat_redeem %}
-          <tr>
-            <td style="font-weight:500;">{{ r.nama_hadiah }}</td>
-            <td><span style="color:#991b1b;font-weight:600;">-{{ r.miles }} mi</span></td>
-            <td class="ts">{{ r.timestamp }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state" style="padding:20px 0;">
-      <div class="empty-icon">📋</div>
-      <p>Belum ada riwayat redeem.</p>
-    </div>
-    {% endif %}
-  </div>
 </div>
 
-<!-- MODAL KONFIRMASI REDEEM -->
-<div id="m-redeem" class="modal-backdrop" style="display:none" onclick="if(event.target.id==='m-redeem') closeModal()">
-  <div class="modal-box modal-sm">
-    <div class="modal-hdr">
-      <h2 class="modal-ttl">Konfirmasi Redeem</h2>
-      <button class="modal-cls" onclick="closeModal()">×</button>
+
+<!-- ── MODAL KONFIRMASI REDEEM ── -->
+<div id="m-redeem" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+        style="background: rgba(255,255,255,0.05);">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
+                <h2 class="text-xl font-bold text-white">Redeem Hadiah</h2>
+            </div>
+            <button onclick="closeModal()" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+        </div>
+
+        <p class="text-sm text-white opacity-60 mb-6">Miles akan langsung dikurangi setelah konfirmasi. Tindakan ini tidak dapat dibatalkan.</p>
+
+        <div class="border border-white border-opacity-10 rounded-2xl p-4 mb-6 space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Hadiah</span>
+                <span class="text-white text-sm font-semibold text-right max-w-48" id="r-nama"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Miles</span>
+                <span class="text-orange-300 font-bold text-sm" id="r-miles"></span>
+            </div>
+            <div class="flex items-center justify-between border-t border-white border-opacity-10 pt-3">
+                <span class="text-xs uppercase tracking-widest text-white opacity-40">Sisa Miles</span>
+                <span class="text-white font-semibold text-sm" id="r-sisa"></span>
+            </div>
+        </div>
+
+        <form method="post" id="f-redeem" action="{% url 'redeem_proses' %}">
+            {% csrf_token %}
+            <input type="hidden" name="kode_hadiah" id="r-kode">
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal()"
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
+                    Konfirmasi
+                </button>
+            </div>
+        </form>
     </div>
-    <p class="confirm-body">Miles akan langsung dikurangi setelah konfirmasi. Tindakan ini tidak dapat dibatalkan.</p>
-    <div class="confirm-detail">
-      <div><span class="dl">Hadiah:</span> <span id="r-nama"></span></div>
-      <div><span class="dl">Miles:</span> <span id="r-miles" style="color:#991b1b;font-weight:600;"></span></div>
-      <div><span class="dl">Sisa Miles:</span> <span id="r-sisa"></span></div>
-    </div>
-    <form method="post" id="f-redeem" action="{% url 'redeem_proses' %}">
-      {% csrf_token %}
-      <input type="hidden" name="kode_hadiah" id="r-kode">
-      <div class="modal-ftr">
-        <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
-        <button type="submit" class="btn-primary">Konfirmasi Redeem</button>
-      </div>
-    </form>
-  </div>
 </div>
+
+
+<style>
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.hadiah-card {
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.hadiah-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(251,191,36,0.35) !important;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(251,191,36,0.15);
+}
+.tab-active {
+    background: white;
+    color: #111827;
+}
+.tab-inactive {
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+}
+.tab-inactive:hover {
+    color: rgba(255,255,255,0.8);
+}
+</style>
 
 <script>
 var awardMiles = {{ award_miles|default:32000 }};
-function openRedeem(kode, nama, miles){
-  document.getElementById('r-kode').value = kode;
-  document.getElementById('r-nama').textContent = nama;
-  document.getElementById('r-miles').textContent = '-' + miles + ' miles';
-  document.getElementById('r-sisa').textContent = (awardMiles - miles) + ' miles';
-  document.getElementById('m-redeem').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+
+function openRedeem(kode, nama, miles) {
+    document.getElementById('r-kode').value  = kode;
+    document.getElementById('r-nama').textContent  = nama;
+    document.getElementById('r-miles').textContent = '−' + miles.toLocaleString() + ' miles';
+    document.getElementById('r-sisa').textContent  = (awardMiles - miles).toLocaleString() + ' miles';
+    document.getElementById('m-redeem').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
-function closeModal(){
-  document.getElementById('m-redeem').style.display = 'none';
-  document.body.style.overflow = '';
+function closeModal() {
+    document.getElementById('m-redeem').classList.add('hidden');
+    document.body.style.overflow = '';
 }
+
+function switchTab(tab) {
+    var isKatalog = tab === 'katalog';
+    document.getElementById('panel-katalog').classList.toggle('hidden', !isKatalog);
+    document.getElementById('panel-riwayat').classList.toggle('hidden',  isKatalog);
+    document.getElementById('tab-katalog').className = 'text-xs uppercase tracking-widest px-6 py-2 rounded-full transition font-semibold ' + (isKatalog ? 'tab-active' : 'tab-inactive');
+    document.getElementById('tab-riwayat').className = 'text-xs uppercase tracking-widest px-6 py-2 rounded-full transition font-semibold ' + (!isKatalog ? 'tab-active' : 'tab-inactive');
+}
+
+// Auto-dismiss flash
 var flash = document.getElementById('flash');
-if(flash) setTimeout(function(){ flash.style.opacity='0'; flash.style.transition='opacity .4s'; setTimeout(function(){ flash.remove(); },400); },4000);
+if (flash) {
+    setTimeout(function () {
+        flash.style.transition = 'opacity 0.4s';
+        flash.style.opacity = '0';
+        setTimeout(function () { flash.remove(); }, 400);
+    }, 4000);
+}
 </script>
+
 {% endblock %}

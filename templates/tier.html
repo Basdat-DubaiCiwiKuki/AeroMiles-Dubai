@@ -1,91 +1,317 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="page-wrapper">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Info Tier</h1>
-      <p class="page-subtitle">Status dan progress keanggotaan AeroMiles kamu</p>
-    </div>
-  </div>
+<!-- Full-page background -->
+<div class="relative min-h-screen">
+    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80"
+        alt="Exotic Travel" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-55"></div>
 
-  <!-- Hero Tier Saat Ini -->
-  <div style="background:linear-gradient(135deg,#0d1f3c 0%,#1e3a6e 100%);border-radius:14px;padding:28px 32px;margin-bottom:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-    <div>
-      <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Tier Kamu Saat Ini</div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:40px;">
-          {% if tier_saat_ini.nama == 'Bronze' %}🥉
-          {% elif tier_saat_ini.nama == 'Silver' %}🥈
-          {% elif tier_saat_ini.nama == 'Gold' %}🥇
-          {% else %}💎{% endif %}
-        </span>
-        <div>
-          <div style="font-size:28px;font-weight:700;">{{ tier_saat_ini.nama }}</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.6);">Member sejak bergabung</div>
+    <!-- Content -->
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- Page Header -->
+            <div class="mb-10 text-center">
+                <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Membership</p>
+                <h1 class="text-5xl font-bold text-white">Info Tier</h1>
+                <h2 class="text-2xl font-bold text-white opacity-40 mt-2">Naik Level, Raih Lebih.</h2>
+            </div>
+
+            <!-- Progress Card -->
+            <div class="border border-white border-opacity-40 rounded-3xl p-8 mb-10 backdrop-blur-sm max-w-3xl mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Tier Saat Ini</p>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-3xl font-bold text-white">{{ tier_saat_ini.nama }}</h2>
+                            <span class="inline-block bg-amber-400 text-white text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider">Tier Anda</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Progress ke {{ tier_berikutnya.nama }}</p>
+                        <p class="text-white"><span class="text-3xl font-bold">{{ progress.total_miles|default:"45000" }}</span> <span class="opacity-60">/ {{ tier_berikutnya.minimal_tier_miles|default:"80000" }} miles</span></p>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-white bg-opacity-20 rounded-full h-3 overflow-hidden">
+                    <div class="bg-amber-400 h-3 rounded-full transition-all duration-1000" style="width: {{ progress.progress_percentage|default:56.25 }}%"></div>
+                </div>
+                <p class="text-xs text-white opacity-40 mt-2 text-right">Butuh {{ progress.miles_needed|default:"35000" }} miles lagi untuk naik tier</p>
+            </div>
+
+            <!-- Horizontal Scrollable Tier Cards -->
+            <div class="relative" id="tier-carousel-wrapper">
+
+                <!-- Navigation Arrows -->
+                <button type="button" id="btn-prev"
+                    class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-30 w-12 h-12 rounded-full bg-white bg-opacity-20 backdrop-blur-md border border-white border-opacity-30 flex items-center justify-center text-white hover:bg-opacity-40 hover:scale-110 transition-all duration-200 shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                <button type="button" id="btn-next"
+                    class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-30 w-12 h-12 rounded-full bg-white bg-opacity-20 backdrop-blur-md border border-white border-opacity-30 flex items-center justify-center text-white hover:bg-opacity-40 hover:scale-110 transition-all duration-200 shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+
+                <!-- Scroll Container -->
+                <div id="tier-scroll-container" class="flex gap-6 overflow-x-hidden pb-4 px-4 md:px-16">
+
+                    {% for tier in semua_tier %}
+                    <!-- Tier Card Wrapper -->
+                    <div class="tier-card-wrapper flex-shrink-0 w-72 py-4" data-index="{{ forloop.counter0 }}">
+                        <div class="tier-card {% if tier.is_current %}tier-current{% else %}tier-normal{% endif %} rounded-3xl p-6 backdrop-blur-sm h-full flex flex-col relative overflow-hidden group cursor-pointer transition-all duration-300">
+
+                            {% if tier.is_current %}
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400 rounded-full -mr-16 -mt-16 opacity-10"></div>
+                            {% endif %}
+
+                            <!-- Tier Icon -->
+                            <div class="w-14 h-14 rounded-2xl 
+                                {% if tier.warna == 'orange' %}bg-orange-500 bg-opacity-20 border-orange-400 border-opacity-40
+                                {% elif tier.warna == 'gray' %}bg-gray-400 bg-opacity-20 border-gray-300 border-opacity-30
+                                {% elif tier.warna == 'amber' %}bg-amber-400 bg-opacity-20 border-amber-400 border-opacity-50
+                                {% elif tier.warna == 'indigo' %}bg-indigo-500 bg-opacity-20 border-indigo-400 border-opacity-30
+                                {% else %}bg-white bg-opacity-10 border-white border-opacity-20{% endif %}
+                                flex items-center justify-center flex-shrink-0 border mb-4 transition-transform duration-300 group-hover:scale-110">
+                                {% if tier.warna == 'orange' %}
+                                <svg class="w-7 h-7 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                {% elif tier.warna == 'gray' %}
+                                <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                                </svg>
+                                {% elif tier.warna == 'amber' %}
+                                <svg class="w-7 h-7 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                </svg>
+                                {% elif tier.warna == 'indigo' %}
+                                <svg class="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                {% else %}
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                </svg>
+                                {% endif %}
+                            </div>
+
+                            <!-- Tier Info -->
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-2xl font-bold text-white">{{ tier.nama }}</h3>
+                                    {% if tier.is_current %}
+                                    <span class="inline-block bg-amber-400 text-white text-xs font-medium px-2 py-1 rounded-full uppercase tracking-wider">Anda</span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="text-sm text-white opacity-40 mb-1">Min. {{ tier.minimal_frekuensi_terbang }} penerbangan</p>
+                                <p class="text-sm text-white opacity-40 mb-6">Min. {{ tier.minimal_tier_miles|default:"0" }} miles</p>
+
+                                <!-- Benefits -->
+                                <div class="space-y-3">
+                                    {% for benefit in tier.benefits %}
+                                    <div class="flex items-start gap-2 text-sm {% if tier.is_current %}text-white opacity-90{% else %}text-white opacity-70{% endif %}">
+                                        <svg class="w-4 h-4 {% if tier.is_current %}text-amber-300{% else %}text-green-400{% endif %} flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        <span>{{ benefit }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Bottom accent line for current tier -->
+                            {% if tier.is_current %}
+                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-amber-400"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <!-- Scroll Indicators (Dots) -->
+                <div class="flex justify-center gap-2 mt-4" id="dot-container">
+                    {% for tier in semua_tier %}
+                    <button type="button" id="dot-{{ forloop.counter0 }}"
+                        class="tier-dot rounded-full transition-all duration-300 bg-white bg-opacity-30 hover:bg-opacity-60"
+                        style="width: 0.625rem; height: 0.625rem;">
+                    </button>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <!-- Tips Card -->
+            <div class="mt-10 border border-white border-opacity-20 rounded-3xl p-8 backdrop-blur-sm hover:bg-white hover:bg-opacity-5 transition-all duration-300 max-w-3xl mx-auto">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white bg-opacity-10 flex items-center justify-center flex-shrink-0 border border-white border-opacity-20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-2">Tips</p>
+                        <h4 class="font-bold text-lg text-white mb-1">Naik Tier Lebih Cepat</h4>
+                        <p class="text-white opacity-60 text-sm leading-relaxed">Ajukan klaim missing miles untuk penerbangan yang belum tercatat, beli award miles package, atau terbang lebih sering dengan maskapai partner kami.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
-    <div style="text-align:right;">
-      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px;">Total Miles</div>
-      <div style="font-size:32px;font-weight:700;">{{ progress.total_miles|default:"45,000" }}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);">{{ progress.total_penerbangan|default:"12" }} penerbangan</div>
-    </div>
-  </div>
-
-  <!-- Progress ke Tier Berikutnya -->
-  {% if tier_berikutnya %}
-  <div class="card" style="margin-bottom:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div>
-        <div class="sec-title" style="margin-bottom:2px;">Progress ke {{ tier_berikutnya.nama }}</div>
-        <div style="font-size:12.5px;color:#6b7280;">Butuh {{ progress.miles_needed|default:"35,000" }} miles lagi untuk naik tier</div>
-      </div>
-      <span style="font-size:22px;">
-        {% if tier_berikutnya.nama == 'Silver' %}🥈
-        {% elif tier_berikutnya.nama == 'Gold' %}🥇
-        {% else %}💎{% endif %}
-      </span>
-    </div>
-    <div style="background:#f3f4f6;border-radius:99px;height:10px;overflow:hidden;">
-      <div style="background:linear-gradient(90deg,#0d1f3c,#3b82f6);height:100%;border-radius:99px;width:{{ progress.progress_percentage|default:56 }}%;transition:width .6s ease;"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:#9ca3af;">
-      <span>{{ tier_saat_ini.nama }} ({{ tier_saat_ini.minimal_tier_miles|default:0 | floatformat:"0" }} mi)</span>
-      <span style="font-weight:600;color:#0d1f3c;">{{ progress.progress_percentage|default:56 }}%</span>
-      <span>{{ tier_berikutnya.nama }} ({{ tier_berikutnya.minimal_tier_miles|default:150000 | floatformat:"0" }} mi)</span>
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- Semua Tier -->
-  <div class="card">
-    <h2 class="sec-title" style="margin-bottom:16px;">Semua Tier & Benefit</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
-      {% for t in semua_tier %}
-      <div style="border:2px solid {% if t.is_current %}#0d1f3c{% else %}#e5e7eb{% endif %};border-radius:12px;padding:18px;position:relative;{% if t.is_current %}background:#f8faff;{% endif %}">
-        {% if t.is_current %}
-        <div style="position:absolute;top:-10px;right:12px;background:#0d1f3c;color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:10px;">TIER KAMU</div>
-        {% endif %}
-        <div style="font-size:28px;margin-bottom:8px;">
-          {% if t.nama == 'Bronze' %}🥉
-          {% elif t.nama == 'Silver' %}🥈
-          {% elif t.nama == 'Gold' %}🥇
-          {% else %}💎{% endif %}
-        </div>
-        <div style="font-weight:700;font-size:16px;color:#0d1f3c;margin-bottom:4px;">{{ t.nama }}</div>
-        <div style="font-size:11.5px;color:#9ca3af;margin-bottom:12px;">Min. {{ t.minimal_tier_miles }} miles</div>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;">
-          {% for b in t.benefits %}
-          <li style="font-size:12.5px;color:#374151;display:flex;align-items:center;gap:6px;">
-            <span style="color:#22c55e;font-weight:700;">✓</span> {{ b }}
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
 </div>
+
+<style>
+    .tier-card {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .tier-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .tier-current {
+        border: 2px solid rgba(251, 191, 36, 0.7) !important;
+        background: rgba(251, 191, 36, 0.1) !important;
+        box-shadow: 0 8px 32px rgba(251, 191, 36, 0.15);
+    }
+    .tier-current:hover {
+        border-color: rgba(251, 191, 36, 0.9) !important;
+        background: rgba(251, 191, 36, 0.15) !important;
+        box-shadow: 0 20px 40px rgba(251, 191, 36, 0.2);
+    }
+
+    #tier-scroll-container {
+        scroll-behavior: smooth;
+    }
+
+    .tier-dot {
+        cursor: pointer;
+        border: none;
+        padding: 0;
+        flex-shrink: 0;
+    }
+    .tier-dot.active {
+        background-color: rgb(251, 191, 36) !important;
+        opacity: 1 !important;
+        width: 2rem !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('tier-scroll-container');
+    const cards = Array.from(container.querySelectorAll('.tier-card-wrapper'));
+    const dots = Array.from(document.querySelectorAll('.tier-dot'));
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    const totalCards = cards.length;
+    let currentIndex = {{ current_tier_index|default:2 }};
+
+    // Clamp to valid range
+    if (currentIndex >= totalCards) currentIndex = totalCards - 1;
+    if (currentIndex < 0) currentIndex = 0;
+
+    // ---- Compute card width (card + gap) ----
+    function getCardStep() {
+        if (cards.length < 2) return 0;
+        const r0 = cards[0].getBoundingClientRect();
+        const r1 = cards[1].getBoundingClientRect();
+        return r1.left - r0.left;
+    }
+
+    // ---- Scroll so that card at `index` is centered ----
+    function scrollToIndex(index) {
+        if (index < 0) index = 0;
+        if (index >= totalCards) index = totalCards - 1;
+        currentIndex = index;
+
+        const step = getCardStep();
+        const cardW = cards[0].offsetWidth;
+        const containerW = container.clientWidth;
+        // position of the left edge of card `index` relative to scroll origin
+        const cardLeft = step * index;
+        // we want the card centred in the container
+        const scrollTarget = cardLeft - (containerW - cardW) / 2;
+
+        container.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
+        updateDots(index);
+    }
+
+    // ---- Update dot visuals ----
+    function updateDots(activeIndex) {
+        dots.forEach(function (dot, i) {
+            if (i === activeIndex) {
+                dot.classList.add('active');
+                dot.style.width = '2rem';
+                dot.style.backgroundColor = 'rgb(251,191,36)';
+                dot.style.opacity = '1';
+            } else {
+                dot.classList.remove('active');
+                dot.style.width = '0.625rem';
+                dot.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                dot.style.opacity = '1';
+            }
+        });
+    }
+
+    // ---- Arrow buttons ----
+    btnPrev.addEventListener('click', function () {
+        scrollToIndex(currentIndex - 1);
+    });
+    btnNext.addEventListener('click', function () {
+        scrollToIndex(currentIndex + 1);
+    });
+
+    // ---- Dot buttons ----
+    dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () {
+            scrollToIndex(i);
+        });
+    });
+
+    // ---- Sync index when user drags/swipes ----
+    let scrollTimer;
+    container.addEventListener('scroll', function () {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function () {
+            const step = getCardStep();
+            if (step === 0) return;
+            const idx = Math.round(container.scrollLeft / step +
+                (container.clientWidth - cards[0].offsetWidth) / (2 * step) -
+                (container.clientWidth - cards[0].offsetWidth) / (2 * step));
+            // simpler: find card whose center is nearest container center
+            const containerCenter = container.scrollLeft + container.clientWidth / 2;
+            let closest = 0;
+            let minDist = Infinity;
+            cards.forEach(function (card, i) {
+                const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+                const dist = Math.abs(cardCenter - containerCenter);
+                if (dist < minDist) { minDist = dist; closest = i; }
+            });
+            currentIndex = closest;
+            updateDots(closest);
+        }, 80);
+    });
+
+    // ---- Initial position ----
+    // Use a tiny delay so layout is complete and offsetLeft values are correct
+    setTimeout(function () {
+        scrollToIndex(currentIndex);
+    }, 50);
+});
+</script>
+
 {% endblock %}
