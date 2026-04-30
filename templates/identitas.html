@@ -30,66 +30,70 @@
     </div>
 </div>
 
-<div id="identityModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
-    <div class="w-full max-w-2xl rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <p id="modalTitle" class="text-xl font-semibold text-slate-900">Tambah Identitas Baru</p>
-                <p class="text-sm text-gray-500">Isi semua kolom untuk menambahkan dokumen identitas.</p>
+<div id="identityModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 px-4 py-6" style="display: none;">
+    <div class="flex w-full h-full items-center justify-center">
+        <div class="w-full max-w-2xl rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p id="modalTitle" class="text-xl font-semibold text-slate-900">Tambah Identitas Baru</p>
+                    <p class="text-sm text-gray-500">Isi semua kolom untuk menambahkan dokumen identitas.</p>
+                </div>
+                <button id="closeModal" class="text-slate-400 transition hover:text-slate-900">✕</button>
             </div>
-            <button id="closeModal" class="text-slate-400 transition hover:text-slate-900">✕</button>
-        </div>
-        <form id="identityForm" class="space-y-5">
-            <div class="grid gap-4 md:grid-cols-2">
-                <label class="space-y-2 text-sm text-slate-700">
-                    <span>Nomor Dokumen</span>
-                    <input id="docNumber" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: SIM0001">
-                </label>
-                <label class="space-y-2 text-sm text-slate-700">
-                    <span>Jenis Dokumen</span>
-                    <select id="docType" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
-                        <option value="Paspor">Paspor</option>
-                        <option value="KTP">KTP</option>
-                        <option value="SIM">SIM</option>
-                    </select>
-                </label>
-            </div>
-            <div class="grid gap-4 md:grid-cols-2">
-                <label class="space-y-2 text-sm text-slate-700">
-                    <span>Negara Penerbit</span>
-                    <input id="docCountry" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: Indonesia">
-                </label>
-                <label class="space-y-2 text-sm text-slate-700">
-                    <span>Tanggal Terbit</span>
-                    <input id="docIssued" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
-                </label>
-            </div>
-            <div class="grid gap-4 md:grid-cols-2">
-                <label class="space-y-2 text-sm text-slate-700">
-                    <span>Tanggal Habis</span>
-                    <input id="docExpiry" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
-                </label>
-                <div class="space-y-2 text-sm text-slate-700">
-                    <span>&nbsp;</span>
-                    <div class="flex flex-wrap gap-3">
-                        <button type="button" id="cancelModal" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
-                        <button type="submit" class="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Simpan</button>
+            <form id="identityForm" class="space-y-5">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <label id="docNumberLabel" class="space-y-2 text-sm text-slate-700">
+                        <span>Nomor Dokumen</span>
+                        <input id="docNumber" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: SIM0001">
+                    </label>
+                    <label class="space-y-2 text-sm text-slate-700">
+                        <span>Jenis Dokumen</span>
+                        <select id="docType" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                            <option value="Paspor">Paspor</option>
+                            <option value="KTP">KTP</option>
+                            <option value="SIM">SIM</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <label class="space-y-2 text-sm text-slate-700">
+                        <span>Negara Penerbit</span>
+                        <input id="docCountry" type="text" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white" placeholder="Contoh: Indonesia">
+                    </label>
+                    <label class="space-y-2 text-sm text-slate-700">
+                        <span>Tanggal Terbit</span>
+                        <input id="docIssued" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                    </label>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <label class="space-y-2 text-sm text-slate-700">
+                        <span>Tanggal Habis</span>
+                        <input id="docExpiry" type="date" required class="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-700 focus:bg-white">
+                    </label>
+                    <div class="space-y-2 text-sm text-slate-700">
+                        <span>&nbsp;</span>
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" id="cancelModal" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+                            <button type="submit" class="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Simpan</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <input id="currentDocId" type="hidden" value="">
-        </form>
-        <p id="formError" class="mt-4 text-sm text-rose-600 hidden"></p>
+                <input id="currentDocId" type="hidden" value="">
+            </form>
+            <p id="formError" class="mt-4 text-sm text-rose-600 hidden"></p>
+        </div>
     </div>
 </div>
 
-<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4 py-6">
-    <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
-        <p class="text-xl font-semibold text-slate-900 mb-3">Hapus Identitas?</p>
-        <p class="text-sm text-slate-600 mb-6">Tindakan ini tidak dapat dibatalkan. Pastikan dokumen yang dihapus tidak lagi diperlukan.</p>
-        <div class="flex justify-end gap-3">
-            <button id="cancelDelete" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
-            <button id="confirmDelete" class="rounded-full bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">Hapus</button>
+<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 px-4 py-6" style="display: none;">
+    <div class="flex w-full h-full items-center justify-center">
+        <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl shadow-slate-900/10">
+            <p class="text-xl font-semibold text-slate-900 mb-3">Hapus Identitas?</p>
+            <p class="text-sm text-slate-600 mb-6">Tindakan ini tidak dapat dibatalkan. Pastikan dokumen yang dihapus tidak lagi diperlukan.</p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelDelete" class="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+                <button id="confirmDelete" class="rounded-full bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">Hapus</button>
+            </div>
         </div>
     </div>
 </div>
@@ -111,6 +115,7 @@
     const identityForm = document.getElementById('identityForm');
     const modalTitle = document.getElementById('modalTitle');
     const docNumber = document.getElementById('docNumber');
+    const docNumberLabel = document.getElementById('docNumberLabel');
     const docType = document.getElementById('docType');
     const docCountry = document.getElementById('docCountry');
     const docIssued = document.getElementById('docIssued');
@@ -166,15 +171,19 @@
 
     function openModal() {
         identityModal.classList.remove('hidden');
+        identityModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
     function closeModalWindow() {
         identityModal.classList.add('hidden');
+        identityModal.style.display = 'none';
         formError.classList.add('hidden');
         identityForm.reset();
         currentDocId.value = '';
         docNumber.removeAttribute('disabled');
+        docNumber.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        docNumberLabel.classList.remove('opacity-60');
         document.body.style.overflow = '';
     }
 
@@ -183,6 +192,8 @@
         identityForm.reset();
         currentDocId.value = '';
         docNumber.removeAttribute('disabled');
+        docNumber.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        docNumberLabel.classList.remove('opacity-60');
         openModal();
     }
 
@@ -199,18 +210,22 @@
         docExpiry.value = item.expiry;
         currentDocId.value = item.id;
         docNumber.setAttribute('disabled', 'disabled');
+        docNumber.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        docNumberLabel.classList.add('opacity-60');
         openModal();
     }
 
     function openDeleteModal(event) {
         deletingId = Number(event.target.dataset.id);
         deleteModal.classList.remove('hidden');
+        deleteModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
     function closeDeleteModal() {
         deletingId = null;
         deleteModal.classList.add('hidden');
+        deleteModal.style.display = 'none';
         document.body.style.overflow = '';
     }
 
