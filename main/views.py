@@ -1370,3 +1370,274 @@ def mitra_hapus(request, email_mitra):
         request.session['success_msg'] = f'Mitra "{nama}" berhasil dihapus{cascade_info}.'
 
     return redirect('kelola_mitra')
+
+# laporan
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAMBAHAN views.py — LAPORAN TRANSAKSI
+# Tempel ke bagian DUMMY DATA (atas) dan VIEWS (bawah) di views.py yang sudah ada
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── DUMMY DATA TAMBAHAN ──────────────────────────────────────────────────────
+# Letakkan bersama DUMMY_KLAIM, DUMMY_MEMBER_INFO, dll. di atas file
+
+DUMMY_TRANSFER = [
+    {
+        'email_member_1': 'john@example.com',
+        'email_member_2': 'siti.nurhaliza@email.com',
+        'jumlah': 5000,
+        'catatan': 'Transfer untuk liburan bersama',
+        'timestamp': '2024-10-10 09:00:00',
+    },
+    {
+        'email_member_1': 'eka.putra@email.com',
+        'email_member_2': 'john@example.com',
+        'jumlah': 3500,
+        'catatan': None,
+        'timestamp': '2024-11-05 14:30:00',
+    },
+    {
+        'email_member_1': 'budi.santoso@email.com',
+        'email_member_2': 'dewi.lestari@email.com',
+        'jumlah': 10000,
+        'catatan': 'Hadiah ulang tahun',
+        'timestamp': '2024-12-20 18:00:00',
+    },
+    {
+        'email_member_1': 'siti.nurhaliza@email.com',
+        'email_member_2': 'budi.santoso@email.com',
+        'jumlah': 2500,
+        'catatan': None,
+        'timestamp': '2025-01-08 11:15:00',
+    },
+    {
+        'email_member_1': 'dewi.lestari@email.com',
+        'email_member_2': 'eka.putra@email.com',
+        'jumlah': 7500,
+        'catatan': 'Bagi-bagi miles',
+        'timestamp': '2025-02-14 20:00:00',
+    },
+]
+
+DUMMY_REDEEM = [
+    {
+        'email_member': 'john@example.com',
+        'kode_hadiah': 'HDH-001',
+        'nama_hadiah': 'Upgrade Business Class',
+        'miles': 25000,
+        'timestamp': '2024-10-15 10:00:00',
+    },
+    {
+        'email_member': 'siti.nurhaliza@email.com',
+        'kode_hadiah': 'HDH-002',
+        'nama_hadiah': 'Voucher Hotel Premium',
+        'miles': 15000,
+        'timestamp': '2024-11-22 13:45:00',
+    },
+    {
+        'email_member': 'eka.putra@email.com',
+        'kode_hadiah': 'HDH-001',
+        'nama_hadiah': 'Upgrade Business Class',
+        'miles': 25000,
+        'timestamp': '2025-01-20 09:30:00',
+    },
+    {
+        'email_member': 'budi.santoso@email.com',
+        'kode_hadiah': 'HDH-003',
+        'nama_hadiah': 'Voucher Makan Foodies',
+        'miles': 8000,
+        'timestamp': '2025-02-05 17:00:00',
+    },
+    {
+        'email_member': 'dewi.lestari@email.com',
+        'kode_hadiah': 'HDH-004',
+        'nama_hadiah': 'Voucher Belanja ShopIndo',
+        'miles': 14000,
+        'timestamp': '2025-03-10 12:00:00',
+    },
+]
+
+DUMMY_BELI_PACKAGE = [
+    {
+        'email_member': 'john@example.com',
+        'id_award_miles_package': 'AMP-001',
+        'jumlah_miles': 50000,
+        'harga': '2,500,000',
+        'timestamp': '2024-09-01 08:00:00',
+    },
+    {
+        'email_member': 'siti.nurhaliza@email.com',
+        'id_award_miles_package': 'AMP-002',
+        'jumlah_miles': 100000,
+        'harga': '4,500,000',
+        'timestamp': '2024-10-10 09:30:00',
+    },
+    {
+        'email_member': 'eka.putra@email.com',
+        'id_award_miles_package': 'AMP-003',
+        'jumlah_miles': 200000,
+        'harga': '8,000,000',
+        'timestamp': '2024-12-05 15:00:00',
+    },
+    {
+        'email_member': 'budi.santoso@email.com',
+        'id_award_miles_package': 'AMP-001',
+        'jumlah_miles': 50000,
+        'harga': '2,500,000',
+        'timestamp': '2025-01-18 11:00:00',
+    },
+    {
+        'email_member': 'dewi.lestari@email.com',
+        'id_award_miles_package': 'AMP-003',
+        'jumlah_miles': 200000,
+        'harga': '8,000,000',
+        'timestamp': '2025-03-01 10:15:00',
+    },
+]
+
+# ─── DUMMY BAR CHART DATA ─────────────────────────────────────────────────────
+# Volume transaksi per bulan (semua jenis digabung) — untuk chart di template
+
+DUMMY_BAR_DATA_RAW = [
+    ('Jan', 42), ('Feb', 58), ('Mar', 33), ('Apr', 71),
+    ('Mei', 52), ('Jun', 85), ('Jul', 64), ('Agu', 90),
+    ('Sep', 47), ('Okt', 73), ('Nov', 60), ('Des', 95),
+]
+
+COLORS_BAR = [
+    'rgba(96,165,250,0.7)',  'rgba(167,139,250,0.6)', 'rgba(96,165,250,0.6)',
+    'rgba(251,191,36,0.6)',  'rgba(52,211,153,0.6)',  'rgba(96,165,250,0.8)',
+    'rgba(167,139,250,0.6)', 'rgba(52,211,153,0.7)',  'rgba(251,191,36,0.6)',
+    'rgba(96,165,250,0.7)',  'rgba(167,139,250,0.6)', 'rgba(52,211,153,0.8)',
+]
+
+
+# ─── VIEW ─────────────────────────────────────────────────────────────────────
+# Letakkan bersama view-view lain di bagian bawah file
+
+def laporan_transaksi(request):
+    """Halaman laporan transaksi — hanya bisa diakses staf."""
+    role = request.session.get('role')
+    if not role:
+        return redirect('login')
+    if role != 'staf':
+        return redirect('dashboard')
+
+    # ── Filter params ──────────────────────────────────────────────────────────
+    search     = request.GET.get('search', '').strip().lower()
+    tgl_dari   = request.GET.get('tgl_dari', '').strip()    # format: YYYY-MM-DD
+    tgl_sampai = request.GET.get('tgl_sampai', '').strip()
+    active_tab = request.GET.get('tab', 'klaim')
+
+    # ── Helper: filter berdasarkan search + tanggal ────────────────────────────
+    def filter_by_date(item, field='timestamp'):
+        ts = item.get(field, '')[:10]   # ambil bagian tanggal saja (YYYY-MM-DD)
+        if tgl_dari   and ts < tgl_dari:   return False
+        if tgl_sampai and ts > tgl_sampai: return False
+        return True
+
+    def member_match(email):
+        if not search:
+            return True
+        info = DUMMY_MEMBER_INFO.get(email, {})
+        nama = info.get('nama', '').lower()
+        return search in email.lower() or search in nama
+
+    # ── Filter KLAIM ───────────────────────────────────────────────────────────
+    klaim_filtered = [
+        k for k in DUMMY_KLAIM
+        if member_match(k['email_member']) and filter_by_date(k)
+    ]
+    klaim_enriched = enrich_klaim(klaim_filtered)
+
+    # ── Filter TRANSFER ────────────────────────────────────────────────────────
+    transfer_filtered = [
+        t for t in DUMMY_TRANSFER
+        if (member_match(t['email_member_1']) or member_match(t['email_member_2']))
+        and filter_by_date(t)
+    ]
+
+    # ── Filter REDEEM ──────────────────────────────────────────────────────────
+    redeem_filtered = [
+        r for r in DUMMY_REDEEM
+        if member_match(r['email_member']) and filter_by_date(r)
+    ]
+
+    # ── Filter BELI PACKAGE ────────────────────────────────────────────────────
+    beli_filtered = [
+        b for b in DUMMY_BELI_PACKAGE
+        if member_match(b['email_member']) and filter_by_date(b)
+    ]
+
+    # ── Stats cards ────────────────────────────────────────────────────────────
+    total_miles_klaim    = sum(5000 for k in klaim_enriched if k['status_penerimaan'] == 'Disetujui')   # placeholder
+    total_miles_transfer = sum(t['jumlah'] for t in transfer_filtered)
+    total_miles_redeem   = sum(r['miles'] for r in redeem_filtered)
+    total_miles_dibeli   = sum(b['jumlah_miles'] for b in beli_filtered)
+
+    # Redeem terbanyak
+    if redeem_filtered:
+        from collections import Counter
+        redeem_top = Counter(r['nama_hadiah'] for r in redeem_filtered).most_common(1)[0][0]
+    else:
+        redeem_top = '—'
+
+    # Paket terlaris
+    if beli_filtered:
+        from collections import Counter
+        paket_top = Counter(b['id_award_miles_package'] for b in beli_filtered).most_common(1)[0][0]
+    else:
+        paket_top = '—'
+
+    klaim_setuju = sum(1 for k in klaim_enriched if k['status_penerimaan'] == 'Disetujui')
+
+    # Revenue dari pembelian paket (hapus pemisah ribuan lalu jumlahkan)
+    try:
+        revenue_total = sum(
+            int(b['harga'].replace(',', '').replace('.', ''))
+            for b in beli_filtered
+        )
+        revenue_str = f"{revenue_total:,}".replace(',', '.')
+    except Exception:
+        revenue_str = '0'
+
+    stats = {
+        'total_klaim':    len(klaim_enriched),
+        'total_transfer': len(transfer_filtered),
+        'total_redeem':   len(redeem_filtered),
+        'total_beli':     len(beli_filtered),
+        'miles_klaim':    f"{total_miles_klaim:,}",
+        'miles_transfer': f"{total_miles_transfer:,}",
+        'miles_redeem':   f"{total_miles_redeem:,}",
+        'miles_dibeli':   f"{total_miles_dibeli:,}",
+        'revenue':        revenue_str,
+        'redeem_top':     redeem_top,
+        'paket_top':      paket_top,
+        'klaim_setuju':   f"{klaim_setuju} klaim",
+    }
+
+    # ── Bar chart data ─────────────────────────────────────────────────────────
+    max_val = max(v for _, v in DUMMY_BAR_DATA_RAW) or 1
+    bar_data = [
+        {
+            'label': label,
+            'val':   val,
+            'pct':   round(val / max_val * 100),
+            'color': COLORS_BAR[i % len(COLORS_BAR)],
+        }
+        for i, (label, val) in enumerate(DUMMY_BAR_DATA_RAW)
+    ]
+
+    context = {
+        'role':            'staf',
+        'search':          request.GET.get('search', ''),
+        'tgl_dari':        tgl_dari,
+        'tgl_sampai':      tgl_sampai,
+        'active_tab':      active_tab,
+        'stats':           stats,
+        'bar_data':        bar_data,
+        'klaim_list':      klaim_enriched,
+        'transfer_list':   transfer_filtered,
+        'redeem_list':     redeem_filtered,
+        'beli_list':       beli_filtered,
+    }
+    return render(request, 'laporan_transaksi.html', context)
