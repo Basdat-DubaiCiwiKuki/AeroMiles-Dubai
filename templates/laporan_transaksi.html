@@ -101,6 +101,123 @@
         </div>
       </div>
 
+     
+      
+      <!-- TOP 10 MEMBER -->
+      <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden mb-8" style="background:rgba(255,255,255,0.03);">
+      
+        <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Leaderboard</p>
+            <h2 class="text-white font-semibold text-lg">Top 5 Member Teraktif</h2>
+          </div>
+          <span class="text-xs uppercase tracking-widest text-white opacity-30">Total Transaksi (Klaim + Transfer + Redeem + Beli)</span>
+        </div>
+      
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white border-opacity-10">
+                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal w-12">#</th>
+                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
+                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Klaim</th>
+                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Transfer</th>
+                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Redeem</th>
+                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Beli Paket</th>
+                <th class="text-right px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white divide-opacity-5">
+              {% for m in top_member_list %}
+              <tr class="hover:bg-white hover:bg-opacity-5 transition">
+      
+                <!-- Rank badge -->
+                <td class="px-8 py-4">
+                  {% if m.rank == 1 %}
+                    <span class="text-lg">🥇</span>
+                  {% elif m.rank == 2 %}
+                    <span class="text-lg">🥈</span>
+                  {% elif m.rank == 3 %}
+                    <span class="text-lg">🥉</span>
+                  {% else %}
+                    <span class="text-white opacity-30 font-semibold text-sm">{{ m.rank }}</span>
+                  {% endif %}
+                </td>
+      
+                <!-- Nama & Email -->
+                <td class="px-4 py-4">
+                  <div class="text-white font-medium">{{ m.nama }}</div>
+                  <div class="text-white opacity-30 text-xs">{{ m.email }}</div>
+                </td>
+      
+                <!-- Klaim -->
+                <td class="px-4 py-4 text-center">
+                  {% if m.jml_klaim %}
+                    <span style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);"
+                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_klaim }}</span>
+                  {% else %}
+                    <span class="text-white opacity-20 text-xs">—</span>
+                  {% endif %}
+                </td>
+      
+                <!-- Transfer -->
+                <td class="px-4 py-4 text-center">
+                  {% if m.jml_transfer %}
+                    <span style="background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.25);"
+                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_transfer }}</span>
+                  {% else %}
+                    <span class="text-white opacity-20 text-xs">—</span>
+                  {% endif %}
+                </td>
+      
+                <!-- Redeem -->
+                <td class="px-4 py-4 text-center">
+                  {% if m.jml_redeem %}
+                    <span style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);"
+                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_redeem }}</span>
+                  {% else %}
+                    <span class="text-white opacity-20 text-xs">—</span>
+                  {% endif %}
+                </td>
+      
+                <!-- Beli Paket -->
+                <td class="px-4 py-4 text-center">
+                  {% if m.jml_beli %}
+                    <span style="background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25);"
+                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_beli }}</span>
+                  {% else %}
+                    <span class="text-white opacity-20 text-xs">—</span>
+                  {% endif %}
+                </td>
+      
+                <!-- Total (progress bar mini) -->
+                <td class="px-8 py-4 text-right">
+                  <div class="flex items-center justify-end gap-3">
+                    <!-- mini progress bar -->
+                    <div class="w-20 h-1.5 rounded-full" style="background:rgba(255,255,255,0.08);">
+                      {% with pct=m.total|floatformat:0 %}
+                      <div class="h-1.5 rounded-full"
+                           style="width:{% widthratio m.total top_member_list.0.total 100 %}%;
+                                  background: linear-gradient(90deg,#60a5fa,#a78bfa);"></div>
+                      {% endwith %}
+                    </div>
+                    <span class="text-white font-bold text-sm">{{ m.total }}</span>
+                  </div>
+                </td>
+      
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="py-16 text-center text-white opacity-30 text-sm">
+                  Belum ada data transaksi.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- TABS -->
       <div class="flex gap-2 mb-6">
         <button id="tab-btn-klaim" onclick="switchTab('klaim')"

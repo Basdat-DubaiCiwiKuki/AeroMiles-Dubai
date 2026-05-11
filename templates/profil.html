@@ -21,8 +21,28 @@
                 </h1>
             </div>
 
-            <!-- Notifikasi -->
-            <div id="notif" class="hidden mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm"></div>
+            <!-- Toast Notification -->
+            <div class="fixed top-24 right-6 z-50 space-y-3">
+
+                {% if success_msg %}
+                <div class="toast transition-all duration-500 ease-in-out bg-green-500/20 text-green-200 border border-green-400/30 px-5 py-3 rounded-xl backdrop-blur-md shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span>✅</span>
+                        <span>{{ success_msg }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if error_msg %}
+                <div class="toast bg-red-500/20 text-red-200 border border-red-400/30 px-5 py-3 rounded-xl backdrop-blur-md shadow-lg transition-all duration-500">
+                    <div class="flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>{{ error_msg }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
 
             <!-- Data Profil Card -->
             <form method="post" action="{% url 'profil_update' %}">
@@ -241,12 +261,21 @@
 </div>
 
 <script>
-function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
-}
-function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
-}
-</script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+    
+    // 🔥 AUTO DISMISS TOAST
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-10px)';
+        });
+    }, 2500);
+    </script>
 
 {% endblock %}

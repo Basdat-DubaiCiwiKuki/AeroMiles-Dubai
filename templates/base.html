@@ -1,40 +1,185 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroMiles</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+    {% load static %}
+    {% load static %}
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AeroMiles</title>
+    
+        <!-- INTER + PLAYFAIR -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    
+        <style>
+            .nav-item {
+                color: white;
+                text-transform: uppercase;
+                padding: 8px 16px;
+                border-radius: 9999px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-item:hover {
+                background: rgba(255,255,255,0.15);
+                backdrop-filter: blur(10px);
+            }
+
+            .nav-active {
+                background: rgba(255,255,255,0.2);
+                backdrop-filter: blur(16px);
+                box-shadow: 
+                    0 4px 20px rgba(0,0,0,0.25),
+                    inset 0 1px 0 rgba(255,255,255,0.4);
+            }
+
+            /* BODY = INTER */
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+    
+            /* HEADING = PLAYFAIR */
+            h1, h2, h3 {
+                font-family: 'Playfair Display', serif;
+                font-style: italic;
+            }
+        </style>
+    
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+
 <body class="bg-gray-50">
 
     <!-- NAVBAR -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-center transition-all duration-300 bg-transparent">
+<nav class="fixed top-4 left-6 right-6 z-50 flex justify-center">
+    <div class="flex items-center gap-1 px-2 py-2 rounded-full
+        bg-white/10 backdrop-blur-2xl border border-white/25
+        shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1.5px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(0,0,0,0.15)]
+        ring-1 ring-inset ring-white/10">
 
-        <div class="flex items-center gap-8 text-sm font-medium tracking-wider">
-            {% if role == 'member' %}
-                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
-                <a href="/identitas/" class="text-white hover:opacity-60 transition uppercase">Identitas Saya</a>
-                <a href="/klaim/" class="text-white hover:opacity-60 transition uppercase">Klaim Miles</a>
-                <a href="/transfer/" class="text-white hover:opacity-60 transition uppercase">Transfer Miles</a>
-                <a href="/redeem/" class="text-white hover:opacity-60 transition uppercase">Redeem Hadiah</a>
-                <a href="/package/" class="text-white hover:opacity-60 transition uppercase">Beli Package</a>
-                <a href="/tier/" class="text-white hover:opacity-60 transition uppercase">Info Tier</a>
-                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
-                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
-            {% elif role == 'staf' %}
-                <a href="/dashboard/" class="text-white hover:opacity-60 transition uppercase">Dashboard</a>
-                <a href="/kelola-member/" class="text-white hover:opacity-60 transition uppercase">Kelola Member</a>
-                <a href="/kelola-klaim/" class="text-white hover:opacity-60 transition uppercase">Kelola Klaim</a>
-                <a href="/kelola-hadiah/" class="text-white hover:opacity-60 transition uppercase">Kelola Hadiah</a>
-                <a href="/kelola-mitra/" class="text-white hover:opacity-60 transition uppercase">Kelola Mitra</a>
-                <a href="/laporan-transaksi/" class="text-white hover:opacity-60 transition uppercase">Laporan</a>
-                <a href="/profil/" class="text-white hover:opacity-60 transition uppercase">Profil</a>
-                <a href="/logout/" class="text-white opacity-40 hover:opacity-60 transition uppercase">Logout</a>
-            {% else %}
-            {% endif %}
-        </div>
-    </nav>
+        {% if role == 'member' %}
+
+            <a href="/dashboard/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/dashboard/' %}nav-active{% endif %}">
+            Dashboard
+            </a>
+
+            <a href="/identitas/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/identitas/' %}nav-active{% endif %}">
+            Identitas Saya
+            </a>
+
+            <a href="/klaim/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/klaim/' %}nav-active{% endif %}">
+            Klaim Miles
+            </a>
+
+            <a href="/transfer/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/transfer/' %}nav-active{% endif %}">
+            Transfer Miles
+            </a>
+
+            <a href="/redeem/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/redeem/' %}nav-active{% endif %}">
+            Redeem Hadiah
+            </a>
+
+            <a href="/package/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/package/' %}nav-active{% endif %}">
+            Beli Package
+            </a>
+
+            <a href="/tier/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/tier/' %}nav-active{% endif %}">
+            Info Tier
+            </a>
+
+            <a href="/profil/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/profil/' %}nav-active{% endif %}">
+            Profil
+            </a>
+
+            <a href="/logout/" 
+            class="text-white/35 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/10 hover:text-white/60">
+            Logout
+            </a>
+
+        {% elif role == 'staf' %}
+
+            <a href="/dashboard/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/dashboard/' %}nav-active{% endif %}">
+            Dashboard
+            </a>
+
+            <a href="/kelola-member/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/kelola-member/' %}nav-active{% endif %}">
+            Kelola Member
+            </a>
+
+            <a href="/kelola-klaim/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/kelola-klaim/' %}nav-active{% endif %}">
+            Kelola Klaim
+            </a>
+
+            <a href="/kelola-hadiah/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/kelola-hadiah/' %}nav-active{% endif %}">
+            Kelola Hadiah
+            </a>
+
+            <a href="/kelola-mitra/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/kelola-mitra/' %}nav-active{% endif %}">
+            Kelola Mitra
+            </a>
+
+            <a href="/laporan-transaksi/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/laporan-transaksi/' %}nav-active{% endif %}">
+            Laporan
+            </a>
+
+            <a href="/profil/" 
+            class="text-white/90 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/20 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]
+            {% if request.path == '/profil/' %}nav-active{% endif %}">
+            Profil
+            </a>
+
+            <a href="/logout/" 
+            class="text-white/35 uppercase text-sm tracking-wide px-4 py-1.5 rounded-full transition-all duration-200
+            hover:bg-white/10 hover:text-white/60">
+            Logout
+            </a>
+
+        {% endif %}
+    </div>
+</nav>
 
     <!-- CONTENT -->
     <main>

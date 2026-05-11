@@ -1,5 +1,32 @@
 from django.shortcuts import render, redirect
 
+import psycopg2
+from django.conf import settings
+
+import os
+import dj_database_url
+
+def get_connection():
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        config = dj_database_url.parse(database_url)
+        return psycopg2.connect(
+            dbname=config['NAME'],
+            user=config['USER'],
+            password=config['PASSWORD'],
+            host=config['HOST'],
+            port=config['PORT'],
+        )
+    else:
+        return psycopg2.connect(
+            dbname="aeromiles",
+            user="postgres",
+            password="your_local_password",
+            host="localhost",
+            port="5432"
+        )
+
+
 # ─── DUMMY DATA ───────────────────────────────────────────────────────────────
 
 DUMMY_BANDARA = [
@@ -271,26 +298,53 @@ def kelola_member(request):
 
 # ─── AUTH VIEWS ───────────────────────────────────────────────────────────────
 
+from django.db import connection
+
 def login_page(request):
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
-        password = request.POST.get('password', '').strip()
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
-        if email == 'john@example.com' and password == 'password':
+        cur = connection.cursor()
+
+        # cek user
+        cur.execute("""
+            SELECT password
+            FROM pengguna
+            WHERE email = %s
+        """, [email])
+
+        user = cur.fetchone()
+
+        if not user or user[0] != password:
+            cur.close()
+            return render(request, 'login.html', {
+                'error': 'Email atau password salah',
+                'role': 'guest'
+            })
+
+        # cek role
+        cur.execute("SELECT 1 FROM member WHERE email = %s", [email])
+        is_member = cur.fetchone()
+
+        cur.execute("SELECT 1 FROM staf WHERE email = %s", [email])
+        is_staf = cur.fetchone()
+
+        cur.close()
+
+        request.session['email'] = email
+
+        if is_member:
             request.session['role'] = 'member'
-            request.session['email'] = email
-            request.session['nama'] = 'Mr. John William Doe'
-            return redirect('dashboard')
-        elif email == 'admin@aeromiles.com' and password == 'password':
+        elif is_staf:
             request.session['role'] = 'staf'
-            request.session['email'] = email
-            request.session['nama'] = 'Mr. Admin Aero'
-            return redirect('dashboard')
         else:
             return render(request, 'login.html', {
-                'role': 'guest',
-                'error': 'Email atau password salah!'
+                'error': 'Role tidak ditemukan',
+                'role': 'guest'
             })
+
+        return redirect('dashboard')
 
     return render(request, 'login.html', {'role': 'guest'})
 
@@ -300,20 +354,268 @@ def logout_view(request):
     return redirect('login')
 
 
+from django.db import connection, transaction
+from datetime import date
+from django.shortcuts import render, redirect
 
 def register(request):
-    return render(request, 'register.html', {'role': 'guest'})
+    if request.method == 'POST':
+        role = request.POST.get('role')
+
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        konfirmasi = request.POST.get('konfirmasi_password', '').strip()
+
+        first_name  = request.POST.get('first_name', '').strip()
+        middle_name = request.POST.get('middle_name', '').strip()
+        last_name   = request.POST.get('last_name', '').strip()
+        mobile_number = request.POST.get('mobile_number', '').strip()
+
+        first_mid = f"{first_name} {middle_name}".strip() if middle_name else first_name
+
+        # ========================
+        # VALIDATION
+        # ========================
+        if not email:
+            error = "Email wajib diisi."
+        elif not password:
+            error = "Password wajib diisi."
+        elif not first_name:
+            error = "Nama depan wajib diisi."
+        elif not last_name:
+            error = "Nama belakang wajib diisi."
+        elif not mobile_number:
+            error = "Nomor HP wajib diisi."
+        else:
+            error = None
+
+        if error:
+            request.session['error_msg'] = error
+            return redirect('register')
+
+        if password != konfirmasi:
+            request.session['error_msg'] = 'Konfirmasi password tidak cocok.'
+            return redirect('register')
+
+        cur = connection.cursor()
+
+        # cek email
+        cur.execute("SELECT 1 FROM pengguna WHERE email = %s", [email])
+        if cur.fetchone():
+            cur.close()
+            request.session['error_msg'] = 'Email sudah terdaftar.'
+            return redirect('register')
+
+        # cek nomor HP
+        cur.execute("SELECT 1 FROM pengguna WHERE mobile_number = %s", [mobile_number])
+        if cur.fetchone():
+            cur.close()
+            request.session['error_msg'] = 'Nomor HP sudah digunakan.'
+            return redirect('register')
+
+        try:
+            with transaction.atomic():
+
+                # ========================
+                # INSERT PENGGUNA
+                # ========================
+                cur.execute("""
+                    INSERT INTO pengguna (
+                        email, password, salutation,
+                        first_mid_name, last_name,
+                        country_code, mobile_number,
+                        tanggal_lahir, kewarganegaraan
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    email,
+                    password,
+                    request.POST.get('salutation'),
+                    first_mid,
+                    last_name,
+                    request.POST.get('country_code'),
+                    mobile_number,
+                    request.POST.get('tanggal_lahir'),
+                    request.POST.get('kewarganegaraan'),
+                ])
+
+                # ========================
+                # ROLE: MEMBER
+                # ========================
+                if role == "member":
+
+                    # generate nomor_member (MXXXX)
+                    cur.execute("SELECT MAX(nomor_member) FROM member")
+                    last = cur.fetchone()[0]
+
+                    if last:
+                        number = int(last[1:]) + 1
+                    else:
+                        number = 1
+
+                    nomor_member = f"M{number:04d}"
+
+                    # ambil tier terendah (sesuai soal)
+                    cur.execute("""
+                        SELECT id_tier 
+                        FROM tier 
+                        ORDER BY minimal_tier_miles ASC 
+                        LIMIT 1
+                    """)
+                    tier_id = cur.fetchone()[0]
+
+                    # insert member
+                    cur.execute("""
+                        INSERT INTO member (
+                            email, nomor_member, tanggal_bergabung, id_tier
+                        )
+                        VALUES (%s, %s, %s, %s)
+                    """, [
+                        email,
+                        nomor_member,
+                        date.today(),
+                        tier_id
+                    ])
+
+                # ========================
+                # ROLE: STAF
+                # ========================
+                elif role == "staf":
+
+                    kode_maskapai = request.POST.get('kode_maskapai')
+
+                    if not kode_maskapai:
+                        raise Exception("Kode maskapai wajib diisi untuk staf")
+
+                    # generate id_staf (SXXXX)
+                    cur.execute("SELECT MAX(id_staf) FROM staf")
+                    last = cur.fetchone()[0]
+
+                    if last:
+                        number = int(last[1:]) + 1
+                    else:
+                        number = 1
+
+                    id_staf = f"S{number:04d}"
+
+                    # insert staf
+                    cur.execute("""
+                        INSERT INTO staf (email, id_staf, kode_maskapai)
+                        VALUES (%s, %s, %s)
+                    """, [
+                        email,
+                        id_staf,
+                        kode_maskapai
+                    ])
+
+                else:
+                    raise Exception("Role tidak valid")
+
+        except Exception as e:
+            if 'unique' in str(e).lower():
+                request.session['error_msg'] = 'Email / nomor HP / ID sudah digunakan.'
+            else:
+                request.session['error_msg'] = str(e)
+            return redirect('register')
+
+        finally:
+            cur.close()
+
+        request.session['success_msg'] = 'Registrasi berhasil. Silakan login.'
+        return redirect('login')
+
+    return render(request, 'register.html', {
+        'role': 'guest',
+        'success_msg': request.session.pop('success_msg', None),
+        'error_msg': request.session.pop('error_msg', None),
+    })
 
 
 # ─── MAIN VIEWS ───────────────────────────────────────────────────────────────
-
 def dashboard(request):
     role = request.session.get('role')
     if not role:
         return redirect('login')
-    if role == 'staf':
-        return render(request, 'dashboard_staf.html', {'role': 'staf'})
-    return render(request, 'dashboard.html', {'role': 'member'})
+
+    email = request.session.get('email')
+    cur = connection.cursor()
+
+    if role == 'member':
+        cur.execute("""
+            SELECT 
+                p.salutation,
+                p.first_mid_name,
+                p.last_name,
+                p.email,
+                p.kewarganegaraan,
+                p.country_code,
+                p.mobile_number,
+                p.tanggal_lahir,
+                m.nomor_member,
+                m.tanggal_bergabung,
+                m.award_miles,
+                t.nama
+            FROM pengguna p
+            JOIN member m ON p.email = m.email
+            JOIN tier t ON m.id_tier = t.id_tier
+            WHERE p.email = %s
+        """, [email])
+
+        row = cur.fetchone()
+        cur.close()
+
+        if not row:
+            return redirect('login')
+
+        member = {
+            'nama_lengkap': f"{row[0]} {row[1]} {row[2]}",
+            'email': row[3],
+            'kewarganegaraan': row[4],
+            'telepon': f"{row[5]}{row[6]}",
+            'tanggal_lahir': row[7],
+            'nomor': row[8],
+            'tanggal_bergabung': row[9],
+            'award_miles': row[10],
+            'tier': row[11],
+            'total_miles': row[10]
+        }
+
+        return render(request, 'dashboard.html', {
+            'role': 'member',
+            'member': member
+        })
+
+    elif role == 'staf':
+        cur.execute("""
+            SELECT 
+                s.id_staf,
+                m.nama_maskapai,
+                p.email
+            FROM staf s
+            JOIN maskapai m ON s.kode_maskapai = m.kode_maskapai
+            JOIN pengguna p ON s.email = p.email
+            WHERE s.email = %s
+        """, [email])
+
+        row = cur.fetchone()
+        cur.close()
+
+        if not row:
+            return redirect('login')
+
+        staf = {
+            'id': row[0],
+            'maskapai': row[1],
+            'email': row[2]
+        }
+
+        return render(request, 'dashboard_staf.html', {
+            'role': 'staf',
+            'staf': staf
+        })
+
+    else:
+        return redirect('login')
 
 
 # ─── DUMMY DATA PROFIL ───────────────────────────────────────────────────────
@@ -362,7 +664,90 @@ DUMMY_STAFS = {
 
 
 # ─── VIEWS PROFIL ─────────────────────────────────────────────────────────────
-# Ganti fungsi profil() yang sudah ada dengan versi ini:
+# helper untuk validasi edit profil
+import re
+from datetime import datetime
+
+def validate_profil_data(data):
+    salutation      = data.get('salutation', '').strip()
+    first_name      = data.get('first_name', '').strip()
+    middle_name     = data.get('middle_name', '').strip()
+    last_name       = data.get('last_name', '').strip()
+    kewarganegaraan = data.get('kewarganegaraan', '').strip()
+    country_code    = data.get('country_code', '').strip()
+    mobile_number   = data.get('mobile_number', '').strip()
+    tanggal_lahir   = data.get('tanggal_lahir', '').strip()
+
+    # wajib isi
+    if not all([salutation, first_name, last_name, kewarganegaraan,
+                country_code, mobile_number, tanggal_lahir]):
+        return False, 'Semua field wajib diisi.'
+
+    # nama
+    if not re.match(r"^[A-Za-z\s]+$", first_name):
+        return False, 'Nama depan hanya boleh huruf.'
+
+    if last_name and not re.match(r"^[A-Za-z\s]+$", last_name):
+        return False, 'Nama belakang hanya boleh huruf.'
+
+    # country code
+    if not re.match(r"^\+\d{1,4}$", country_code):
+        return False, 'Kode negara harus format +62.'
+
+    # nomor hp
+    if not mobile_number.isdigit():
+        return False, 'Nomor HP hanya boleh angka.'
+
+    if len(mobile_number) < 8 or len(mobile_number) > 15:
+        return False, 'Nomor HP harus 8–15 digit.'
+
+    # tanggal lahir
+    try:
+        tgl = datetime.strptime(tanggal_lahir, "%Y-%m-%d")
+        today = datetime.today()
+
+        if tgl > today:
+            return False, 'Tanggal lahir tidak boleh di masa depan.'
+
+        umur = (today - tgl).days // 365
+
+        if umur < 10:
+            return False, 'Umur minimal 10 tahun.'
+
+        if umur > 120:
+            return False, 'Umur tidak valid.'
+
+    except:
+        return False, 'Format tanggal tidak valid.'
+
+    return True, {
+        'salutation': salutation,
+        'first_mid': f"{first_name} {middle_name}".strip() if middle_name else first_name,
+        'last_name': last_name,
+        'kewarganegaraan': kewarganegaraan,
+        'country_code': country_code,
+        'mobile_number': mobile_number,
+        'tanggal_lahir': tanggal_lahir
+    }
+
+# helper untuk validasi edit password
+def validate_password(password_lama, password_baru, konfirmasi, db_password):
+    if password_lama != db_password:
+        return False, 'Password lama tidak sesuai.'
+
+    if not password_baru:
+        return False, 'Password baru tidak boleh kosong.'
+
+    if password_baru != konfirmasi:
+        return False, 'Konfirmasi password tidak cocok.'
+
+    if len(password_baru) < 8:
+        return False, 'Password minimal 8 karakter.'
+
+    return True, None
+
+from django.db import connection
+from django.shortcuts import render, redirect
 
 def profil(request):
     role = request.session.get('role')
@@ -370,27 +755,101 @@ def profil(request):
         return redirect('login')
 
     email = request.session.get('email')
-    user  = DUMMY_USERS.get(email, {})
+    cur = connection.cursor()
 
-    # Ambil data member/staf jika ada
-    member = DUMMY_MEMBERS.get(email) if role == 'member' else None
-    staf   = DUMMY_STAFS.get(email)   if role == 'staf'   else None
+    # ambil data pengguna (INI JADI user)
+    cur.execute("""
+        SELECT 
+            salutation,
+            first_mid_name,
+            last_name,
+            email,
+            country_code,
+            mobile_number,
+            kewarganegaraan,
+            tanggal_lahir
+        FROM pengguna
+        WHERE email = %s
+    """, [email])
 
-    # Flash dari update sebelumnya
-    success_msg = request.session.pop('success_msg', None)
-    error_msg   = request.session.pop('error_msg', None)
+    p = cur.fetchone()
 
-    context = {
-        'role':           role,
-        'user':           user,
-        'member':         member,
-        'staf':           staf,
-        'maskapai_list':  DUMMY_MASKAPAI,   # sudah ada di views.py
-        'success_msg':    success_msg,
-        'error_msg':      error_msg,
+    if not p:
+        cur.close()
+        return redirect('login')
+
+    user = {
+        'salutation': p[0],
+        'first_mid_name': p[1],
+        'last_name': p[2],
+        'email': p[3],
+        'country_code': p[4],
+        'mobile_number': p[5],
+        'kewarganegaraan': p[6],
+        'tanggal_lahir': p[7],
     }
-    return render(request, 'profil.html', context)
 
+    # ================= MEMBER =================
+    if role == 'member':
+        cur.execute("""
+            SELECT nomor_member, tanggal_bergabung
+            FROM member
+            WHERE email = %s
+        """, [email])
+
+        m = cur.fetchone()
+
+        member = {
+            'nomor_member': m[0],
+            'tanggal_bergabung': m[1]
+        } if m else None
+
+        cur.close()
+
+        return render(request, 'profil.html', {
+            'role': 'member',
+            'user': user,
+            'member': member,
+            'success_msg': request.session.pop('success_msg', None),
+            'error_msg': request.session.pop('error_msg', None),
+        })
+
+    # ================= STAF =================
+    elif role == 'staf':
+        cur.execute("""
+            SELECT id_staf, kode_maskapai
+            FROM staf
+            WHERE email = %s
+        """, [email])
+
+        s = cur.fetchone()
+
+        staf = {
+            'id_staf': s[0],
+            'kode_maskapai': s[1]
+        } if s else None
+
+        # dropdown maskapai (buat select kamu)
+        cur.execute("SELECT kode, nama FROM maskapai")
+        maskapai_list = cur.fetchall()
+
+        cur.close()
+
+        return render(request, 'profil.html', {
+            'role': 'staf',
+            'user': user,
+            'staf': staf,
+            'maskapai_list': maskapai_list,
+            'success_msg': request.session.pop('success_msg', None),
+            'error_msg': request.session.pop('error_msg', None),
+        })
+
+    cur.close()
+    return redirect('login')
+
+
+from django.db import connection
+from django.shortcuts import redirect
 
 def profil_update(request):
     role = request.session.get('role')
@@ -401,51 +860,57 @@ def profil_update(request):
         return redirect('profil')
 
     email = request.session.get('email')
-    user  = DUMMY_USERS.get(email)
 
-    if not user:
-        return redirect('login')
+    # VALIDASI
+    valid, result = validate_profil_data(request.POST)
 
-    # Ambil data dari form
-    salutation      = request.POST.get('salutation', '').strip()
-    first_name      = request.POST.get('first_name', '').strip()
-    middle_name     = request.POST.get('middle_name', '').strip()
-    last_name       = request.POST.get('last_name', '').strip()
-    kewarganegaraan = request.POST.get('kewarganegaraan', '').strip()
-    country_code    = request.POST.get('country_code', '').strip()
-    mobile_number   = request.POST.get('mobile_number', '').strip()
-    tanggal_lahir   = request.POST.get('tanggal_lahir', '').strip()
-
-    # Validasi field wajib
-    if not all([salutation, first_name, last_name, kewarganegaraan,
-                country_code, mobile_number, tanggal_lahir]):
-        request.session['error_msg'] = 'Semua field wajib diisi.'
+    if not valid:
+        request.session['error_msg'] = result
         return redirect('profil')
 
-    # Gabungkan first + middle name jadi first_mid_name
-    first_mid = f"{first_name} {middle_name}".strip() if middle_name else first_name
+    data = result
 
-    # Update dummy data (in-memory)
-    user['salutation']      = salutation
-    user['first_mid_name']  = first_mid
-    user['last_name']       = last_name
-    user['kewarganegaraan'] = kewarganegaraan
-    user['country_code']    = country_code
-    user['mobile_number']   = mobile_number
-    user['tanggal_lahir']   = tanggal_lahir
+    cur = connection.cursor()
 
-    # Khusus staf: update kode maskapai
+    # UPDATE pengguna
+    cur.execute("""
+        UPDATE pengguna
+        SET 
+            salutation = %s,
+            first_mid_name = %s,
+            last_name = %s,
+            kewarganegaraan = %s,
+            country_code = %s,
+            mobile_number = %s,
+            tanggal_lahir = %s
+        WHERE email = %s
+    """, [
+        data['salutation'],
+        data['first_mid'],
+        data['last_name'],
+        data['kewarganegaraan'],
+        data['country_code'],
+        data['mobile_number'],
+        data['tanggal_lahir'],
+        email
+    ])
+
+    # khusus staf
     if role == 'staf':
-        staf = DUMMY_STAFS.get(email)
-        if staf:
-            kode_maskapai = request.POST.get('kode_maskapai', '').strip()
-            if kode_maskapai:
-                staf['kode_maskapai'] = kode_maskapai
+        kode_maskapai = request.POST.get('kode_maskapai', '').strip()
+        if kode_maskapai:
+            cur.execute("""
+                UPDATE staf
+                SET kode_maskapai = %s
+                WHERE email = %s
+            """, [kode_maskapai, email])
 
-    # Update nama di session supaya navbar ikut berubah
-    request.session['nama'] = f"{salutation} {first_mid} {last_name}".strip()
+    connection.commit()
+    cur.close()
 
+    request.session['nama'] = f"{data['salutation']} {data['first_mid']} {data['last_name']}"
     request.session['success_msg'] = 'Perubahan berhasil disimpan.'
+
     return redirect('profil')
 
 
@@ -458,34 +923,49 @@ def profil_ubah_password(request):
         return redirect('profil')
 
     email = request.session.get('email')
-    user  = DUMMY_USERS.get(email)
-
-    if not user:
-        return redirect('login')
 
     password_lama  = request.POST.get('password_lama', '')
     password_baru  = request.POST.get('password_baru', '')
     konfirmasi     = request.POST.get('konfirmasi_password', '')
 
-    # Validasi password lama (dummy: plaintext)
-    if password_lama != user['password']:
-        request.session['error_msg'] = 'Password lama tidak sesuai.'
+    cur = connection.cursor()
+
+    # ambil password dari DB
+    cur.execute("""
+        SELECT password
+        FROM pengguna
+        WHERE email = %s
+    """, [email])
+
+    row = cur.fetchone()
+
+    if not row:
+        cur.close()
+        request.session['error_msg'] = 'User tidak ditemukan.'
         return redirect('profil')
 
-    if not password_baru:
-        request.session['error_msg'] = 'Password baru tidak boleh kosong.'
+    # VALIDASI (dipisah 🔥)
+    valid, msg = validate_password(
+        password_lama,
+        password_baru,
+        konfirmasi,
+        row[0]
+    )
+
+    if not valid:
+        cur.close()
+        request.session['error_msg'] = msg
         return redirect('profil')
 
-    if password_baru != konfirmasi:
-        request.session['error_msg'] = 'Konfirmasi password tidak cocok.'
-        return redirect('profil')
+    # UPDATE
+    cur.execute("""
+        UPDATE pengguna
+        SET password = %s
+        WHERE email = %s
+    """, [password_baru, email])
 
-    if len(password_baru) < 8:
-        request.session['error_msg'] = 'Password baru minimal 8 karakter.'
-        return redirect('profil')
-
-    # Update password di dummy data
-    user['password'] = password_baru
+    connection.commit()
+    cur.close()
 
     request.session['success_msg'] = 'Password berhasil diubah.'
     return redirect('profil')
@@ -821,20 +1301,37 @@ def transfer_miles(request):
 
     email = request.session.get('email')
 
+    transfers = Transfer.objects.all().order_by('-timestamp')
+
     riwayat = []
-    for t in DUMMY_TRANSFER:
-        if t['email_dari'] == email:
-            riwayat.append({**t, 'tipe': 'keluar', 'email_lain': t['email_ke']})
-        elif t['email_ke'] == email:
-            riwayat.append({**t, 'tipe': 'masuk', 'email_lain': t['email_dari']})
-    riwayat.sort(key=lambda x: x['timestamp'], reverse=True)
+    for t in transfers:
+        if t.email_member_1_id == email:
+            riwayat.append({
+                'email_dari': t.email_member_1_id,
+                'email_ke': t.email_member_2_id,
+                'jumlah': t.jumlah,
+                'catatan': t.catatan,
+                'timestamp': t.timestamp,
+                'tipe': 'keluar',
+                'email_lain': t.email_member_2_id
+            })
+        elif t.email_member_2_id == email:
+            riwayat.append({
+                'email_dari': t.email_member_1_id,
+                'email_ke': t.email_member_2_id,
+                'jumlah': t.jumlah,
+                'catatan': t.catatan,
+                'timestamp': t.timestamp,
+                'tipe': 'masuk',
+                'email_lain': t.email_member_1_id
+            })
 
     total_keluar = sum(t['jumlah'] for t in riwayat if t['tipe'] == 'keluar')
     total_masuk  = sum(t['jumlah'] for t in riwayat if t['tipe'] == 'masuk')
 
     context = {
         'role': 'member',
-        'total_miles': '45,000',
+        'total_miles': '45,000',  # nanti bisa ambil dari DB juga
         'riwayat': riwayat,
         'stats': {
             'total_keluar': total_keluar,
@@ -843,6 +1340,7 @@ def transfer_miles(request):
         'success_msg': request.session.pop('success_msg', None),
         'error_msg':   request.session.pop('error_msg', None),
     }
+
     return render(request, 'transfer.html', context)
 
 
@@ -873,14 +1371,48 @@ def transfer_kirim(request):
             request.session['error_msg'] = 'Jumlah miles minimal 100.'
             return redirect('transfer_miles')
 
-        DUMMY_TRANSFER.append({
-            'email_dari':  email_dari,
-            'email_ke':    email_tujuan,
-            'jumlah':      jumlah,
-            'catatan':     catatan,
-            'timestamp':   '2026-04-30 10:00:00',
-        })
-        request.session['success_msg'] = f'{jumlah} miles berhasil dikirim ke {email_tujuan}.'
+        try:
+            conn = get_connection()
+            cur = conn.cursor()
+
+            # cek member tujuan
+            cur.execute("SELECT 1 FROM member WHERE email = %s", [email_tujuan])
+            if not cur.fetchone():
+                request.session['error_msg'] = 'Member tujuan tidak ditemukan.'
+                return redirect('transfer_miles')
+
+            # cek saldo
+            cur.execute("SELECT award_miles FROM member WHERE email = %s", [email_dari])
+            result = cur.fetchone()
+
+            if not result or result[0] < jumlah:
+                request.session['error_msg'] = 'Miles tidak cukup.'
+                return redirect('transfer_miles')
+
+            # insert transfer
+            cur.execute("""
+                INSERT INTO transfer (email_member_1, email_member_2, jumlah, catatan, timestamp)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, [email_dari, email_tujuan, jumlah, catatan])
+
+            # update saldo
+            cur.execute("UPDATE member SET award_miles = award_miles - %s WHERE email = %s",
+                        [jumlah, email_dari])
+
+            cur.execute("UPDATE member SET award_miles = award_miles + %s WHERE email = %s",
+                        [jumlah, email_tujuan])
+
+            conn.commit()
+
+            request.session['success_msg'] = f'{jumlah} miles berhasil dikirim ke {email_tujuan}.'
+
+        except Exception as e:
+            conn.rollback()
+            request.session['error_msg'] = f'Error: {str(e)}'
+
+        finally:
+            cur.close()
+            conn.close()
 
     return redirect('transfer_miles')
 
@@ -1377,8 +1909,78 @@ def mitra_hapus(request, email_mitra):
 # Tempel ke bagian DUMMY DATA (atas) dan VIEWS (bawah) di views.py yang sudah ada
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# ─── DUMMY DATA TAMBAHAN ──────────────────────────────────────────────────────
-# Letakkan bersama DUMMY_KLAIM, DUMMY_MEMBER_INFO, dll. di atas file
+#from django.shortcuts import render, redirect
+from collections import Counter
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DUMMY DATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+DUMMY_MEMBER_INFO = {
+    'john@example.com': {'nama': 'John Doe'},
+    'siti.nurhaliza@email.com': {'nama': 'Siti Nurhaliza'},
+    'eka.putra@email.com': {'nama': 'Eka Putra'},
+    'budi.santoso@email.com': {'nama': 'Budi Santoso'},
+    'dewi.lestari@email.com': {'nama': 'Dewi Lestari'},
+}
+
+DUMMY_KLAIM = [
+    {
+        'nomor_klaim': 'KLM-0001',
+        'email_member': 'john@example.com',
+        'maskapai': 'Garuda Indonesia',
+        'bandara_asal': 'CGK',
+        'bandara_tujuan': 'DPS',
+        'kelas_kabin': 'Business',
+        'status_penerimaan': 'Disetujui',
+        'email_staf': 'staf@miles.com',
+        'timestamp': '2024-10-01 08:00:00',
+    },
+    {
+        'nomor_klaim': 'KLM-0002',
+        'email_member': 'siti.nurhaliza@email.com',
+        'maskapai': 'Batik Air',
+        'bandara_asal': 'SUB',
+        'bandara_tujuan': 'CGK',
+        'kelas_kabin': 'Economy',
+        'status_penerimaan': 'Menunggu',
+        'email_staf': None,
+        'timestamp': '2024-11-15 10:30:00',
+    },
+    {
+        'nomor_klaim': 'KLM-0003',
+        'email_member': 'eka.putra@email.com',
+        'maskapai': 'Lion Air',
+        'bandara_asal': 'MDC',
+        'bandara_tujuan': 'CGK',
+        'kelas_kabin': 'Economy',
+        'status_penerimaan': 'Ditolak',
+        'email_staf': 'staf@miles.com',
+        'timestamp': '2024-12-03 14:00:00',
+    },
+    {
+        'nomor_klaim': 'KLM-0004',
+        'email_member': 'budi.santoso@email.com',
+        'maskapai': 'Garuda Indonesia',
+        'bandara_asal': 'CGK',
+        'bandara_tujuan': 'SIN',
+        'kelas_kabin': 'First',
+        'status_penerimaan': 'Disetujui',
+        'email_staf': 'staf@miles.com',
+        'timestamp': '2025-01-10 09:00:00',
+    },
+    {
+        'nomor_klaim': 'KLM-0005',
+        'email_member': 'dewi.lestari@email.com',
+        'maskapai': 'Citilink',
+        'bandara_asal': 'JOG',
+        'bandara_tujuan': 'CGK',
+        'kelas_kabin': 'Economy',
+        'status_penerimaan': 'Disetujui',
+        'email_staf': 'staf@miles.com',
+        'timestamp': '2025-02-20 11:00:00',
+    },
+]
 
 DUMMY_TRANSFER = [
     {
@@ -1494,9 +2096,7 @@ DUMMY_BELI_PACKAGE = [
     },
 ]
 
-# ─── DUMMY BAR CHART DATA ─────────────────────────────────────────────────────
-# Volume transaksi per bulan (semua jenis digabung) — untuk chart di template
-
+# Bar chart: volume transaksi per bulan
 DUMMY_BAR_DATA_RAW = [
     ('Jan', 42), ('Feb', 58), ('Mar', 33), ('Apr', 71),
     ('Mei', 52), ('Jun', 85), ('Jul', 64), ('Agu', 90),
@@ -1511,30 +2111,105 @@ COLORS_BAR = [
 ]
 
 
-# ─── VIEW ─────────────────────────────────────────────────────────────────────
-# Letakkan bersama view-view lain di bagian bawah file
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELPER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def enrich_klaim(klaim_list):
+    """Tambahkan nama_member dari DUMMY_MEMBER_INFO ke setiap item klaim."""
+    enriched = []
+    for k in klaim_list:
+        item = dict(k)
+        info = DUMMY_MEMBER_INFO.get(k['email_member'], {})
+        item['nama_member'] = info.get('nama', k['email_member'])
+        enriched.append(item)
+    return enriched
+
+
+def get_top_members(klaim_list, transfer_list, redeem_list, beli_list, top_n=10):
+    """
+    Hitung total transaksi (klaim + transfer + redeem + beli) per member,
+    kembalikan list top_n member diurutkan dari terbanyak.
+
+    Setiap transfer dihitung 1 transaksi untuk pengirim (email_member_1).
+    Return: list of dict {rank, email, nama, jml_klaim, jml_transfer,
+                          jml_redeem, jml_beli, total}
+    """
+    emails = set(DUMMY_MEMBER_INFO.keys())
+
+    # Hitung per kategori
+    cnt_klaim    = Counter(k['email_member'] for k in klaim_list)
+    cnt_transfer = Counter(t['email_member_1'] for t in transfer_list)
+    cnt_redeem   = Counter(r['email_member'] for r in redeem_list)
+    cnt_beli     = Counter(b['email_member'] for b in beli_list)
+
+    # Gabungkan semua email yang muncul
+    all_emails = (
+        set(cnt_klaim) | set(cnt_transfer) | set(cnt_redeem) | set(cnt_beli)
+    )
+
+    rows = []
+    for email in all_emails:
+        jml_klaim    = cnt_klaim.get(email, 0)
+        jml_transfer = cnt_transfer.get(email, 0)
+        jml_redeem   = cnt_redeem.get(email, 0)
+        jml_beli     = cnt_beli.get(email, 0)
+        total        = jml_klaim + jml_transfer + jml_redeem + jml_beli
+        nama         = DUMMY_MEMBER_INFO.get(email, {}).get('nama', email)
+        rows.append({
+            'email':        email,
+            'nama':         nama,
+            'jml_klaim':    jml_klaim,
+            'jml_transfer': jml_transfer,
+            'jml_redeem':   jml_redeem,
+            'jml_beli':     jml_beli,
+            'total':        total,
+        })
+
+    rows.sort(key=lambda x: x['total'], reverse=True)
+    rows = rows[:top_n]
+
+    # Tambahkan rank
+    for i, row in enumerate(rows, start=1):
+        row['rank'] = i
+
+    return rows
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIEWS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def laporan_transaksi(request):
-    """Halaman laporan transaksi — hanya bisa diakses staf."""
+    """
+    Halaman laporan transaksi — hanya bisa diakses staf.
+
+    Variabel yang dikirim ke template laporan_transaksi.html:
+      role, search, tgl_dari, tgl_sampai, active_tab,
+      stats, bar_data,
+      klaim_list, transfer_list, redeem_list, beli_list,
+      top_member_list
+    """
     role = request.session.get('role')
     if not role:
         return redirect('login')
     if role != 'staf':
         return redirect('dashboard')
 
-    # ── Filter params ──────────────────────────────────────────────────────────
+    # ── Parameter filter dari GET ──────────────────────────────────────────────
     search     = request.GET.get('search', '').strip().lower()
-    tgl_dari   = request.GET.get('tgl_dari', '').strip()    # format: YYYY-MM-DD
-    tgl_sampai = request.GET.get('tgl_sampai', '').strip()
+    tgl_dari   = request.GET.get('tgl_dari', '').strip()    # YYYY-MM-DD
+    tgl_sampai = request.GET.get('tgl_sampai', '').strip()  # YYYY-MM-DD
     active_tab = request.GET.get('tab', 'klaim')
 
-    # ── Helper: filter berdasarkan search + tanggal ────────────────────────────
-    def filter_by_date(item, field='timestamp'):
-        ts = item.get(field, '')[:10]   # ambil bagian tanggal saja (YYYY-MM-DD)
+    # ── Helper: filter tanggal ─────────────────────────────────────────────────
+    def in_date_range(item, field='timestamp'):
+        ts = item.get(field, '')[:10]   # ambil YYYY-MM-DD saja
         if tgl_dari   and ts < tgl_dari:   return False
         if tgl_sampai and ts > tgl_sampai: return False
         return True
 
+    # ── Helper: cocokkan member berdasarkan search ─────────────────────────────
     def member_match(email):
         if not search:
             return True
@@ -1542,55 +2217,52 @@ def laporan_transaksi(request):
         nama = info.get('nama', '').lower()
         return search in email.lower() or search in nama
 
-    # ── Filter KLAIM ───────────────────────────────────────────────────────────
+    # ── Filter masing-masing dataset ──────────────────────────────────────────
     klaim_filtered = [
         k for k in DUMMY_KLAIM
-        if member_match(k['email_member']) and filter_by_date(k)
+        if member_match(k['email_member']) and in_date_range(k)
     ]
     klaim_enriched = enrich_klaim(klaim_filtered)
 
-    # ── Filter TRANSFER ────────────────────────────────────────────────────────
     transfer_filtered = [
         t for t in DUMMY_TRANSFER
         if (member_match(t['email_member_1']) or member_match(t['email_member_2']))
-        and filter_by_date(t)
+        and in_date_range(t)
     ]
 
-    # ── Filter REDEEM ──────────────────────────────────────────────────────────
     redeem_filtered = [
         r for r in DUMMY_REDEEM
-        if member_match(r['email_member']) and filter_by_date(r)
+        if member_match(r['email_member']) and in_date_range(r)
     ]
 
-    # ── Filter BELI PACKAGE ────────────────────────────────────────────────────
     beli_filtered = [
         b for b in DUMMY_BELI_PACKAGE
-        if member_match(b['email_member']) and filter_by_date(b)
+        if member_match(b['email_member']) and in_date_range(b)
     ]
 
-    # ── Stats cards ────────────────────────────────────────────────────────────
-    total_miles_klaim    = sum(5000 for k in klaim_enriched if k['status_penerimaan'] == 'Disetujui')   # placeholder
+    # ── Hitung stats untuk kartu ringkasan ────────────────────────────────────
+    total_miles_klaim    = sum(
+        5000 for k in klaim_enriched if k['status_penerimaan'] == 'Disetujui'
+    )
     total_miles_transfer = sum(t['jumlah'] for t in transfer_filtered)
     total_miles_redeem   = sum(r['miles'] for r in redeem_filtered)
     total_miles_dibeli   = sum(b['jumlah_miles'] for b in beli_filtered)
 
-    # Redeem terbanyak
-    if redeem_filtered:
-        from collections import Counter
-        redeem_top = Counter(r['nama_hadiah'] for r in redeem_filtered).most_common(1)[0][0]
-    else:
-        redeem_top = '—'
-
-    # Paket terlaris
-    if beli_filtered:
-        from collections import Counter
-        paket_top = Counter(b['id_award_miles_package'] for b in beli_filtered).most_common(1)[0][0]
-    else:
-        paket_top = '—'
-
     klaim_setuju = sum(1 for k in klaim_enriched if k['status_penerimaan'] == 'Disetujui')
 
-    # Revenue dari pembelian paket (hapus pemisah ribuan lalu jumlahkan)
+    # Redeem terbanyak
+    redeem_top = (
+        Counter(r['nama_hadiah'] for r in redeem_filtered).most_common(1)[0][0]
+        if redeem_filtered else '—'
+    )
+
+    # Paket terlaris
+    paket_top = (
+        Counter(b['id_award_miles_package'] for b in beli_filtered).most_common(1)[0][0]
+        if beli_filtered else '—'
+    )
+
+    # Total pendapatan dari pembelian paket
     try:
         revenue_total = sum(
             int(b['harga'].replace(',', '').replace('.', ''))
@@ -1601,21 +2273,24 @@ def laporan_transaksi(request):
         revenue_str = '0'
 
     stats = {
+        # Kartu atas
         'total_klaim':    len(klaim_enriched),
         'total_transfer': len(transfer_filtered),
         'total_redeem':   len(redeem_filtered),
         'total_beli':     len(beli_filtered),
+        # Ringkasan Miles (kolom kanan atas)
         'miles_klaim':    f"{total_miles_klaim:,}",
         'miles_transfer': f"{total_miles_transfer:,}",
         'miles_redeem':   f"{total_miles_redeem:,}",
         'miles_dibeli':   f"{total_miles_dibeli:,}",
+        # Keuangan (kolom kanan bawah)
         'revenue':        revenue_str,
         'redeem_top':     redeem_top,
         'paket_top':      paket_top,
         'klaim_setuju':   f"{klaim_setuju} klaim",
     }
 
-    # ── Bar chart data ─────────────────────────────────────────────────────────
+    # ── Data bar chart ─────────────────────────────────────────────────────────
     max_val = max(v for _, v in DUMMY_BAR_DATA_RAW) or 1
     bar_data = [
         {
@@ -1627,17 +2302,27 @@ def laporan_transaksi(request):
         for i, (label, val) in enumerate(DUMMY_BAR_DATA_RAW)
     ]
 
+    # ── Top 10 Member berdasarkan total transaksi ──────────────────────────────
+    top_member_list = get_top_members(
+        klaim_enriched, transfer_filtered, redeem_filtered, beli_filtered,
+        top_n=10,
+    )
+
+    # ── Context ────────────────────────────────────────────────────────────────
     context = {
-        'role':            'staf',
-        'search':          request.GET.get('search', ''),
-        'tgl_dari':        tgl_dari,
-        'tgl_sampai':      tgl_sampai,
-        'active_tab':      active_tab,
-        'stats':           stats,
-        'bar_data':        bar_data,
-        'klaim_list':      klaim_enriched,
-        'transfer_list':   transfer_filtered,
-        'redeem_list':     redeem_filtered,
-        'beli_list':       beli_filtered,
+        'role':          'staf',
+        # Filter state (untuk mengisi ulang form)
+        'search':        request.GET.get('search', ''),
+        'tgl_dari':      tgl_dari,
+        'tgl_sampai':    tgl_sampai,
+        'active_tab':    active_tab,
+        # Data
+        'stats':         stats,
+        'bar_data':      bar_data,
+        'klaim_list':    klaim_enriched,
+        'transfer_list': transfer_filtered,
+        'redeem_list':   redeem_filtered,
+        'beli_list':     beli_filtered,
+        'top_member_list': top_member_list,
     }
     return render(request, 'laporan_transaksi.html', context)
