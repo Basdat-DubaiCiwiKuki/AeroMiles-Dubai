@@ -1507,22 +1507,6 @@ def transfer_kirim(request):
         with transaction.atomic():
             with connection.cursor() as cur:
                 cur.execute("""
-                    UPDATE member
-                    SET award_miles = award_miles - %s
-                    WHERE email = %s AND award_miles >= %s
-                    RETURNING award_miles
-                """, [jumlah, email_dari, jumlah])
-                if not cur.fetchone():
-                    request.session['error_msg'] = 'Saldo award miles tidak mencukupi.'
-                    return redirect('transfer_miles')
-
-                cur.execute("""
-                    UPDATE member
-                    SET award_miles = award_miles + %s
-                    WHERE email = %s
-                """, [jumlah, email_tujuan])
-
-                cur.execute("""
                     INSERT INTO transfer (email_member_1, email_member_2, timestamp, jumlah, catatan)
                     VALUES (%s, %s, NOW(), %s, %s)
                 """, [email_dari, email_tujuan, jumlah, catatan])

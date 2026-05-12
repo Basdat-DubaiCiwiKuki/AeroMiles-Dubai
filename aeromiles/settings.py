@@ -28,10 +28,10 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('DB_NAME', 'aeromiles'),
-            'USER': os.environ.get('DB_USER', 'mac'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'USER': os.environ.get('DB_USER', 'alia.artanti'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'alia2905'),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'PORT': os.environ.get('DB_PORT', '5433'),
         }
     }
 
