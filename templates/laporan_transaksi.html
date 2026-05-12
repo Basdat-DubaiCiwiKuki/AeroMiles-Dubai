@@ -111,7 +111,7 @@
             <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Leaderboard</p>
             <h2 class="text-white font-semibold text-lg">Top 5 Member Teraktif</h2>
           </div>
-          <span class="text-xs uppercase tracking-widest text-white opacity-30">Total Transaksi (Klaim + Transfer + Redeem + Beli)</span>
+          <span class="text-xs uppercase tracking-widest text-white opacity-30">Total Miles</span>
         </div>
       
         <div class="overflow-x-auto">
@@ -120,15 +120,11 @@
               <tr class="border-b border-white border-opacity-10">
                 <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal w-12">#</th>
                 <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Klaim</th>
-                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Transfer</th>
-                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Redeem</th>
-                <th class="text-center px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Beli Paket</th>
-                <th class="text-right px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Total</th>
+                <th class="text-right px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Total Miles</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white divide-opacity-5">
-              {% for m in top_member_list %}
+              {% for m in top5_list %}
               <tr class="hover:bg-white hover:bg-opacity-5 transition">
       
                 <!-- Rank badge -->
@@ -150,65 +146,22 @@
                   <div class="text-white opacity-30 text-xs">{{ m.email }}</div>
                 </td>
       
-                <!-- Klaim -->
-                <td class="px-4 py-4 text-center">
-                  {% if m.jml_klaim %}
-                    <span style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);"
-                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_klaim }}</span>
-                  {% else %}
-                    <span class="text-white opacity-20 text-xs">—</span>
-                  {% endif %}
-                </td>
-      
-                <!-- Transfer -->
-                <td class="px-4 py-4 text-center">
-                  {% if m.jml_transfer %}
-                    <span style="background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.25);"
-                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_transfer }}</span>
-                  {% else %}
-                    <span class="text-white opacity-20 text-xs">—</span>
-                  {% endif %}
-                </td>
-      
-                <!-- Redeem -->
-                <td class="px-4 py-4 text-center">
-                  {% if m.jml_redeem %}
-                    <span style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);"
-                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_redeem }}</span>
-                  {% else %}
-                    <span class="text-white opacity-20 text-xs">—</span>
-                  {% endif %}
-                </td>
-      
-                <!-- Beli Paket -->
-                <td class="px-4 py-4 text-center">
-                  {% if m.jml_beli %}
-                    <span style="background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25);"
-                          class="text-xs px-2.5 py-1 rounded-full font-semibold">{{ m.jml_beli }}</span>
-                  {% else %}
-                    <span class="text-white opacity-20 text-xs">—</span>
-                  {% endif %}
-                </td>
-      
-                <!-- Total (progress bar mini) -->
+                <!-- Total Miles (progress bar mini) -->
                 <td class="px-8 py-4 text-right">
                   <div class="flex items-center justify-end gap-3">
-                    <!-- mini progress bar -->
                     <div class="w-20 h-1.5 rounded-full" style="background:rgba(255,255,255,0.08);">
-                      {% with pct=m.total|floatformat:0 %}
                       <div class="h-1.5 rounded-full"
-                           style="width:{% widthratio m.total top_member_list.0.total 100 %}%;
+                           style="width:{% widthratio m.total_miles top5_list.0.total_miles 100 %}%;
                                   background: linear-gradient(90deg,#60a5fa,#a78bfa);"></div>
-                      {% endwith %}
                     </div>
-                    <span class="text-white font-bold text-sm">{{ m.total }}</span>
+                    <span class="text-white font-bold text-sm">{{ m.total_miles }}</span>
                   </div>
                 </td>
       
               </tr>
               {% empty %}
               <tr>
-                <td colspan="7" class="py-16 text-center text-white opacity-30 text-sm">
+                <td colspan="3" class="py-16 text-center text-white opacity-30 text-sm">
                   Belum ada data transaksi.
                 </td>
               </tr>
@@ -297,12 +250,12 @@
                     <div class="text-white opacity-30 text-xs">{{ k.email_member }}</div>
                   </td>
                   <td class="px-4 py-4 text-white opacity-70">{{ k.maskapai }}</td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ k.bandara_asal }} → {{ k.bandara_tujuan }}</td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ k.rute }}</td>
                   <td class="px-4 py-4 text-white opacity-70">{{ k.kelas_kabin }}</td>
                   <td class="px-4 py-4">
-                    {% if k.status_penerimaan == 'Disetujui' %}
+                    {% if k.status == 'Disetujui' %}
                     <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Disetujui</span>
-                    {% elif k.status_penerimaan == 'Ditolak' %}
+                    {% elif k.status == 'Ditolak' %}
                     <span style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Ditolak</span>
                     {% else %}
                     <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);" class="text-xs px-3 py-1 rounded-full font-semibold">Menunggu</span>
@@ -340,8 +293,8 @@
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for t in transfer_list %}
                 <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ t.email_member_1 }}</td>
-                  <td class="px-4 py-4 text-white opacity-80">{{ t.email_member_2 }}</td>
+                  <td class="px-8 py-4 text-white opacity-80">{{ t.email_dari }}</td>
+                  <td class="px-4 py-4 text-white opacity-80">{{ t.email_ke }}</td>
                   <td class="px-4 py-4">
                     <span style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">{{ t.jumlah }} mi</span>
                   </td>
@@ -377,7 +330,7 @@
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for r in redeem_list %}
                 <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ r.email_member }}</td>
+                  <td class="px-8 py-4 text-white opacity-80">{{ r.email }}</td>
                   <td class="px-4 py-4 text-white font-mono text-xs opacity-70">{{ r.kode_hadiah }}</td>
                   <td class="px-4 py-4 text-white opacity-80">{{ r.nama_hadiah|default:"—" }}</td>
                   <td class="px-4 py-4">
@@ -414,8 +367,8 @@
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for b in beli_list %}
                 <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ b.email_member }}</td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ b.id_award_miles_package }}</td>
+                  <td class="px-8 py-4 text-white opacity-80">{{ b.email }}</td>
+                  <td class="px-4 py-4 text-white opacity-70">{{ b.id_paket }}</td>
                   <td class="px-4 py-4">
                     <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">+{{ b.jumlah_miles|default:"0" }} mi</span>
                   </td>

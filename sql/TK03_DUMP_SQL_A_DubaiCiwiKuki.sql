@@ -14,6 +14,55 @@ DROP TABLE IF EXISTS MEMBER CASCADE;
 DROP TABLE IF EXISTS BANDARA CASCADE;
 DROP TABLE IF EXISTS TIER CASCADE;
 DROP TABLE IF EXISTS PENGGUNA CASCADE;
+DROP FUNCTION IF EXISTS generate_prefixed_id(regclass, text, text, text, int);
+DROP SEQUENCE IF EXISTS member_nomor_member_seq;
+DROP SEQUENCE IF EXISTS staf_id_staf_seq;
+DROP SEQUENCE IF EXISTS award_miles_package_id_seq;
+DROP SEQUENCE IF EXISTS hadiah_kode_hadiah_seq;
+
+CREATE SEQUENCE member_nomor_member_seq START 1;
+CREATE SEQUENCE staf_id_staf_seq START 1;
+CREATE SEQUENCE award_miles_package_id_seq START 1;
+CREATE SEQUENCE hadiah_kode_hadiah_seq START 1;
+
+CREATE OR REPLACE FUNCTION generate_prefixed_id(
+    p_sequence regclass,
+    p_table_name text,
+    p_column_name text,
+    p_prefix text,
+    p_width int
+)
+RETURNS text AS $$
+DECLARE
+    v_max_number int;
+    v_sequence_number int;
+    v_next_number int;
+BEGIN
+    PERFORM pg_advisory_xact_lock(hashtext(p_table_name || '.' || p_column_name));
+
+    EXECUTE format(
+        'SELECT COALESCE(MAX(CAST(SUBSTRING(%I FROM %s) AS INTEGER)), 0)
+           FROM %I
+          WHERE LEFT(%I, %s) = %L
+            AND SUBSTRING(%I FROM %s) ~ ''^[0-9]+$''',
+        p_column_name,
+        length(p_prefix) + 1,
+        p_table_name,
+        p_column_name,
+        length(p_prefix),
+        p_prefix,
+        p_column_name,
+        length(p_prefix) + 1
+    )
+    INTO v_max_number;
+
+    v_sequence_number := nextval(p_sequence)::int;
+    v_next_number := GREATEST(v_max_number + 1, v_sequence_number);
+    PERFORM setval(p_sequence, v_next_number, true);
+
+    RETURN p_prefix || LPAD(v_next_number::text, p_width, '0');
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE TABLE PENGGUNA (
     email VARCHAR(100) PRIMARY KEY,
@@ -109,7 +158,7 @@ INSERT INTO TIER (id_tier, nama, minimal_frekuensi_terbang, minimal_tier_miles) 
 
 CREATE TABLE MEMBER (
     email VARCHAR(100) PRIMARY KEY REFERENCES PENGGUNA(email) ON DELETE CASCADE,
-    nomor_member VARCHAR(20) NOT NULL UNIQUE,
+    nomor_member VARCHAR(20) NOT NULL UNIQUE DEFAULT generate_prefixed_id('member_nomor_member_seq'::regclass, 'member', 'nomor_member', 'M', 4),
     tanggal_bergabung DATE NOT NULL,
     id_tier VARCHAR(10) NOT NULL REFERENCES TIER(id_tier),
     award_miles INT DEFAULT 0 CHECK (award_miles >= 0),
@@ -168,6 +217,7 @@ INSERT INTO MEMBER (email, nomor_member, tanggal_bergabung, id_tier, award_miles
 ('astrid.murni@email.com', 'M0049', '2025-12-10', 'T002', 25000, 45000),
 ('aziz.irfandi@email.com', 'M0050', '2026-01-10', 'T003', 70000, 110000),
 ('ayu.citra@email.com', 'M0051', '2026-02-15', 'T004', 200000, 300000);
+SELECT setval('member_nomor_member_seq', (SELECT COALESCE(MAX(CAST(SUBSTRING(nomor_member FROM 2) AS INTEGER)), 1) FROM MEMBER), true);
 
 CREATE TABLE PENYEDIA (
     id SERIAL PRIMARY KEY
@@ -191,7 +241,7 @@ INSERT INTO MASKAPAI (kode_maskapai, nama_maskapai, id_penyedia) VALUES
 
 CREATE TABLE STAF (
     email VARCHAR(100) PRIMARY KEY REFERENCES PENGGUNA(email) ON DELETE CASCADE,
-    id_staf VARCHAR(20) NOT NULL UNIQUE,
+    id_staf VARCHAR(20) NOT NULL UNIQUE DEFAULT generate_prefixed_id('staf_id_staf_seq'::regclass, 'staf', 'id_staf', 'S', 4),
     kode_maskapai VARCHAR(10) NOT NULL REFERENCES MASKAPAI(kode_maskapai)
 );
 
@@ -207,6 +257,7 @@ INSERT INTO STAF (email, id_staf, kode_maskapai) VALUES
 ('hana.widya@email.com', 'S0009', 'SJ'),
 ('indra.kusuma@email.com', 'S0010', 'ID'),
 ('jaka.sinopati@email.com', 'S0011', 'ID');
+SELECT setval('staf_id_staf_seq', (SELECT COALESCE(MAX(CAST(SUBSTRING(id_staf FROM 2) AS INTEGER)), 1) FROM STAF), true);
 
 CREATE TABLE MITRA (
     email_mitra VARCHAR(100) PRIMARY KEY,
@@ -299,7 +350,7 @@ INSERT INTO IDENTITAS (nomor, email_member, tanggal_habis, tanggal_terbit, negar
 ('KTP-0030-AERO', 'joko.setiawan@email.com', '2030-05-20', '2024-05-20', 'Indonesia', 'KTP');
 
 CREATE TABLE AWARD_MILES_PACKAGE (
-    id VARCHAR(20) PRIMARY KEY,
+    id VARCHAR(20) PRIMARY KEY DEFAULT generate_prefixed_id('award_miles_package_id_seq'::regclass, 'award_miles_package', 'id', 'AMP-', 3),
     harga_paket DECIMAL(15,2) NOT NULL,
     jumlah_award_miles INT NOT NULL
 );
@@ -310,6 +361,7 @@ INSERT INTO AWARD_MILES_PACKAGE (id, harga_paket, jumlah_award_miles) VALUES
 ('AMP-003', 1200000.00, 10000),
 ('AMP-004', 2750000.00, 25000),
 ('AMP-005', 5000000.00, 50000);
+SELECT setval('award_miles_package_id_seq', (SELECT COALESCE(MAX(CAST(SUBSTRING(id FROM 5) AS INTEGER)), 1) FROM AWARD_MILES_PACKAGE), true);
 
 CREATE TABLE MEMBER_AWARD_MILES_PACKAGE (
     id_award_miles_package VARCHAR(20) NOT NULL REFERENCES AWARD_MILES_PACKAGE(id),
@@ -407,7 +459,7 @@ INSERT INTO TRANSFER (email_member_1, email_member_2, timestamp, jumlah, catatan
 ('xandra.bella@email.com', 'yanto.setiadi@email.com', '2024-06-14 12:30:00', 2450, 'Transfer miles #15');
 
 CREATE TABLE HADIAH (
-    kode_hadiah VARCHAR(20) PRIMARY KEY,
+    kode_hadiah VARCHAR(20) PRIMARY KEY DEFAULT generate_prefixed_id('hadiah_kode_hadiah_seq'::regclass, 'hadiah', 'kode_hadiah', 'RWD-', 3),
     nama VARCHAR(100) NOT NULL,
     miles INT NOT NULL,
     deskripsi TEXT,
@@ -428,6 +480,7 @@ INSERT INTO HADIAH (kode_hadiah, nama, miles, deskripsi, valid_start_date, progr
 ('RWD-008', 'Car Rental Discount', 11000, 'Diskon sewa mobil dari RentCar Nusantara.', '2024-01-01', '2026-12-31', 10),
 ('RWD-009', 'Priority Boarding', 5000, 'Fasilitas naik pesawat lebih awal.', '2024-01-01', '2026-12-31', 3),
 ('RWD-010', 'Free Seat Selection', 4000, 'Bebas memilih kursi penerbangan.', '2024-01-01', '2026-12-31', 2);
+SELECT setval('hadiah_kode_hadiah_seq', (SELECT COALESCE(MAX(CAST(SUBSTRING(kode_hadiah FROM 5) AS INTEGER)), 1) FROM HADIAH), true);
 
 CREATE TABLE REDEEM (
     email_member VARCHAR(100) NOT NULL REFERENCES MEMBER(email) ON DELETE CASCADE,

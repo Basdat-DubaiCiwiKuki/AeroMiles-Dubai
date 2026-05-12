@@ -218,8 +218,12 @@ def _extract_raise_message(e):
     """Extract clean message from PostgreSQL RAISE EXCEPTION."""
     msg = str(e)
     if 'ERROR:' in msg:
-        return msg.split('ERROR:')[-1].strip()
-    return msg.strip()
+        body = msg.split('ERROR:', 1)[1].strip()
+        if body.startswith('ERROR:'):
+            body = body.split('ERROR:', 1)[1].strip()
+        body = body.splitlines()[0].strip()
+        return f'ERROR: {body}'
+    return msg.splitlines()[0].strip()
 
 
 # ─── LANDING ──────────────────────────────────────────────────────────────────
@@ -239,33 +243,27 @@ def login_page(request):
 
         with connection.cursor() as cur:
             cur.execute(
-                "SELECT email, password FROM pengguna WHERE LOWER(email) = LOWER(%s)",
-                [email]
+                "SELECT email, salutation, first_mid_name, last_name, role, success, message "
+                "FROM verify_login(%s, %s)",
+                [email, hash_password(password)]
             )
             row = cur.fetchone()
 
-            if not row or row[1] != hash_password(password):
+            if not row or not row[5]:
                 return render(request, 'login.html', {
-                    'error': 'Email atau password salah, silakan coba lagi.',
+                    'error': row[6] if row else 'Email atau password salah, silakan coba lagi.',
                     'role':  'guest',
                 })
 
             db_email = row[0]
-
-            cur.execute("SELECT 1 FROM member WHERE email = %s", [db_email])
-            is_member = cur.fetchone()
-
-            cur.execute("SELECT 1 FROM staf WHERE email = %s", [db_email])
-            is_staf = cur.fetchone()
+            db_role = row[4]
 
         request.session['email'] = db_email
-        if is_member:
-            request.session['role'] = 'member'
-        elif is_staf:
-            request.session['role'] = 'staf'
+        if db_role in ('member', 'staf'):
+            request.session['role'] = db_role
         else:
             return render(request, 'login.html', {
-                'error': 'Role tidak ditemukan.',
+                'error': 'Akun tidak memiliki role valid.',
                 'role':  'guest',
             })
 
@@ -324,15 +322,6 @@ def register(request):
             with transaction.atomic():
                 with connection.cursor() as cur:
                     cur.execute(
-                        "SELECT 1 FROM pengguna WHERE LOWER(email) = LOWER(%s)", [email]
-                    )
-                    if cur.fetchone():
-                        request.session['error_msg'] = (
-                            f'ERROR: Email "{email}" sudah terdaftar, silakan gunakan email lain.'
-                        )
-                        return redirect('register')
-
-                    cur.execute(
                         "SELECT 1 FROM pengguna WHERE mobile_number = %s", [data['mobile_number']]
                     )
                     if cur.fetchone():
@@ -356,44 +345,36 @@ def register(request):
                     ])
 
                     if role == 'member':
-                        cur.execute("LOCK TABLE member IN EXCLUSIVE MODE")
-                        cur.execute("""
-                            SELECT COALESCE(MAX(CAST(SUBSTRING(nomor_member FROM 2) AS INTEGER)), 0)
-                            FROM member
-                        """)
-                        last_number  = cur.fetchone()[0]
-                        nomor_member = f"M{last_number + 1:04d}"
-
                         cur.execute(
                             "SELECT id_tier FROM tier ORDER BY minimal_tier_miles ASC LIMIT 1"
                         )
                         tier_id = cur.fetchone()[0]
 
                         cur.execute("""
-                            INSERT INTO member (email, nomor_member, tanggal_bergabung, id_tier,
-                                               award_miles, total_miles)
-                            VALUES (%s, %s, %s, %s, 0, 0)
-                        """, [email, nomor_member, date.today(), tier_id])
+                            INSERT INTO member (email, tanggal_bergabung, id_tier,
+                                                award_miles, total_miles)
+                            VALUES (%s, %s, %s, 0, 0)
+                            RETURNING nomor_member
+                        """, [email, date.today(), tier_id])
+                        nomor_member = cur.fetchone()[0]
 
                     elif role == 'staf':
-                        cur.execute("LOCK TABLE staf IN EXCLUSIVE MODE")
                         cur.execute("""
-                            SELECT COALESCE(MAX(CAST(SUBSTRING(id_staf FROM 2) AS INTEGER)), 0)
-                            FROM staf
-                        """)
-                        last_number = cur.fetchone()[0]
-                        id_staf     = f"S{last_number + 1:04d}"
-
-                        cur.execute("""
-                            INSERT INTO staf (email, id_staf, kode_maskapai)
-                            VALUES (%s, %s, %s)
-                        """, [email, id_staf, kode_maskapai])
+                            INSERT INTO staf (email, kode_maskapai)
+                            VALUES (%s, %s)
+                            RETURNING id_staf
+                        """, [email, kode_maskapai])
+                        id_staf = cur.fetchone()[0]
 
         except Exception as e:
             if _is_unique_error(e):
-                request.session['error_msg'] = 'Data sudah digunakan (email/nomor HP/ID duplikat).'
+                extracted = _extract_raise_message(e)
+                request.session['error_msg'] = (
+                    extracted if extracted.startswith('ERROR:')
+                    else 'Data sudah digunakan (email/nomor HP/ID duplikat).'
+                )
             else:
-                request.session['error_msg'] = f'Error: {_extract_raise_message(e)}'
+                request.session['error_msg'] = _extract_raise_message(e)
             return redirect('register')
 
         request.session['success_msg'] = 'Registrasi berhasil. Silakan login.'
@@ -1377,14 +1358,6 @@ def klaim_proses(request, klaim_id):
                     request.session['error_msg'] = 'Klaim ini sudah diproses sebelumnya.'
                     return redirect('klaim_staf')
 
-                if aksi == 'setujui':
-                    cur.execute("""
-                        UPDATE member
-                        SET award_miles = award_miles + 1000,
-                            total_miles = total_miles + 1000
-                        WHERE email = %s
-                    """, [updated[0]])
-
         if aksi == 'setujui':
             request.session['success_msg'] = 'Klaim DISETUJUI. Miles ditambahkan ke akun member.'
         else:
@@ -1487,22 +1460,6 @@ def transfer_kirim(request):
         request.session['error_msg'] = err
         return redirect('transfer_miles')
 
-    with connection.cursor() as cur:
-        cur.execute("SELECT 1 FROM member WHERE email = %s", [email_tujuan])
-        if not cur.fetchone():
-            request.session['error_msg'] = 'Member tujuan tidak ditemukan.'
-            return redirect('transfer_miles')
-
-        cur.execute("SELECT award_miles FROM member WHERE email = %s", [email_dari])
-        saldo = cur.fetchone()[0]
-
-    if saldo < jumlah:
-        request.session['error_msg'] = (
-            f'ERROR: Saldo award miles tidak mencukupi. '
-            f'Saldo Anda saat ini: {saldo} miles, jumlah transfer: {jumlah} miles.'
-        )
-        return redirect('transfer_miles')
-
     try:
         with transaction.atomic():
             with connection.cursor() as cur:
@@ -1587,49 +1544,18 @@ def redeem_proses(request):
         return redirect('redeem_hadiah')
 
     with connection.cursor() as cur:
-        cur.execute(
-            "SELECT nama, miles, valid_start_date, program_end FROM hadiah WHERE kode_hadiah = %s",
-            [kode_hadiah]
-        )
+        cur.execute("SELECT nama, miles FROM hadiah WHERE kode_hadiah = %s", [kode_hadiah])
         hadiah = cur.fetchone()
 
     if not hadiah:
         request.session['error_msg'] = 'Hadiah tidak ditemukan.'
         return redirect('redeem_hadiah')
 
-    nama_hadiah, miles_hadiah, valid_start, program_end = hadiah
-    today = date.today()
-
-    if not (valid_start <= today <= program_end):
-        request.session['error_msg'] = (
-            f'ERROR: Hadiah "{nama_hadiah}" tidak tersedia pada periode ini.'
-        )
-        return redirect('redeem_hadiah')
-
-    with connection.cursor() as cur:
-        cur.execute("SELECT award_miles FROM member WHERE email = %s", [email])
-        saldo = cur.fetchone()[0]
-
-    if saldo < miles_hadiah:
-        request.session['error_msg'] = (
-            f'ERROR: Saldo award miles tidak mencukupi. '
-            f'Dibutuhkan {miles_hadiah} miles, saldo Anda: {saldo} miles.'
-        )
-        return redirect('redeem_hadiah')
+    nama_hadiah, miles_hadiah = hadiah
 
     try:
         with transaction.atomic():
             with connection.cursor() as cur:
-                cur.execute("""
-                    UPDATE member
-                    SET award_miles = award_miles - %s
-                    WHERE email = %s AND award_miles >= %s
-                    RETURNING award_miles
-                """, [miles_hadiah, email, miles_hadiah])
-                if not cur.fetchone():
-                    request.session['error_msg'] = 'Saldo award miles tidak mencukupi.'
-                    return redirect('redeem_hadiah')
-
                 cur.execute("""
                     INSERT INTO redeem (email_member, kode_hadiah, timestamp)
                     VALUES (%s, %s, NOW())
@@ -1721,12 +1647,6 @@ def package_beli(request):
                     INSERT INTO member_award_miles_package (id_award_miles_package, email_member, timestamp)
                     VALUES (%s, %s, NOW())
                 """, [id_paket, email])
-                cur.execute("""
-                    UPDATE member
-                    SET award_miles = award_miles + %s,
-                        total_miles = total_miles + %s
-                    WHERE email = %s
-                """, [jumlah_miles, jumlah_miles, email])
         request.session['success_msg'] = (
             f'SUKSES: Pembelian package berhasil. '
             f'Award miles dan total miles Anda bertambah {jumlah_miles} miles.'
@@ -1887,24 +1807,18 @@ def member_tambah(request):
                       data['last_name'], data['country_code'], data['mobile_number'],
                       data['tanggal_lahir'], data['kewarganegaraan']])
 
-                cur.execute("LOCK TABLE member IN EXCLUSIVE MODE")
-                cur.execute("""
-                    SELECT COALESCE(MAX(CAST(SUBSTRING(nomor_member FROM 2) AS INTEGER)), 0)
-                    FROM member
-                """)
-                last_number  = cur.fetchone()[0]
-                nomor_member = f"M{last_number + 1:04d}"
-
                 cur.execute(
                     "SELECT id_tier FROM tier ORDER BY minimal_tier_miles ASC LIMIT 1"
                 )
                 tier_id = cur.fetchone()[0]
 
                 cur.execute("""
-                    INSERT INTO member (email, nomor_member, tanggal_bergabung, id_tier,
-                                       award_miles, total_miles)
-                    VALUES (%s,%s,%s,%s,0,0)
-                """, [email, nomor_member, date.today(), tier_id])
+                    INSERT INTO member (email, tanggal_bergabung, id_tier,
+                                        award_miles, total_miles)
+                    VALUES (%s,%s,%s,0,0)
+                    RETURNING nomor_member
+                """, [email, date.today(), tier_id])
+                nomor_member = cur.fetchone()[0]
 
         request.session['success_msg'] = f'Member {nomor_member} berhasil ditambahkan.'
     except Exception as e:
@@ -2136,21 +2050,13 @@ def hadiah_tambah(request):
                     request.session['error_msg'] = 'Penyedia tidak valid.'
                     return redirect('kelola_hadiah')
 
-                cur.execute("LOCK TABLE hadiah IN EXCLUSIVE MODE")
-                cur.execute("SELECT COUNT(*) FROM hadiah")
-                n    = cur.fetchone()[0] + 1
-                kode = f"RWD-{n:03d}"
-                cur.execute("SELECT 1 FROM hadiah WHERE kode_hadiah = %s", [kode])
-                while cur.fetchone():
-                    n += 1
-                    kode = f"RWD-{n:03d}"
-                    cur.execute("SELECT 1 FROM hadiah WHERE kode_hadiah = %s", [kode])
-
                 cur.execute("""
-                    INSERT INTO hadiah (kode_hadiah, nama, miles, deskripsi,
-                                       valid_start_date, program_end, id_penyedia)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s)
-                """, [kode, nama, miles_int, deskripsi, valid_start_date, program_end_date, id_penyedia_int])
+                    INSERT INTO hadiah (nama, miles, deskripsi,
+                                        valid_start_date, program_end, id_penyedia)
+                    VALUES (%s,%s,%s,%s,%s,%s)
+                    RETURNING kode_hadiah
+                """, [nama, miles_int, deskripsi, valid_start_date, program_end_date, id_penyedia_int])
+                kode = cur.fetchone()[0]
 
         request.session['success_msg'] = f'Hadiah {kode} berhasil ditambahkan.'
     except Exception as e:
@@ -2451,7 +2357,7 @@ def laporan_transaksi(request):
         cur.execute(f"""
             SELECT c.id, p.first_mid_name || ' ' || p.last_name, c.email_member,
                    mk.nama_maskapai, c.bandara_asal, c.bandara_tujuan,
-                   c.kelas_kabin, c.status_penerimaan, c.timestamp
+                   c.kelas_kabin, c.status_penerimaan, c.timestamp, c.email_staf
             FROM claim_missing_miles c
             JOIN pengguna p  ON c.email_member = p.email
             JOIN maskapai mk ON c.maskapai = mk.kode_maskapai
@@ -2463,6 +2369,7 @@ def laporan_transaksi(request):
                 'id': r[0], 'nama_member': r[1], 'email_member': r[2],
                 'maskapai': r[3], 'rute': f"{r[4]} → {r[5]}",
                 'kelas_kabin': r[6], 'status': r[7], 'timestamp': r[8],
+                'email_staf': r[9],
             }
             for r in cur.fetchall()
         ]
@@ -2501,7 +2408,7 @@ def laporan_transaksi(request):
         conds += dc + mc; params += dp + mp
         cur.execute(f"""
             SELECT r.email_member, p.first_mid_name || ' ' || p.last_name,
-                   h.nama, h.miles, r.timestamp
+                   r.kode_hadiah, h.nama, h.miles, r.timestamp
             FROM redeem r
             JOIN pengguna p ON r.email_member = p.email
             JOIN hadiah   h ON r.kode_hadiah  = h.kode_hadiah
@@ -2509,7 +2416,10 @@ def laporan_transaksi(request):
             ORDER BY r.timestamp DESC
         """, params)
         redeem_list = [
-            {'email': r[0], 'nama': r[1], 'nama_hadiah': r[2], 'miles': r[3], 'timestamp': r[4]}
+            {
+                'email': r[0], 'nama': r[1], 'kode_hadiah': r[2],
+                'nama_hadiah': r[3], 'miles': r[4], 'timestamp': r[5],
+            }
             for r in cur.fetchall()
         ]
 
@@ -2559,12 +2469,8 @@ def laporan_transaksi(request):
                 {'rank': i + 1, 'email': r[0], 'nama': r[1], 'total_miles': r[2]}
                 for i, r in enumerate(top5_rows)
             ]
-            if top5_list:
-                request.session['success_msg_laporan'] = (
-                    f'SUKSES: Daftar Top 5 Member berdasarkan total miles berhasil diperbarui, '
-                    f'dengan peringkat pertama "{top5_list[0]["email"]}" '
-                    f'memiliki {top5_list[0]["total_miles"]} miles.'
-                )
+            if top5_rows and len(top5_rows[0]) > 3 and top5_rows[0][3]:
+                request.session['success_msg_laporan'] = top5_rows[0][3]
         except Exception:
             cur.execute("""
                 SELECT m.email, p.first_mid_name || ' ' || p.last_name, m.total_miles

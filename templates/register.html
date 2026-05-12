@@ -58,6 +58,7 @@
             <!-- Form -->
             <form method="POST" action="{% url 'register' %}" class="space-y-4">
                 {% csrf_token %}
+                <input type="hidden" name="role" id="role-input" value="member">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                     <input type="email" name="email" placeholder="email@example.com" 
@@ -140,11 +141,9 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kode Maskapai *</label>
                     <select name="kode_maskapai" class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
                         <option value="">Pilih maskapai</option>
-                        <option>GA - Garuda Indonesia</option>
-                        <option>SQ - Singapore Airlines</option>
-                        <option>MH - Malaysia Airlines</option>
-                        <option>CX - Cathay Pacific</option>
-                        <option>EK - Emirates</option>
+                        {% for kode, nama in maskapai_list %}
+                        <option value="{{ kode }}">{{ kode }} - {{ nama }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -202,6 +201,8 @@
         const memberTab = document.getElementById('tab-member')
         const stafTab = document.getElementById('tab-staf')
         const fieldStaf = document.getElementById('field-staf')
+        const roleInput = document.getElementById('role-input')
+        roleInput.value = tab
     
         if (tab === 'member') {
             memberTab.classList.add('bg-[#0f172a]', 'text-white')

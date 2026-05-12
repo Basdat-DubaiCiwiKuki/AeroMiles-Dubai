@@ -1,17 +1,5 @@
--- ============================================================
--- TK04 TRIGGER 1 - WAJIB
--- 1. Pemeriksaan Duplikasi Email saat Registrasi (case-insensitive)
--- 2. Verifikasi Kredensial saat Login
--- ============================================================
-
--- -----------------------------------------------------------
--- TRIGGER 1.1: Cek duplikasi email saat INSERT ke PENGGUNA
--- Case-insensitive: Users@gmail.com = users@gmail.com
--- -----------------------------------------------------------
 CREATE OR REPLACE FUNCTION check_duplicate_email()
 RETURNS TRIGGER AS $$
-DECLARE
-    existing_count INT;
 BEGIN
     IF EXISTS (
         SELECT 1
@@ -39,7 +27,7 @@ EXECUTE FUNCTION check_duplicate_email();
 
 
 -- -----------------------------------------------------------
--- TRIGGER 1.2: Verifikasi kredensial login
+-- STORED FUNCTION 1.2: Verifikasi kredensial login
 -- Diimplementasikan sebagai FUNCTION (bukan trigger karena
 -- login adalah SELECT, bukan INSERT/UPDATE/DELETE)
 -- Dipanggil dari backend Django di views.py
@@ -95,14 +83,14 @@ BEGIN
     -- Tentukan role
     SELECT EXISTS(
         SELECT 1
-        FROM STAF
-        WHERE LOWER(email) = LOWER(p_email)
+        FROM STAF s
+        WHERE LOWER(s.email) = LOWER(p_email)
     ) INTO v_is_staf;
 
     SELECT EXISTS(
         SELECT 1
-        FROM MEMBER
-        WHERE LOWER(email) = LOWER(p_email)
+        FROM MEMBER m
+        WHERE LOWER(m.email) = LOWER(p_email)
     ) INTO v_is_member;
 
     -- VALIDASI role

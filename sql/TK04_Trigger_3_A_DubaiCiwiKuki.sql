@@ -1,27 +1,3 @@
--- =====================================================================
--- TK04 - TRIGGER NOMOR 3
--- =====================================================================
--- Berisi 2 trigger sesuai soal:
---   1. Validasi dan Update Saldo Award Miles saat Redeem Hadiah
---   2. Sinkronisasi Award Miles setelah Transaksi Pembelian Package
---
--- Asumsi nama tabel & kolom mengikuti dump TK03 kelompok Dubai:
---   - MEMBER (email, award_miles, total_miles, ...)
---   - HADIAH (kode_hadiah, nama, miles, valid_start_date, program_end, ...)
---   - REDEEM (email_member, kode_hadiah, timestamp)
---   - AWARD_MILES_PACKAGE (id, harga_paket, jumlah_award_miles)
---   - MEMBER_AWARD_MILES_PACKAGE (id_award_miles_package, email_member, timestamp)
---
--- INFORMASI:
---   - total_miles  = akumulasi (tidak berkurang saat redeem)
---   - award_miles  = saldo aktif (berkurang saat redeem)
--- =====================================================================
-
-
--- =====================================================================
--- BAGIAN 1: REDEEM HADIAH (BEFORE INSERT pada REDEEM)
--- =====================================================================
-
 CREATE OR REPLACE FUNCTION fn_validasi_redeem_hadiah()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -89,11 +65,6 @@ BEFORE INSERT ON REDEEM
 FOR EACH ROW
 EXECUTE FUNCTION fn_validasi_redeem_hadiah();
 
-
--- =====================================================================
--- BAGIAN 2: PEMBELIAN PACKAGE (AFTER INSERT pada MEMBER_AWARD_MILES_PACKAGE)
--- =====================================================================
-
 CREATE OR REPLACE FUNCTION fn_sinkron_pembelian_package()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -110,7 +81,6 @@ BEGIN
             NEW.id_award_miles_package;
     END IF;
 
-    -- Tambah award_miles DAN total_miles member
     UPDATE MEMBER
        SET award_miles = award_miles + v_jumlah_award_miles,
            total_miles = total_miles + v_jumlah_award_miles

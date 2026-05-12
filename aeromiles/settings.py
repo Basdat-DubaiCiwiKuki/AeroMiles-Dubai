@@ -12,15 +12,21 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import getpass
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def env_list(name, default=''):
+    values = os.environ.get(name, default)
+    return [value.strip() for value in values.split(',') if value.strip()]
+
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
     # Fallback local development database. Railway uses DATABASE_URL above.
@@ -28,10 +34,10 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('DB_NAME', 'aeromiles'),
-            'USER': os.environ.get('DB_USER', 'alia.artanti'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'alia2905'),
+            'USER': os.environ.get('DB_USER', getpass.getuser()),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5433'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 
@@ -44,9 +50,35 @@ SECRET_KEY = os.environ.get(
     'django-insecure-tde2*7&o_^@47$c6@1-)j7cqorflns=no8u&+4-d$5097r@vo*'
 )
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+# TODO: CHANGE TO THIS WHEN READY TO DEPLOY. Debug=True for temporary local production 
+# DEBUG = os.environ.get('DEBUG', 'False') == 'True' 
+DEBUG=True 
 
-ALLOWED_HOSTS = ['*']
+
+ALLOWED_HOSTS = env_list(
+    'ALLOWED_HOSTS',
+    '.up.railway.app,localhost,127.0.0.1'
+)
+CSRF_TRUSTED_ORIGINS = env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://*.up.railway.app'
+)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.environ.get(
+    'SECURE_SSL_REDIRECT',
+    'True' if not DEBUG else 'False'
+) == 'True'
+SECURE_HSTS_SECONDS = int(os.environ.get(
+    'SECURE_HSTS_SECONDS',
+    '31536000' if not DEBUG else '0'
+))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get(
+    'SECURE_HSTS_INCLUDE_SUBDOMAINS',
+    'False'
+) == 'True'
+SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False') == 'True'
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 
 # Application definition
