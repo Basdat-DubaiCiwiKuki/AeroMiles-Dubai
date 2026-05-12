@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS CLAIM_MISSING_MILES CASCADE;
 DROP TABLE IF EXISTS MEMBER_AWARD_MILES_PACKAGE CASCADE;
 DROP TABLE IF EXISTS AWARD_MILES_PACKAGE CASCADE;
 DROP TABLE IF EXISTS IDENTITAS CASCADE;
+DROP TABLE IF EXISTS JENIS_IDENTITAS CASCADE;
 DROP TABLE IF EXISTS MITRA CASCADE;
 DROP TABLE IF EXISTS STAF CASCADE;
 DROP TABLE IF EXISTS MASKAPAI CASCADE;
@@ -111,8 +112,8 @@ CREATE TABLE MEMBER (
     nomor_member VARCHAR(20) NOT NULL UNIQUE,
     tanggal_bergabung DATE NOT NULL,
     id_tier VARCHAR(10) NOT NULL REFERENCES TIER(id_tier),
-    award_miles INT DEFAULT 0,
-    total_miles INT DEFAULT 0
+    award_miles INT DEFAULT 0 CHECK (award_miles >= 0),
+    total_miles INT DEFAULT 0 CHECK (total_miles >= 0)
 );
 
 INSERT INTO MEMBER (email, nomor_member, tanggal_bergabung, id_tier, award_miles, total_miles) VALUES
@@ -245,13 +246,24 @@ INSERT INTO BANDARA (iata_code, nama, kota, negara) VALUES
 ('SYD', 'Sydney Kingsford Smith Airport', 'Sydney', 'Australia'),
 ('DOH', 'Hamad International Airport', 'Doha', 'Qatar');
 
+CREATE TABLE JENIS_IDENTITAS (
+    nama VARCHAR(30) PRIMARY KEY,
+    urutan INT NOT NULL UNIQUE
+);
+
+INSERT INTO JENIS_IDENTITAS (nama, urutan) VALUES
+('Paspor', 1),
+('KTP', 2),
+('SIM', 3);
+
 CREATE TABLE IDENTITAS (
     nomor VARCHAR(50) PRIMARY KEY,
     email_member VARCHAR(100) NOT NULL REFERENCES MEMBER(email) ON DELETE CASCADE,
     tanggal_habis DATE NOT NULL,
     tanggal_terbit DATE NOT NULL,
+    CHECK (tanggal_terbit < tanggal_habis),
     negara_penerbit VARCHAR(50) NOT NULL,
-    jenis VARCHAR(30) NOT NULL CHECK (jenis IN ('Paspor', 'KTP', 'SIM'))
+    jenis VARCHAR(30) NOT NULL REFERENCES JENIS_IDENTITAS(nama)
 );
 
 INSERT INTO IDENTITAS (nomor, email_member, tanggal_habis, tanggal_terbit, negara_penerbit, jenis) VALUES
@@ -335,7 +347,7 @@ CREATE TABLE CLAIM_MISSING_MILES (
     maskapai VARCHAR(10) NOT NULL REFERENCES MASKAPAI(kode_maskapai),
     bandara_asal CHAR(3) NOT NULL REFERENCES BANDARA(iata_code),
     bandara_tujuan CHAR(3) NOT NULL REFERENCES BANDARA(iata_code),
-    tanggal_penerbangan DATE NOT NULL,
+    tanggal_penerbangan DATE NOT NULL CHECK (tanggal_penerbangan <= CURRENT_DATE),
     flight_number VARCHAR(10) NOT NULL,
     nomor_tiket VARCHAR(20) NOT NULL,
     kelas_kabin VARCHAR(20) NOT NULL CHECK (kelas_kabin IN ('Economy', 'Business', 'First')),
@@ -371,7 +383,7 @@ CREATE TABLE TRANSFER (
     email_member_1 VARCHAR(100) NOT NULL REFERENCES MEMBER(email) ON DELETE CASCADE,
     email_member_2 VARCHAR(100) NOT NULL REFERENCES MEMBER(email) ON DELETE CASCADE,
     timestamp TIMESTAMP NOT NULL,
-    jumlah INT NOT NULL,
+    jumlah INT NOT NULL CHECK (jumlah > 0),
     catatan VARCHAR(255),
     PRIMARY KEY (email_member_1, email_member_2, timestamp),
     CHECK (email_member_1 <> email_member_2)
@@ -401,6 +413,7 @@ CREATE TABLE HADIAH (
     deskripsi TEXT,
     valid_start_date DATE NOT NULL,
     program_end DATE NOT NULL,
+    CHECK (program_end > valid_start_date),
     id_penyedia INT NOT NULL REFERENCES PENYEDIA(id) ON DELETE CASCADE
 );
 

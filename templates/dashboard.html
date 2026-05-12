@@ -20,7 +20,7 @@
                     <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member Dashboard</p>
                     <h1 class="text-5xl font-bold text-white leading-tight">
                         Selamat Datang,<br>
-                        <span class="opacity-40">{{ member.nama_lengkap|default:"Mr. John William Doe" }}</span>
+                        <span class="opacity-40">{{ member.nama_lengkap }}</span>
                     </h1>
                 </div>
                 <!-- Tier badge -->
@@ -33,7 +33,7 @@
                         Platinum → bg-slate-400
                     -->
                     <span class="inline-block bg-amber-400 text-gray-900 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest">
-                        {{ member.tier|default:"Gold" }}
+                        {{ member.tier }}
                     </span>
                 </div>
             </div>
@@ -42,19 +42,19 @@
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.15s both;">
                     <p class="text-xs uppercase tracking-widest text-white opacity-40">Nomor Member</p>
-                    <p class="text-3xl font-bold text-white">{{ member.nomor|default:"M0001" }}</p>
+                    <p class="text-3xl font-bold text-white">{{ member.nomor }}</p>
                 </div>
                 <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.2s both;">
                     <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Miles</p>
-                    <p class="text-3xl font-bold text-white">{{ member.total_miles|default:"45,000" }}</p>
+                    <p class="text-3xl font-bold text-white">{{ member.total_miles }}</p>
                 </div>
                 <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.25s both;">
                     <p class="text-xs uppercase tracking-widest text-white opacity-40">Award Miles</p>
-                    <p class="text-3xl font-bold text-amber-300">{{ member.award_miles|default:"32,000" }}</p>
+                    <p class="text-3xl font-bold text-amber-300">{{ member.award_miles }}</p>
                 </div>
                 <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.3s both;">
                     <p class="text-xs uppercase tracking-widest text-white opacity-40">Member Sejak</p>
-                    <p class="text-lg font-semibold text-white leading-snug">{{ member.tanggal_bergabung|default:"15 Jan 2024" }}</p>
+                    <p class="text-lg font-semibold text-white leading-snug">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
                 </div>
             </div>
 
@@ -64,27 +64,27 @@
                 <div class="grid grid-cols-3 gap-8 text-sm">
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Nama Lengkap</p>
-                        <p class="font-semibold text-white">{{ member.nama_lengkap|default:"Mr. John William Doe" }}</p>
+                        <p class="font-semibold text-white">{{ member.nama_lengkap }}</p>
                     </div>
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Email</p>
-                        <p class="font-semibold text-white">{{ member.email|default:"john@example.com" }}</p>
+                        <p class="font-semibold text-white">{{ member.email }}</p>
                     </div>
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Telepon</p>
-                        <p class="font-semibold text-white">{{ member.telepon|default:"+62 81234567890" }}</p>
+                        <p class="font-semibold text-white">{{ member.telepon }}</p>
                     </div>
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Kewarganegaraan</p>
-                        <p class="font-semibold text-white">{{ member.kewarganegaraan|default:"Indonesia" }}</p>
+                        <p class="font-semibold text-white">{{ member.kewarganegaraan }}</p>
                     </div>
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Tanggal Lahir</p>
-                        <p class="font-semibold text-white">{{ member.tanggal_lahir|default:"15 Mei 1990" }}</p>
+                        <p class="font-semibold text-white">{{ member.tanggal_lahir|date:"d M Y" }}</p>
                     </div>
                     <div>
                         <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Tanggal Bergabung</p>
-                        <p class="font-semibold text-white">{{ member.tanggal_bergabung|default:"15 Januari 2024" }}</p>
+                        <p class="font-semibold text-white">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
                     </div>
                 </div>
             </div>
@@ -97,90 +97,53 @@
                 </div>
 
                 <div class="divide-y divide-white divide-opacity-5">
-                    <!-- Transfer (debit) -->
+                    {% for item in riwayat %}
                     <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
                         <div class="flex items-center gap-4">
+                            {% if item.icon_color == 'red' %}
                             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
                                 border border-red-400 border-opacity-25 bg-red-500 bg-opacity-10">
                                 <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">Transfer</p>
-                                <p class="text-white opacity-30 text-xs">2025-01-15 · 10:30</p>
-                            </div>
-                        </div>
-                        <p class="text-red-300 font-bold text-sm">−5,000 mi</p>
-                    </div>
-
-                    <!-- Redeem (debit) -->
-                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
-                        <div class="flex items-center gap-4">
+                            {% elif item.icon_color == 'orange' %}
                             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
                                 border border-orange-400 border-opacity-25 bg-orange-500 bg-opacity-10">
                                 <svg class="w-4 h-4 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">Redeem</p>
-                                <p class="text-white opacity-30 text-xs">2025-01-20 · 16:00</p>
-                            </div>
-                        </div>
-                        <p class="text-red-300 font-bold text-sm">−3,000 mi</p>
-                    </div>
-
-                    <!-- Package (credit) -->
-                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
-                        <div class="flex items-center gap-4">
+                            {% elif item.icon_color == 'emerald' %}
                             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
                                 border border-emerald-400 border-opacity-25 bg-emerald-500 bg-opacity-10">
                                 <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">Package</p>
-                                <p class="text-white opacity-30 text-xs">2025-03-01 · 08:00</p>
-                            </div>
-                        </div>
-                        <p class="text-emerald-300 font-bold text-sm">+10,000 mi</p>
-                    </div>
-
-                    <!-- Klaim (credit) -->
-                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
-                        <div class="flex items-center gap-4">
+                            {% else %}
                             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
                                 border border-blue-400 border-opacity-25 bg-blue-500 bg-opacity-10">
                                 <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">Klaim</p>
-                                <p class="text-white opacity-30 text-xs">2025-03-10 · 14:00</p>
-                            </div>
-                        </div>
-                        <p class="text-emerald-300 font-bold text-sm">+2,500 mi</p>
-                    </div>
-
-                    <!-- Transfer (debit) -->
-                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
-                        <div class="flex items-center gap-4">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
-                                border border-red-400 border-opacity-25 bg-red-500 bg-opacity-10">
-                                <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {% endif %}
+                                    {% if item.label == 'Transfer' and not item.is_credit %}
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                                    {% elif item.label == 'Transfer' %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                    {% elif item.label == 'Redeem' %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                                    {% elif item.label == 'Package' %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
+                                    {% else %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    {% endif %}
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">Transfer</p>
-                                <p class="text-white opacity-30 text-xs">2025-03-15 · 09:00</p>
+                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">{{ item.label }}</p>
+                                <p class="text-white opacity-30 text-xs">{{ item.timestamp|date:"Y-m-d" }} · {{ item.timestamp|time:"H:i" }}</p>
                             </div>
                         </div>
-                        <p class="text-red-300 font-bold text-sm">−2,000 mi</p>
+                        <p class="{% if item.is_credit %}text-emerald-300{% else %}text-red-300{% endif %} font-bold text-sm">
+                            {% if item.is_credit %}+{% else %}−{% endif %}{{ item.jumlah }} mi
+                        </p>
                     </div>
+                    {% empty %}
+                    <div class="px-8 py-10 text-center">
+                        <p class="text-white opacity-40 text-sm">Belum ada transaksi terbaru.</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 

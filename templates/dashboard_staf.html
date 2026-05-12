@@ -2,71 +2,516 @@
 
 {% block content %}
 
-<!-- Hero Section -->
-<div class="relative h-72 overflow-hidden">
-    <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80"
-        alt="Travel" class="w-full h-full object-cover">
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-    <div class="absolute inset-0 flex flex-col justify-end px-12 pb-16 text-white">
-        <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Staff Dashboard</p>
-        <h1 class="text-4xl font-bold">Selamat Datang,</h1>
-        <h2 class="text-4xl font-bold opacity-60">Mr. Admin Aero</h2>
+<div class="relative min-h-screen overflow-hidden staff-dashboard">
+    <img src="https://source.unsplash.com/y4VqGXq1g5A/1920x1080"
+        alt="Business traveler using laptop at airport" class="fixed inset-0 h-full w-full object-cover staff-photo">
+    <div class="fixed inset-0 bg-slate-950 bg-opacity-45"></div>
+    <div class="fixed inset-0 staff-aurora"></div>
+    <div class="fixed inset-0 staff-grid opacity-30"></div>
+
+    <div class="relative z-10 min-h-screen px-5 pb-14 pt-28 md:px-8">
+        <div class="mx-auto max-w-7xl">
+            <section class="mb-6 grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
+                <div class="glass-panel hero-panel overflow-hidden p-7 md:p-9">
+                    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                        <div class="max-w-3xl">
+                            <div class="mb-5 flex flex-wrap items-center gap-3">
+                                <span class="status-pill">
+                                    <span class="pulse-dot"></span>
+                                    Staff Control
+                                </span>
+                                <span class="text-xs uppercase tracking-widest text-white text-opacity-45">{{ staf.maskapai }}</span>
+                            </div>
+                            <p class="mb-3 text-xs uppercase tracking-widest text-white text-opacity-50">Dashboard Staf</p>
+                            <h1 class="text-3xl font-bold leading-tight text-white md:text-5xl">
+                                Selamat Datang,<br>
+                                <span class="text-2xl text-white text-opacity-45 md:text-4xl">{{ staf.nama }}</span>
+                            </h1>
+                        </div>
+
+                        <div class="crew-chip">
+                            <div class="crew-avatar">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4.418 0-8 2.015-8 4.5V20h16v-1.5c0-2.485-3.582-4.5-8-4.5z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-white text-opacity-40">ID Staf</p>
+                                <p class="text-xl font-bold text-white">{{ staf.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ops-pulse">
+                        <div>
+                            <p>Prioritas</p>
+                            <strong>{% if next_claim %}{{ next_claim.flight }} · {{ next_claim.rute }}{% else %}Tidak ada klaim menunggu{% endif %}</strong>
+                        </div>
+                        <div>
+                            <p>Queue</p>
+                            <strong>{{ total_menunggu }} menunggu</strong>
+                        </div>
+                        <div>
+                            <p>Handled</p>
+                            <strong>{{ disetujui_saya }} disetujui · {{ ditolak_saya }} ditolak</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="glass-panel claim-panel p-7">
+                    <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-45">Ringkasan Klaim</p>
+                    <div class="flex items-end justify-between gap-4">
+                        <div>
+                            <p class="text-6xl font-bold leading-none text-amber-200">{{ total_menunggu }}</p>
+                            <p class="mt-3 text-sm text-white text-opacity-55">klaim menunggu validasi staf</p>
+                        </div>
+                        <a href="/kelola-klaim/" class="icon-action" aria-label="Buka kelola klaim">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="mt-8 h-2 overflow-hidden rounded-full bg-white bg-opacity-10">
+                        <div class="h-full rounded-full bg-amber-200 progress-glow" style="width: {% if total_menunggu %}76{% else %}12{% endif %}%;"></div>
+                    </div>
+                    <div class="claim-note">
+                        <span>Klaim Berikutnya</span>
+                        <strong>{% if next_claim %}{{ next_claim.email_member }} · {{ next_claim.timestamp|date:"d M Y" }}{% else %}Antrean klaim kosong{% endif %}</strong>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div class="metric-card">
+                    <div class="metric-icon text-sky-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.5 6h9.75M10.5 12h9.75M10.5 18h9.75M3.75 6h.008v.008H3.75V6zm0 6h.008v.008H3.75V12zm0 6h.008v.008H3.75V18z"/>
+                        </svg>
+                    </div>
+                    <p class="metric-label">Maskapai</p>
+                    <p class="metric-value text-2xl">{{ staf.maskapai }}</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon text-amber-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v5l3 2m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="metric-label">Menunggu</p>
+                    <p class="metric-value text-4xl text-amber-200">{{ total_menunggu }}</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon text-emerald-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="metric-label">Disetujui Saya</p>
+                    <p class="metric-value text-4xl text-emerald-200">{{ disetujui_saya }}</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon text-rose-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="metric-label">Ditolak Saya</p>
+                    <p class="metric-value text-4xl text-rose-200">{{ ditolak_saya }}</p>
+                </div>
+            </section>
+
+            <section class="grid gap-6 lg:grid-cols-[0.95fr_1.25fr]">
+                <div class="glass-panel p-7 md:p-8">
+                    <div class="mb-7 flex items-center justify-between gap-5">
+                        <div>
+                            <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-45">Profil Operasional</p>
+                            <h2 class="text-2xl font-bold text-white">Data Staf</h2>
+                        </div>
+                        <span class="rounded-full border border-white border-opacity-15 bg-white bg-opacity-10 px-3 py-2 text-xs uppercase tracking-widest text-white text-opacity-55">Aktif</span>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="info-row">
+                            <span>Nama Lengkap</span>
+                            <strong>{{ staf.nama }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Email</span>
+                            <strong>{{ staf.email }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>ID Staf</span>
+                            <strong>{{ staf.id }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Maskapai</span>
+                            <strong>{{ staf.maskapai }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel overflow-hidden">
+                    <div class="flex flex-col gap-5 border-b border-white border-opacity-10 px-7 py-7 md:flex-row md:items-center md:justify-between md:px-8">
+                        <div>
+                            <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-45">Ruang Kerja</p>
+                            <h2 class="text-2xl font-bold text-white">Panel Aksi Cepat</h2>
+                        </div>
+                        <a href="/kelola-klaim/" class="primary-link">
+                            Kelola Klaim
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="grid gap-0 md:grid-cols-3">
+                        <a href="/kelola-member/" class="action-tile">
+                            <span class="tile-icon text-cyan-200">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m0-4a4 4 0 100-8 4 4 0 000 8zm8 0a4 4 0 100-8 4 4 0 000 8z"/>
+                                </svg>
+                            </span>
+                            <strong>Member</strong>
+                            <span>Kelola profil dan status member.</span>
+                        </a>
+                        <a href="/kelola-hadiah/" class="action-tile">
+                            <span class="tile-icon text-violet-200">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v13m0-13V6a2 2 0 114 0c0 1.105-.895 2-2 2h-2zm0 0H9.5A2.5 2.5 0 117 5.5V8h5zM4 12h16M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                                </svg>
+                            </span>
+                            <strong>Hadiah</strong>
+                            <span>Atur katalog penukaran miles.</span>
+                        </a>
+                        <a href="/laporan-transaksi/" class="action-tile">
+                            <span class="tile-icon text-emerald-200">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 13.5l6-6 4 4L21 3.5M21 3.5V10m0-6.5h-6.5M4.5 20.5h15"/>
+                                </svg>
+                            </span>
+                            <strong>Laporan</strong>
+                            <span>Pantau transaksi dan performa.</span>
+                        </a>
+                    </div>
+
+                    <div class="operations-strip">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-white text-opacity-40">Status Sistem</p>
+                            <p class="mt-1 text-sm font-semibold text-white">Sinkron dengan database AeroMiles</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs uppercase tracking-widest text-emerald-200">
+                            <span class="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_18px_rgba(167,243,208,0.85)]"></span>
+                            Online
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 </div>
 
-<!-- Floating Cards -->
-<div class="max-w-5xl mx-auto px-8 -mt-10 relative z-10 pb-12">
+<style>
+.staff-dashboard {
+    color: white;
+}
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 min-h-36 flex flex-col justify-between">
-            <p class="text-xs uppercase tracking-widest text-gray-400">ID Staf</p>
-            <p class="text-3xl font-bold text-gray-900">S0001</p>
-        </div>
-        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 min-h-36 flex flex-col justify-between">
-            <p class="text-xs uppercase tracking-widest text-gray-400">Maskapai</p>
-            <p class="text-2xl font-bold text-gray-900">Garuda Indonesia</p>
-        </div>
-        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 min-h-36 flex flex-col justify-between">
-            <p class="text-xs uppercase tracking-widest text-gray-400">Klaim Menunggu</p>
-            <p class="text-3xl font-bold text-yellow-500">2</p>
-        </div>
-        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 min-h-36 flex flex-col justify-between">
-            <p class="text-xs uppercase tracking-widest text-gray-400">Disetujui / Ditolak</p>
-            <p class="text-3xl font-bold">
-                <span class="text-gray-900">1</span>
-                <span class="text-gray-300 font-light mx-1">/</span>
-                <span class="text-gray-400">1</span>
-            </p>
-        </div>
-    </div>
+.staff-photo {
+    filter: saturate(1.08) contrast(1.04);
+    object-position: center 42%;
+}
 
-    <!-- Informasi Pribadi -->
-    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-        <p class="text-xs uppercase tracking-widest text-gray-400 mb-6">Informasi Pribadi</p>
-        <div class="grid grid-cols-3 gap-8 text-sm">
-            <div>
-                <p class="text-gray-400 mb-1">Nama Lengkap</p>
-                <p class="font-semibold text-gray-900">Mr. Admin Aero</p>
-            </div>
-            <div>
-                <p class="text-gray-400 mb-1">Email</p>
-                <p class="font-semibold text-gray-900">admin@aeromiles.com</p>
-            </div>
-            <div>
-                <p class="text-gray-400 mb-1">Telepon</p>
-                <p class="font-semibold text-gray-900">+62 811111111</p>
-            </div>
-            <div>
-                <p class="text-gray-400 mb-1">Kewarganegaraan</p>
-                <p class="font-semibold text-gray-900">Indonesia</p>
-            </div>
-            <div>
-                <p class="text-gray-400 mb-1">Tanggal Lahir</p>
-                <p class="font-semibold text-gray-900">01 Januari 1988</p>
-            </div>
-        </div>
-    </div>
+.staff-aurora {
+    background:
+        linear-gradient(90deg, rgba(2, 6, 23, 0.74) 0%, rgba(2, 6, 23, 0.5) 42%, rgba(2, 6, 23, 0.28) 100%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.2) 0%, rgba(2, 6, 23, 0.64) 100%),
+        radial-gradient(circle at 18% 12%, rgba(125, 211, 252, 0.14), transparent 30%);
+}
 
-</div>
+.staff-grid {
+    background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 72%, transparent);
+}
+
+.glass-panel,
+.metric-card {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.5rem;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.115), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(26px) saturate(1.2);
+    -webkit-backdrop-filter: blur(26px) saturate(1.2);
+    box-shadow:
+        0 22px 70px rgba(2, 6, 23, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.hero-panel {
+    min-height: 18.5rem;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045)),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.16), transparent 56%);
+}
+
+.claim-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-pill,
+.crew-chip,
+.primary-link,
+.icon-action {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.095);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.pulse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #a7f3d0;
+    box-shadow: 0 0 18px rgba(167, 243, 208, 0.9);
+}
+
+.crew-chip {
+    display: flex;
+    min-width: 15rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.ops-pulse {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.ops-pulse > div,
+.claim-note {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.055);
+    padding: 0.9rem 1rem;
+}
+
+.ops-pulse p,
+.claim-note span {
+    margin-bottom: 0.35rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.ops-pulse strong,
+.claim-note strong {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.claim-note {
+    margin-top: auto;
+}
+
+.crew-avatar,
+.metric-icon,
+.tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.crew-avatar {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 9999px;
+}
+
+.icon-action,
+.primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.icon-action {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 9999px;
+}
+
+.primary-link {
+    gap: 0.65rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.icon-action:hover,
+.primary-link:hover,
+.action-tile:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.metric-card {
+    min-height: 9.2rem;
+    padding: 1.35rem;
+}
+
+.metric-icon,
+.tile-icon {
+    height: 2.35rem;
+    width: 2.35rem;
+    margin-bottom: 1.1rem;
+}
+
+.metric-label {
+    margin-bottom: 0.65rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.metric-value {
+    overflow-wrap: anywhere;
+    font-weight: 800;
+    line-height: 1.05;
+    color: white;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 0.75fr) minmax(0, 1.25fr);
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 1rem;
+}
+
+.info-row span {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.info-row strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.action-tile {
+    min-height: 13rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.65rem;
+    color: white;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-tile:last-child {
+    border-right: 0;
+}
+
+.action-tile strong {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 1.05rem;
+}
+
+.action-tile span:last-child {
+    display: block;
+    max-width: 12rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.48);
+}
+
+.operations-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.4rem 2rem;
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.progress-glow {
+    box-shadow: 0 0 24px rgba(253, 230, 138, 0.7);
+}
+
+@media (max-width: 767px) {
+    .hero-panel {
+        min-height: auto;
+    }
+
+    .ops-pulse {
+        grid-template-columns: 1fr;
+        margin-top: 1.35rem;
+    }
+
+    .crew-chip {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .info-row {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+    }
+
+    .action-tile {
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        min-height: auto;
+    }
+
+    .action-tile:last-child {
+        border-bottom: 0;
+    }
+
+    .operations-strip {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 1.4rem 1.65rem;
+    }
+}
+</style>
+
 {% endblock %}

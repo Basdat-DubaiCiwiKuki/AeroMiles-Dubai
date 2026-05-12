@@ -1,330 +1,680 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- Full-page background — dark operations/control room feel -->
-<div class="relative min-h-screen">
-    <img src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=1920&q=80"
-        alt="Operations" class="fixed inset-0 w-full h-full object-cover">
-    <div class="fixed inset-0 bg-black bg-opacity-70"></div>
-    <!-- Slate/crimson tint — beda dari semua member pages, feel "back-office/ops" -->
-    <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(30,10,10,0.55) 0%, rgba(15,23,42,0.40) 100%);"></div>
+<div class="relative min-h-screen overflow-hidden claim-admin">
+    <img src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=1920&q=88"
+        alt="Travelers at airport terminal" class="fixed inset-0 h-full w-full object-cover claim-photo">
+    <div class="fixed inset-0 bg-slate-950 bg-opacity-35"></div>
+    <div class="fixed inset-0 claim-light"></div>
+    <div class="fixed inset-0 claim-grid opacity-20"></div>
 
-    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
-        <div class="max-w-7xl mx-auto">
+    <div class="relative z-10 min-h-screen px-5 pb-14 pt-28 md:px-8">
+        <div class="mx-auto max-w-7xl">
+            <section class="mb-6 grid gap-5 lg:grid-cols-[1.28fr_0.9fr]">
+                <div class="liquid-panel hero-panel p-7 md:p-9">
+                    <div class="mb-6 flex flex-wrap items-center gap-3">
+                        <span class="status-pill">
+                            <span class="pulse-dot"></span>
+                            Claim Control
+                        </span>
+                        <span class="text-xs uppercase tracking-widest text-white text-opacity-55">{{ stats.total_menunggu }} klaim menunggu</span>
+                    </div>
 
-            <!-- Page Header -->
-            <div class="mb-10 flex items-end justify-between">
-                <div>
-                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Verifikasi</p>
-                    <h1 class="text-5xl font-bold text-white">Kelola Klaim<br><span class="opacity-40">Missing Miles</span></h1>
+                    <p class="mb-3 text-xs uppercase tracking-widest text-white text-opacity-55">Staf · Verifikasi</p>
+                    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                        <h1 class="text-3xl font-bold leading-tight text-white md:text-5xl">
+                            Kelola Klaim<br>
+                            <span class="text-2xl text-white text-opacity-55 md:text-4xl">Missing Miles</span>
+                        </h1>
+
+                        <a href="#claimTable" class="primary-link">
+                            Review Klaim
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="ops-pulse">
+                        <div>
+                            <p>Ditampilkan</p>
+                            <strong>{{ stats.total_ditampilkan }} klaim</strong>
+                        </div>
+                        <div>
+                            <p>Disetujui Saya</p>
+                            <strong>{{ stats.disetujui_saya }}</strong>
+                        </div>
+                        <div>
+                            <p>Ditolak Saya</p>
+                            <strong>{{ stats.ditolak_saya }}</strong>
+                        </div>
+                    </div>
                 </div>
-                <!-- Live pending indicator -->
-                <div class="flex items-center gap-3 border border-white border-opacity-20 rounded-2xl px-5 py-3 backdrop-blur-sm" style="background: rgba(255,255,255,0.04);">
-                    <span class="relative flex h-2.5 w-2.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
-                    </span>
-                    <span class="text-xs uppercase tracking-widest text-white opacity-60">
-                        <span class="text-amber-300 font-bold">{{ stats.total_menunggu }}</span> klaim menunggu
-                    </span>
-                </div>
-            </div>
 
-            <!-- Flash -->
+                <aside class="liquid-panel insight-panel p-7">
+                    <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-50">Antrean Berikutnya</p>
+                    {% if next_claim %}
+                    <div class="next-claim">
+                        <span>{{ next_claim.nomor_klaim }}</span>
+                        <strong>{{ next_claim.flight_number }} · {{ next_claim.rute }}</strong>
+                        <p>{{ next_claim.nama_member }} · {{ next_claim.timestamp|date:"d M Y" }}</p>
+                    </div>
+                    {% else %}
+                    <div class="next-claim">
+                        <span>Queue</span>
+                        <strong>Tidak ada klaim menunggu</strong>
+                        <p>Semua klaim sudah diproses.</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="claim-meter">
+                        <div class="flex items-end justify-between gap-4">
+                            <div>
+                                <p class="text-6xl font-bold leading-none text-amber-100">{{ stats.total_menunggu }}</p>
+                                <p class="mt-2 text-sm text-white text-opacity-60">klaim masih perlu divalidasi</p>
+                            </div>
+                            <span class="meter-icon">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="mt-6 h-2 overflow-hidden rounded-full bg-white bg-opacity-15">
+                            <div class="h-full rounded-full bg-amber-100 progress-glow" style="width: {% if stats.total_menunggu %}78{% else %}12{% endif %}%;"></div>
+                        </div>
+                    </div>
+                </aside>
+            </section>
+
             {% if success_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">✓ {{ success_msg }}</div>
+            <div class="liquid-panel mb-5 px-5 py-4 text-sm text-white" id="flash">{{ success_msg }}</div>
             {% endif %}
             {% if error_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">✕ {{ error_msg }}</div>
+            <div class="liquid-panel mb-5 border-red-200 border-opacity-45 px-5 py-4 text-sm text-red-100" id="flash">{{ error_msg }}</div>
             {% endif %}
 
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-4 mb-8">
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Menunggu (semua staf)</p>
-                    <p class="text-4xl font-bold text-amber-300">{{ stats.total_menunggu }}</p>
-                </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Disetujui oleh saya</p>
-                    <p class="text-4xl font-bold text-emerald-300">{{ stats.disetujui_saya }}</p>
-                </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Ditolak oleh saya</p>
-                    <p class="text-4xl font-bold text-red-300">{{ stats.ditolak_saya }}</p>
-                </div>
-            </div>
-
-            <!-- Filter Card -->
-            <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm" style="background: rgba(255,255,255,0.03);">
-                <form method="get" class="flex flex-wrap items-end gap-4">
-
-                    <div class="flex flex-col gap-1.5 min-w-36">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Status</label>
-                        <select name="status"
-                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
-                            style="background-color: transparent;">
-                            <option value="semua"     class="text-gray-900" {% if status_filter == 'semua' %}selected{% endif %}>Semua Status</option>
-                            <option value="Menunggu"  class="text-gray-900" {% if status_filter == 'Menunggu' %}selected{% endif %}>Menunggu</option>
-                            <option value="Disetujui" class="text-gray-900" {% if status_filter == 'Disetujui' %}selected{% endif %}>Disetujui</option>
-                            <option value="Ditolak"   class="text-gray-900" {% if status_filter == 'Ditolak' %}selected{% endif %}>Ditolak</option>
+            <section class="liquid-panel mb-6 p-5 md:p-6">
+                <form method="get" class="grid gap-4 xl:grid-cols-[12rem_15rem_10rem_10rem_1fr_auto] xl:items-end">
+                    <div>
+                        <label class="field-label">Status</label>
+                        <select name="status" class="glass-input">
+                            <option value="semua" {% if status_filter == 'semua' %}selected{% endif %}>Semua Status</option>
+                            <option value="Menunggu" {% if status_filter == 'Menunggu' %}selected{% endif %}>Menunggu</option>
+                            <option value="Disetujui" {% if status_filter == 'Disetujui' %}selected{% endif %}>Disetujui</option>
+                            <option value="Ditolak" {% if status_filter == 'Ditolak' %}selected{% endif %}>Ditolak</option>
                         </select>
                     </div>
 
-                    <div class="flex flex-col gap-1.5 min-w-44">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Maskapai</label>
-                        <select name="maskapai"
-                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition appearance-none cursor-pointer"
-                            style="background-color: transparent;">
-                            <option value="semua" class="text-gray-900" {% if maskapai_filter == 'semua' %}selected{% endif %}>Semua Maskapai</option>
+                    <div>
+                        <label class="field-label">Maskapai</label>
+                        <select name="maskapai" class="glass-input">
+                            <option value="semua" {% if maskapai_filter == 'semua' %}selected{% endif %}>Semua Maskapai</option>
                             {% for kode,nama in maskapai_list %}
-                            <option value="{{ kode }}" class="text-gray-900" {% if maskapai_filter == kode %}selected{% endif %}>{{ kode }} – {{ nama }}</option>
+                            <option value="{{ kode }}" {% if maskapai_filter == kode %}selected{% endif %}>{{ kode }} · {{ nama }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Dari</label>
-                        <input type="date" name="tgl_dari" value="{{ tgl_dari }}"
-                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition"
-                            style="color-scheme: dark;">
+                    <div>
+                        <label class="field-label">Dari</label>
+                        <input type="date" name="tgl_dari" value="{{ tgl_dari }}" class="glass-input" style="color-scheme: dark;">
                     </div>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Sampai</label>
-                        <input type="date" name="tgl_sampai" value="{{ tgl_sampai }}"
-                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition"
-                            style="color-scheme: dark;">
+                    <div>
+                        <label class="field-label">Sampai</label>
+                        <input type="date" name="tgl_sampai" value="{{ tgl_sampai }}" class="glass-input" style="color-scheme: dark;">
                     </div>
 
-                    <div class="flex flex-col gap-1.5 flex-1 min-w-48">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Member</label>
-                        <input type="text" name="search" value="{{ search }}" placeholder="email member..."
-                            class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    <div>
+                        <label class="field-label">Cari Member</label>
+                        <input type="text" name="search" value="{{ search }}" placeholder="email atau nama member" class="glass-input">
                     </div>
 
-                    <div class="flex gap-2 pb-0.5">
-                        <button type="submit"
-                            class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition">
-                            Filter
-                        </button>
-                        <a href="{% url 'klaim_staf' %}"
-                            class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition">
-                            Reset
-                        </a>
+                    <div class="flex gap-3">
+                        <button type="submit" class="primary-link justify-center">Filter</button>
+                        <a href="{% url 'klaim_staf' %}" class="secondary-link">Reset</a>
                     </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- Table Card -->
-            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
-                {% if klaim_list %}
+            <section id="claimTable" class="liquid-panel overflow-hidden">
+                <div class="flex flex-col gap-4 border-b border-white border-opacity-10 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8">
+                    <div>
+                        <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Database Klaim</p>
+                        <h2 class="text-2xl font-bold text-white">Daftar Klaim Missing Miles</h2>
+                    </div>
+                    <div class="text-xs uppercase tracking-widest text-white text-opacity-50">
+                        {{ klaim_list|length }} klaim ditampilkan
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full min-w-[1120px] text-sm">
                         <thead>
                             <tr class="border-b border-white border-opacity-10">
-                                <th class="text-left px-6 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Klaim</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Maskapai</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Rute</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tgl. Terbang</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Flight</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kelas</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Pengajuan</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                                <th class="table-head pl-8">No. Klaim</th>
+                                <th class="table-head">Member</th>
+                                <th class="table-head">Maskapai</th>
+                                <th class="table-head">Rute</th>
+                                <th class="table-head">Terbang</th>
+                                <th class="table-head">Flight</th>
+                                <th class="table-head">Kelas</th>
+                                <th class="table-head">Pengajuan</th>
+                                <th class="table-head">Status</th>
+                                <th class="table-head pr-8">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white divide-opacity-5">
                             {% for k in klaim_list %}
-                            <tr class="hover:bg-white hover:bg-opacity-5 transition group klaim-row"
-                                style="animation: fadeIn 0.3s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
-                                <td class="px-6 py-4">
-                                    <span class="text-white text-xs font-mono font-semibold opacity-60">{{ k.nomor_klaim }}</span>
+                            <tr class="claim-row">
+                                <td class="table-cell pl-8">
+                                    <span class="claim-number">{{ k.nomor_klaim }}</span>
                                 </td>
-                                <td class="px-4 py-4">
-                                    <p class="text-white text-sm font-medium leading-tight">{{ k.nama_member }}</p>
-                                    <p class="text-white opacity-40 text-xs mt-0.5">{{ k.email_member }}</p>
+                                <td class="table-cell">
+                                    <p class="font-semibold text-white">{{ k.nama_member }}</p>
+                                    <p class="mt-1 text-xs text-white text-opacity-48">{{ k.email_member }}</p>
                                 </td>
-                                <td class="px-4 py-4">
-                                    <span class="text-xs font-bold text-white bg-white bg-opacity-15 px-2 py-1 rounded-lg">{{ k.maskapai }}</span>
+                                <td class="table-cell">
+                                    <span class="soft-pill">{{ k.nama_maskapai }}</span>
                                 </td>
-                                <td class="px-4 py-4">
-                                    <div class="flex items-center gap-1.5 text-white">
-                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_asal }}</span>
-                                        <span class="opacity-30 text-xs">→</span>
-                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_tujuan }}</span>
-                                    </div>
+                                <td class="table-cell">
+                                    <span class="route-pill">{{ k.bandara_asal }} <span>→</span> {{ k.bandara_tujuan }}</span>
                                 </td>
-                                <td class="px-4 py-4 text-white opacity-50 text-xs">{{ k.tanggal_penerbangan }}</td>
-                                <td class="px-4 py-4">
-                                    <span class="text-white font-mono text-xs bg-white bg-opacity-10 px-2 py-1 rounded">{{ k.flight_number }}</span>
+                                <td class="table-cell text-white text-opacity-55">{{ k.tanggal_penerbangan|date:"d M Y" }}</td>
+                                <td class="table-cell">
+                                    <span class="claim-number">{{ k.flight_number }}</span>
                                 </td>
-                                <td class="px-4 py-4 text-white opacity-50 text-xs">{{ k.kelas_kabin }}</td>
-                                <td class="px-4 py-4 text-white opacity-40 text-xs">{{ k.timestamp }}</td>
-                                <td class="px-4 py-4">
+                                <td class="table-cell text-white text-opacity-55">{{ k.kelas_kabin }}</td>
+                                <td class="table-cell text-white text-opacity-45">{{ k.timestamp|date:"d M Y" }} · {{ k.timestamp|time:"H:i" }}</td>
+                                <td class="table-cell">
                                     {% if k.status_penerimaan == 'Menunggu' %}
-                                    <span class="inline-flex items-center gap-1.5 bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                        Menunggu
-                                    </span>
+                                    <span class="status-chip status-wait"><span></span>Menunggu</span>
                                     {% elif k.status_penerimaan == 'Disetujui' %}
-                                    <span class="inline-block bg-emerald-400 bg-opacity-20 text-emerald-300 border border-emerald-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Disetujui</span>
+                                    <span class="status-chip status-ok">Disetujui</span>
                                     {% else %}
-                                    <span class="inline-block bg-red-400 bg-opacity-20 text-red-300 border border-red-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Ditolak</span>
+                                    <span class="status-chip status-no">Ditolak</span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-4">
+                                <td class="table-cell pr-8">
                                     {% if k.status_penerimaan == 'Menunggu' %}
                                     <div class="flex items-center gap-2">
                                         <button
-                                            data-id="{{ k.id }}"
+                                            data-url="{% url 'klaim_proses' k.id %}"
                                             data-nom="{{ k.nomor_klaim }}"
                                             data-mem="{{ k.nama_member }}"
-                                            data-rut="{{ k.bandara_asal }} → {{ k.bandara_tujuan }}"
+                                            data-rut="{{ k.rute }}"
                                             data-kls="{{ k.kelas_kabin }}"
                                             onclick="openSetujui(this)"
-                                            class="flex items-center gap-1 text-emerald-300 border border-emerald-400 border-opacity-30 bg-emerald-400 bg-opacity-10 hover:bg-opacity-25 text-xs px-3 py-2.5 rounded-full transition uppercase tracking-wider font-semibold">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                            </svg>
+                                            class="action-button approve-button"
+                                            type="button">
                                             Setujui
                                         </button>
                                         <button
-                                            data-id="{{ k.id }}"
+                                            data-url="{% url 'klaim_proses' k.id %}"
                                             data-nom="{{ k.nomor_klaim }}"
                                             data-mem="{{ k.nama_member }}"
-                                            data-rut="{{ k.bandara_asal }} → {{ k.bandara_tujuan }}"
+                                            data-rut="{{ k.rute }}"
                                             data-kls="{{ k.kelas_kabin }}"
                                             onclick="openTolak(this)"
-                                            class="flex items-center gap-1 text-red-300 border border-red-400 border-opacity-30 bg-red-400 bg-opacity-10 hover:bg-opacity-25 text-xs px-3 py-2.5 rounded-full transition uppercase tracking-wider font-semibold">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
+                                            class="action-button reject-button"
+                                            type="button">
                                             Tolak
                                         </button>
                                     </div>
                                     {% else %}
-                                    <span class="text-white opacity-20 text-xs">—</span>
+                                    <span class="text-white text-opacity-25">Selesai</span>
                                     {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="px-8 py-20 text-center">
+                                    <p class="text-sm uppercase tracking-widest text-white text-opacity-45">Tidak ada klaim yang sesuai filter.</p>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <div class="py-24 text-center">
-                    <p class="text-5xl mb-6 opacity-30">📋</p>
-                    <p class="text-white opacity-40 text-sm">Tidak ada klaim yang sesuai dengan filter yang dipilih.</p>
-                </div>
-                {% endif %}
-            </div>
-
+            </section>
         </div>
     </div>
 </div>
 
-
-<!-- ── MODAL: SETUJUI ── -->
-<div id="m-setujui" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
-        style="background: rgba(255,255,255,0.05);">
-        <div class="flex justify-between items-start mb-6">
+<div id="m-setujui" class="modal-backdrop hidden">
+    <div class="liquid-panel modal-panel">
+        <div class="mb-6 flex items-start justify-between gap-5">
             <div>
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
-                <h2 class="text-xl font-bold text-white">Setujui Klaim?</h2>
+                <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Konfirmasi</p>
+                <h2 class="text-2xl font-bold text-white">Setujui Klaim?</h2>
             </div>
-            <button onclick="closeModal('m-setujui')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button type="button" onclick="closeModal('m-setujui')" class="icon-close" aria-label="Tutup modal">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <p class="text-sm text-white opacity-60 mb-6">Miles akan ditambahkan ke akun member sesuai rute dan kelas kabin yang diklaim.</p>
-        <div class="border border-emerald-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-3 bg-emerald-400 bg-opacity-5">
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">No. Klaim</span>
-                <span class="text-white text-sm font-mono font-semibold" id="s-nom"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Member</span>
-                <span class="text-white text-sm" id="s-mem"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Rute</span>
-                <span class="text-white text-sm font-mono" id="s-rut"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Kelas</span>
-                <span class="text-white text-sm" id="s-kls"></span>
-            </div>
+        <p class="mb-6 text-sm leading-6 text-white text-opacity-62">Miles akan ditambahkan ke akun member sesuai aturan klaim yang berlaku.</p>
+        <div class="modal-summary approve-summary">
+            <div><span>No. Klaim</span><strong id="s-nom"></strong></div>
+            <div><span>Member</span><strong id="s-mem"></strong></div>
+            <div><span>Rute</span><strong id="s-rut"></strong></div>
+            <div><span>Kelas</span><strong id="s-kls"></strong></div>
         </div>
         <form method="post" id="f-setujui" action="">
             {% csrf_token %}
             <input type="hidden" name="aksi" value="setujui">
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal('m-setujui')"
-                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-emerald-400 text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-emerald-300 transition">
-                    Setujui
-                </button>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal('m-setujui')" class="secondary-link flex-1 justify-center">Batal</button>
+                <button type="submit" class="primary-link flex-1 justify-center">Setujui</button>
             </div>
         </form>
     </div>
 </div>
 
-
-<!-- ── MODAL: TOLAK ── -->
-<div id="m-tolak" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
-        style="background: rgba(255,255,255,0.05);">
-        <div class="flex justify-between items-start mb-6">
+<div id="m-tolak" class="modal-backdrop hidden">
+    <div class="liquid-panel modal-panel">
+        <div class="mb-6 flex items-start justify-between gap-5">
             <div>
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
-                <h2 class="text-xl font-bold text-white">Tolak Klaim?</h2>
+                <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Konfirmasi</p>
+                <h2 class="text-2xl font-bold text-white">Tolak Klaim?</h2>
             </div>
-            <button onclick="closeModal('m-tolak')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button type="button" onclick="closeModal('m-tolak')" class="icon-close" aria-label="Tutup modal">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <p class="text-sm text-white opacity-60 mb-6">Klaim akan ditolak dan status akan diperbarui untuk member.</p>
-        <div class="border border-red-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-3 bg-red-400 bg-opacity-5">
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">No. Klaim</span>
-                <span class="text-white text-sm font-mono font-semibold" id="t-nom"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Member</span>
-                <span class="text-white text-sm" id="t-mem"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Rute</span>
-                <span class="text-white text-sm font-mono" id="t-rut"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Kelas</span>
-                <span class="text-white text-sm" id="t-kls"></span>
-            </div>
+        <p class="mb-6 text-sm leading-6 text-white text-opacity-62">Status klaim akan diperbarui dan member dapat melihat hasil verifikasi.</p>
+        <div class="modal-summary reject-summary">
+            <div><span>No. Klaim</span><strong id="t-nom"></strong></div>
+            <div><span>Member</span><strong id="t-mem"></strong></div>
+            <div><span>Rute</span><strong id="t-rut"></strong></div>
+            <div><span>Kelas</span><strong id="t-kls"></strong></div>
         </div>
         <form method="post" id="f-tolak" action="">
             {% csrf_token %}
             <input type="hidden" name="aksi" value="tolak">
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal('m-tolak')"
-                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
-                    Tolak
-                </button>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal('m-tolak')" class="secondary-link flex-1 justify-center">Batal</button>
+                <button type="submit" class="danger-submit flex-1 justify-center">Tolak</button>
             </div>
         </form>
     </div>
 </div>
 
-
 <style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-8px); }
-    to   { opacity: 1; transform: translateX(0); }
+.claim-admin {
+    color: white;
+}
+
+.claim-photo {
+    filter: saturate(1.08) contrast(1.03) blur(1px);
+    object-position: center center;
+    transform: scale(1.012);
+}
+
+.claim-light {
+    background:
+        linear-gradient(90deg, rgba(2, 6, 23, 0.68) 0%, rgba(15, 23, 42, 0.46) 44%, rgba(15, 23, 42, 0.18) 100%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.08) 0%, rgba(2, 6, 23, 0.58) 100%),
+        radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.16), transparent 24%);
+}
+
+.claim-grid {
+    background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 74px 74px;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 70%, transparent);
+}
+
+.liquid-panel {
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 2.25rem;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07)),
+        rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    box-shadow:
+        0 24px 80px rgba(2, 6, 23, 0.32),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-panel {
+    min-height: 18.5rem;
+}
+
+.insight-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-pill,
+.primary-link,
+.secondary-link,
+.danger-submit,
+.icon-close,
+.meter-icon {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.58rem 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.pulse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #fde68a;
+    box-shadow: 0 0 18px rgba(253, 230, 138, 0.9);
+}
+
+.primary-link,
+.secondary-link,
+.danger-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.82rem 1.08rem;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.primary-link {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.secondary-link {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.danger-submit {
+    justify-content: center;
+    background: rgba(248, 113, 113, 0.32);
+    color: #fee2e2;
+}
+
+.primary-link:hover,
+.secondary-link:hover,
+.danger-submit:hover,
+.icon-close:hover,
+.action-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.42);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.ops-pulse > div,
+.next-claim,
+.claim-meter,
+.modal-summary {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1.65rem;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse > div,
+.next-claim,
+.claim-meter {
+    padding: 1rem;
+}
+
+.ops-pulse p,
+.next-claim span,
+.modal-summary span {
+    margin-bottom: 0.35rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.ops-pulse strong,
+.next-claim strong,
+.modal-summary strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.next-claim p {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.claim-meter {
+    margin-top: auto;
+}
+
+.meter-icon {
+    display: inline-flex;
+    height: 3.4rem;
+    width: 3.4rem;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.progress-glow {
+    box-shadow: 0 0 26px rgba(254, 243, 199, 0.8);
+}
+
+.field-label,
+.table-head {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.65rem;
+}
+
+.glass-input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.85rem 1rem;
+    color: white;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-input:focus {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.36);
+}
+
+.glass-input option {
+    color: #111827;
+}
+
+.table-head {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.table-cell {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.claim-row {
+    transition: background 0.2s ease;
+}
+
+.claim-row:hover {
+    background: rgba(255, 255, 255, 0.075);
+}
+
+.claim-number,
+.soft-pill,
+.route-pill,
+.status-chip,
+.action-button {
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.claim-number,
+.soft-pill,
+.route-pill {
+    display: inline-flex;
+    padding: 0.38rem 0.72rem;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.72rem;
+}
+
+.claim-number,
+.route-pill {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.route-pill span {
+    margin: 0 0.35rem;
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.38rem 0.78rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.status-chip span {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 9999px;
+    background: currentColor;
+}
+
+.status-wait { color: #fde68a; border-color: rgba(251, 191, 36, 0.34); background: rgba(245, 158, 11, 0.16); }
+.status-ok { color: #bbf7d0; border-color: rgba(74, 222, 128, 0.32); background: rgba(34, 197, 94, 0.14); }
+.status-no { color: #fecaca; border-color: rgba(248, 113, 113, 0.32); background: rgba(239, 68, 68, 0.14); }
+
+.action-button {
+    padding: 0.58rem 0.82rem;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.approve-button {
+    color: #bbf7d0;
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.reject-button {
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.3);
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(2, 6, 23, 0.66);
+    backdrop-filter: blur(10px);
+}
+
+.modal-backdrop:not(.hidden) {
+    display: flex;
+}
+
+.modal-panel {
+    width: 100%;
+    max-width: 34rem;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.icon-close {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.modal-summary {
+    padding: 1rem;
+}
+
+.modal-summary > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-summary > div:last-child {
+    border-bottom: 0;
+}
+
+.approve-summary { border-color: rgba(74, 222, 128, 0.22); }
+.reject-summary { border-color: rgba(248, 113, 113, 0.22); }
+
+@media (max-width: 767px) {
+    .ops-pulse {
+        grid-template-columns: 1fr;
+        margin-top: 1.35rem;
+    }
+
+    .liquid-panel {
+        border-radius: 1.65rem;
+    }
 }
 </style>
 
@@ -333,25 +683,27 @@ function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
+
 function closeModal(id) {
     document.getElementById(id).classList.add('hidden');
     document.body.style.overflow = '';
 }
 
+function setModalFields(prefix, btn) {
+    document.getElementById('f-' + prefix).action = btn.dataset.url;
+    document.getElementById(prefix.charAt(0) + '-nom').textContent = btn.dataset.nom;
+    document.getElementById(prefix.charAt(0) + '-mem').textContent = btn.dataset.mem;
+    document.getElementById(prefix.charAt(0) + '-rut').textContent = btn.dataset.rut;
+    document.getElementById(prefix.charAt(0) + '-kls').textContent = btn.dataset.kls;
+}
+
 function openSetujui(btn) {
-    document.getElementById('f-setujui').action = '/kelola-klaim/proses/' + btn.dataset.id + '/';
-    document.getElementById('s-nom').textContent = btn.dataset.nom;
-    document.getElementById('s-mem').textContent = btn.dataset.mem;
-    document.getElementById('s-rut').textContent = btn.dataset.rut;
-    document.getElementById('s-kls').textContent = btn.dataset.kls;
+    setModalFields('setujui', btn);
     openModal('m-setujui');
 }
+
 function openTolak(btn) {
-    document.getElementById('f-tolak').action = '/kelola-klaim/proses/' + btn.dataset.id + '/';
-    document.getElementById('t-nom').textContent = btn.dataset.nom;
-    document.getElementById('t-mem').textContent = btn.dataset.mem;
-    document.getElementById('t-rut').textContent = btn.dataset.rut;
-    document.getElementById('t-kls').textContent = btn.dataset.kls;
+    setModalFields('tolak', btn);
     openModal('m-tolak');
 }
 

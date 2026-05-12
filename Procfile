@@ -1,1 +1,1 @@
-web: gunicorn aeromiles.wsgi
+web: gunicorn aeromiles.wsgi --bind 0.0.0.0:$PORT

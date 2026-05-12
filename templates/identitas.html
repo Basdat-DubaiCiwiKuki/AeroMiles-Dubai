@@ -2,126 +2,162 @@
 
 {% block content %}
 
-<!-- Hero Section -->
-<div class="relative h-72 overflow-hidden">
+<div class="relative min-h-screen overflow-hidden">
     <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80"
-        alt="Travel" class="w-full h-full object-cover">
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-    <div class="absolute inset-0 flex flex-col justify-end px-12 pb-16 text-white">
-        <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Identitas Saya</p>
-        <h1 class="text-4xl font-bold">Dokumen</h1>
-        <h2 class="text-4xl font-bold opacity-60">& Identitas</h2>
+        alt="Travel" class="fixed inset-0 w-full h-full object-cover">
+    <div class="fixed inset-0 bg-black bg-opacity-60"></div>
+    <div class="fixed inset-0" style="background: linear-gradient(145deg, rgba(15,23,42,0.78) 0%, rgba(30,58,138,0.28) 48%, rgba(2,6,23,0.72) 100%);"></div>
+    <div class="fixed inset-0 opacity-25 identity-grid"></div>
+
+    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
+        <div class="max-w-6xl mx-auto identity-shell">
+
+            <div class="mb-10 flex items-end justify-between gap-8">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Identitas Saya</p>
+                    <h1 class="text-5xl font-bold text-white leading-tight">
+                        Dokumen<br><span class="opacity-40">& Identitas</span>
+                    </h1>
+                    <p class="text-white opacity-40 text-sm mt-3 max-w-xl">
+                        Kelola dokumen perjalanan dan kartu identitas yang tersimpan di profil AeroMiles.
+                    </p>
+                </div>
+                <button id="btnAddIdentity"
+                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                    + Tambah Identitas
+                </button>
+            </div>
+
+            {% if success_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
+                {{ success_msg }}
+            </div>
+            {% endif %}
+            {% if error_msg %}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
+                {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="glass-card p-7 col-span-1 min-h-36 flex flex-col justify-between">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Dokumen</p>
+                    <p id="totalDokumen" class="text-4xl font-bold text-white">0</p>
+                </div>
+                <div class="glass-card p-7 col-span-3 min-h-36 flex items-center justify-between gap-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Pencarian Dokumen</p>
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 text-white opacity-35 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="Cari nomor dokumen, jenis, atau negara..."
+                                oninput="filterTable()"
+                                class="w-full min-w-[24rem] text-sm text-white placeholder-white placeholder-opacity-30 focus:outline-none bg-transparent">
+                        </div>
+                    </div>
+                    <button onclick="clearSearch()" id="clearBtn"
+                        class="text-white opacity-35 hover:opacity-70 transition hidden text-xl leading-none">x</button>
+                </div>
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Arsip</p>
+                        <h2 class="text-xl font-bold text-white">Daftar Identitas</h2>
+                    </div>
+                    <div class="hidden md:flex items-center gap-3 text-xs uppercase tracking-widest text-white opacity-35">
+                        <span class="w-2 h-2 rounded-full bg-emerald-300"></span>
+                        Tersinkron
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[780px] text-sm">
+                        <thead>
+                            <tr class="border-b border-white border-opacity-10">
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Dokumen</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Jenis</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Negara</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Terbit</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Habis</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
+                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-white divide-opacity-5"></tbody>
+                    </table>
+                </div>
+
+                <div id="emptyState" class="px-8 py-24 text-center hidden">
+                    <p class="text-white opacity-30 text-5xl mb-5">ID</p>
+                    <p class="text-white opacity-40 text-sm uppercase tracking-widest">Belum ada dokumen identitas.</p>
+                </div>
+                <div id="emptySearch" class="px-8 py-24 text-center hidden">
+                    <p class="text-white opacity-30 text-5xl mb-5">?</p>
+                    <p class="text-white opacity-40 text-sm uppercase tracking-widest">Tidak ada dokumen yang cocok.</p>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
-<!-- Content -->
-<div class="max-w-5xl mx-auto px-8 -mt-10 relative z-10 pb-12">
-
-    <!-- Header Card -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-4 flex items-center justify-between">
-        <div>
-            <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Total Dokumen</p>
-            <p id="totalDokumen" class="text-2xl font-bold text-gray-900">3</p>
-        </div>
-        <button id="btnAddIdentity"
-            class="bg-[#0f172a] text-white text-xs uppercase tracking-wider px-5 py-3 rounded-xl hover:bg-[#1e293b] transition font-medium">
-            + Tambah Identitas
-        </button>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 mb-4 flex items-center gap-3">
-        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Cari nomor dokumen, jenis, atau negara..."
-            oninput="filterTable()"
-            class="w-full text-sm text-gray-700 placeholder-gray-300 focus:outline-none bg-transparent">
-        <button onclick="clearSearch()" id="clearBtn"
-            class="text-gray-300 hover:text-gray-500 transition hidden text-lg leading-none">✕</button>
-    </div>
-
-    <!-- Tabel -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-x-auto">
-        <table class="w-full min-w-[700px] text-sm">
-            <thead>
-                <tr class="border-b border-gray-50">
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">No. Dokumen</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Jenis</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Negara</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Terbit</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Habis</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Status</th>
-                    <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-gray-400 font-medium">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
-        </table>
-        <div id="emptyState" class="px-8 py-16 text-center text-gray-300 text-xs uppercase tracking-widest hidden">
-            Belum ada dokumen identitas.
-        </div>
-        <div id="emptySearch" class="px-8 py-16 text-center text-gray-300 text-xs uppercase tracking-widest hidden">
-            Tidak ada dokumen yang cocok.
-        </div>
-    </div>
-
-</div>
-
-<!-- MODAL TAMBAH / EDIT -->
-<div id="identityModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div class="flex items-center justify-between mb-6">
+<div id="identityModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+    <div class="glass-modal p-8 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-8">
             <div>
-                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1" id="modalSubtitle">Dokumen Baru</p>
-                <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Tambah Identitas</h2>
+                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1" id="modalSubtitle">Dokumen Baru</p>
+                <h2 class="text-xl font-bold text-white" id="modalTitle">Tambah Identitas</h2>
             </div>
-            <button id="closeModal" class="text-gray-300 hover:text-gray-600 transition text-xl">✕</button>
+            <button id="closeModal" class="text-white opacity-30 hover:opacity-70 transition text-xl">x</button>
         </div>
 
-        <form id="identityForm" class="space-y-4">
+        <form id="identityForm" class="space-y-5" method="post" action="{% url 'identitas_tambah' %}">
+            {% csrf_token %}
             <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nomor Dokumen *</label>
-                <input id="docNumber" type="text" required placeholder="Contoh: A12345678"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                <label class="block text-xs uppercase tracking-widest text-white opacity-40 mb-2">Nomor Dokumen *</label>
+                <input id="docNumber" name="nomor" type="text" required placeholder="Nomor dokumen"
+                    class="glass-input w-full rounded-2xl px-4 py-3 text-sm text-white placeholder-white placeholder-opacity-25 focus:outline-none">
             </div>
             <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Jenis Dokumen *</label>
-                <select id="docType" required
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                    <option value="Paspor">Paspor</option>
-                    <option value="KTP">KTP</option>
-                    <option value="SIM">SIM</option>
+                <label class="block text-xs uppercase tracking-widest text-white opacity-40 mb-2">Jenis Dokumen *</label>
+                <select id="docType" name="jenis" required
+                    class="glass-input w-full rounded-2xl px-4 py-3 text-sm text-white focus:outline-none">
+                    {% for identity_type in identity_types %}
+                    <option value="{{ identity_type }}">{{ identity_type }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Negara Penerbit *</label>
-                <input id="docCountry" type="text" required placeholder="Indonesia"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                <label class="block text-xs uppercase tracking-widest text-white opacity-40 mb-2">Negara Penerbit *</label>
+                <input id="docCountry" name="negara_penerbit" type="text" required placeholder="Negara penerbit"
+                    class="glass-input w-full rounded-2xl px-4 py-3 text-sm text-white placeholder-white placeholder-opacity-25 focus:outline-none">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Terbit *</label>
-                    <input id="docIssued" type="date" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                    <label class="block text-xs uppercase tracking-widest text-white opacity-40 mb-2">Tanggal Terbit *</label>
+                    <input id="docIssued" name="tanggal_terbit" type="date" required
+                        class="glass-input w-full rounded-2xl px-4 py-3 text-sm text-white focus:outline-none" style="color-scheme: dark;">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Tanggal Habis *</label>
-                    <input id="docExpiry" type="date" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                    <label class="block text-xs uppercase tracking-widest text-white opacity-40 mb-2">Tanggal Habis *</label>
+                    <input id="docExpiry" name="tanggal_habis" type="date" required
+                        class="glass-input w-full rounded-2xl px-4 py-3 text-sm text-white focus:outline-none" style="color-scheme: dark;">
                 </div>
             </div>
             <input id="currentDocId" type="hidden" value="">
 
-            <!-- Error message -->
-            <p id="formError" class="text-xs text-red-400 hidden"></p>
+            <p id="formError" class="text-xs text-red-300 hidden"></p>
 
-            <div class="flex gap-3 pt-2">
+            <div class="flex gap-3 pt-3">
                 <button type="button" id="cancelModal"
-                    class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
+                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
                     Batal
                 </button>
                 <button type="submit"
-                    class="flex-1 py-3 bg-[#0f172a] text-white rounded-xl text-sm hover:bg-[#1e293b] transition uppercase tracking-wider font-medium">
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
                     Simpan
                 </button>
             </div>
@@ -129,32 +165,97 @@
     </div>
 </div>
 
-<!-- MODAL HAPUS -->
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center">
-        <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">Konfirmasi</p>
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Hapus Identitas?</h2>
-        <p class="text-sm text-gray-400 mb-8">Tindakan ini tidak dapat dibatalkan.</p>
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+    <div class="glass-modal p-8 w-full max-w-sm mx-4 text-center">
+        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Konfirmasi</p>
+        <h2 class="text-xl font-bold text-white mb-2">Hapus Identitas?</h2>
+        <p class="text-sm text-white opacity-45 mb-8">Tindakan ini tidak dapat dibatalkan.</p>
+        <form method="post" id="deleteForm" action="">
+            {% csrf_token %}
         <div class="flex gap-3">
             <button id="cancelDelete"
-                class="flex-1 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition uppercase tracking-wider">
+                type="button"
+                class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
                 Batal
             </button>
             <button id="confirmDelete"
-                class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition uppercase tracking-wider font-medium">
+                type="submit"
+                class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
                 Hapus
             </button>
         </div>
+        </form>
     </div>
 </div>
 
+<style>
+.identity-grid {
+    background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 72%, transparent);
+}
+
+.glass-card,
+.glass-modal {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.25),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.glass-modal {
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.glass-input {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-input:focus {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.glass-input option {
+    color: #111827;
+}
+
+.identity-shell {
+    animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
 <script>
     const identityList = [
-        { id: 1, number: 'A12345678', type: 'Paspor', country: 'Indonesia', issued: '2020-01-15', expiry: '2030-01-15' },
-        { id: 2, number: '3275012345678901', type: 'KTP', country: 'Indonesia', issued: '2019-06-01', expiry: '2024-06-01' },
-        { id: 3, number: 'SIM0001', type: 'SIM', country: 'Indonesia', issued: '2026-04-12', expiry: '2031-04-12' }
+        {% for item in identitas_list %}
+        {
+            id: {{ forloop.counter }},
+            number: '{{ item.nomor|escapejs }}',
+            type: '{{ item.jenis|escapejs }}',
+            country: '{{ item.negara_penerbit|escapejs }}',
+            issued: '{{ item.tanggal_terbit|date:"Y-m-d" }}',
+            expiry: '{{ item.tanggal_habis|date:"Y-m-d" }}',
+            editUrl: '{% url "identitas_edit" item.nomor %}',
+            deleteUrl: '{% url "identitas_hapus" item.nomor %}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
+    const addIdentityUrl = '{% url "identitas_tambah" %}';
     const tableBody = document.getElementById('tableBody');
     const emptyState = document.getElementById('emptyState');
     const emptySearch = document.getElementById('emptySearch');
@@ -170,6 +271,8 @@
     const currentDocId = document.getElementById('currentDocId');
     const formError = document.getElementById('formError');
     const totalDokumen = document.getElementById('totalDokumen');
+    const identityForm = document.getElementById('identityForm');
+    const deleteForm = document.getElementById('deleteForm');
 
     let deletingId = null;
 
@@ -195,22 +298,24 @@
             const status = getStatus(item.expiry);
             const searchStr = `${item.number} ${item.type} ${item.country}`.toLowerCase();
             tableBody.insertAdjacentHTML('beforeend', `
-                <tr class="hover:bg-gray-50 transition" data-search="${searchStr}">
-                    <td class="px-8 py-5 font-semibold text-gray-900">${item.number}</td>
-                    <td class="px-8 py-5 text-gray-400 uppercase tracking-wider text-xs">${item.type}</td>
-                    <td class="px-8 py-5 text-gray-600">${item.country}</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">${formatDate(item.issued)}</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs">${formatDate(item.expiry)}</td>
+                <tr class="hover:bg-white hover:bg-opacity-5 transition" data-search="${searchStr}">
+                    <td class="px-8 py-5 font-semibold text-white">${item.number}</td>
                     <td class="px-8 py-5">
-                        <span class="inline-block text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider
-                            ${status === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-400'}">
+                        <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider bg-white bg-opacity-10 text-white border border-white border-opacity-10">${item.type}</span>
+                    </td>
+                    <td class="px-8 py-5 text-white opacity-70">${item.country}</td>
+                    <td class="px-8 py-5 text-white opacity-45 text-xs">${formatDate(item.issued)}</td>
+                    <td class="px-8 py-5 text-white opacity-45 text-xs">${formatDate(item.expiry)}</td>
+                    <td class="px-8 py-5">
+                        <span class="inline-block text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider border
+                            ${status === 'Aktif' ? 'bg-emerald-400 bg-opacity-20 text-emerald-300 border-emerald-400 border-opacity-30' : 'bg-red-400 bg-opacity-20 text-red-300 border-red-400 border-opacity-30'}">
                             ${status}
                         </span>
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
                         <div class="flex gap-4">
-                            <button data-id="${item.id}" class="btn-edit text-xs font-semibold text-gray-400 hover:text-gray-900 transition uppercase tracking-wider">Edit</button>
-                            <button data-id="${item.id}" class="btn-delete text-xs font-semibold text-red-300 hover:text-red-500 transition uppercase tracking-wider">Hapus</button>
+                            <button data-id="${item.id}" class="btn-edit text-xs font-semibold text-white opacity-45 hover:opacity-90 transition uppercase tracking-wider">Edit</button>
+                            <button data-id="${item.id}" class="btn-delete text-xs font-semibold text-red-300 opacity-60 hover:opacity-100 transition uppercase tracking-wider">Hapus</button>
                         </div>
                     </td>
                 </tr>
@@ -220,7 +325,6 @@
         document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', openEditModal));
         document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', openDeleteModal));
 
-        // reapply search filter after re-render
         filterTable();
     }
 
@@ -235,6 +339,7 @@
         formError.textContent = '';
         document.getElementById('identityForm').reset();
         currentDocId.value = '';
+        identityForm.action = addIdentityUrl;
         docNumber.removeAttribute('disabled');
         document.body.style.overflow = '';
     }
@@ -244,8 +349,9 @@
         modalSubtitle.textContent = 'Dokumen Baru';
         document.getElementById('identityForm').reset();
         currentDocId.value = '';
+        identityForm.action = addIdentityUrl;
         docNumber.removeAttribute('disabled');
-        docNumber.classList.remove('bg-gray-50', 'text-gray-400', 'cursor-not-allowed');
+        docNumber.classList.remove('bg-white', 'bg-opacity-5', 'text-white', 'cursor-not-allowed');
         openModal();
     }
 
@@ -262,19 +368,24 @@
         docIssued.value = item.issued;
         docExpiry.value = item.expiry;
         currentDocId.value = item.id;
+        identityForm.action = item.editUrl;
         docNumber.setAttribute('disabled', 'disabled');
-        docNumber.classList.add('bg-gray-50', 'text-gray-400', 'cursor-not-allowed');
+        docNumber.classList.add('bg-white', 'bg-opacity-5', 'text-white', 'cursor-not-allowed');
         openModal();
     }
 
     function openDeleteModal(event) {
         deletingId = Number(event.target.dataset.id);
+        const item = identityList.find(i => i.id === deletingId);
+        if (!item) return;
+        deleteForm.action = item.deleteUrl;
         deleteModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
     function closeDeleteModal() {
         deletingId = null;
+        deleteForm.action = '';
         deleteModal.classList.add('hidden');
         document.body.style.overflow = '';
     }
@@ -284,7 +395,6 @@
     }
 
     document.getElementById('identityForm').addEventListener('submit', function(event) {
-        event.preventDefault();
         const number = docNumber.value.trim();
         const type = docType.value;
         const country = docCountry.value.trim();
@@ -293,45 +403,25 @@
         const editId = currentDocId.value ? Number(currentDocId.value) : null;
 
         if (!country || !issued || !expiry) {
+            event.preventDefault();
             formError.textContent = 'Semua kolom harus diisi.';
             formError.classList.remove('hidden');
             return;
         }
-        if (new Date(expiry) < new Date(issued)) {
+        if (new Date(expiry) <= new Date(issued)) {
+            event.preventDefault();
             formError.textContent = 'Tanggal habis harus setelah tanggal terbit.';
             formError.classList.remove('hidden');
             return;
         }
         if (!editId && !validateUniqueNumber(number)) {
+            event.preventDefault();
             formError.textContent = 'Nomor dokumen sudah terdaftar.';
             formError.classList.remove('hidden');
             return;
         }
-
-        if (editId) {
-            const item = identityList.find(i => i.id === editId);
-            item.type = type;
-            item.country = country;
-            item.issued = issued;
-            item.expiry = expiry;
-        } else {
-            const nextId = identityList.length > 0 ? Math.max(...identityList.map(i => i.id)) + 1 : 1;
-            identityList.push({ id: nextId, number, type, country, issued, expiry });
-        }
-
-        renderTable();
-        closeModalWindow();
     });
 
-    document.getElementById('confirmDelete').addEventListener('click', function() {
-        if (deletingId === null) return;
-        const index = identityList.findIndex(i => i.id === deletingId);
-        if (index !== -1) identityList.splice(index, 1);
-        renderTable();
-        closeDeleteModal();
-    });
-
-    // Search
     function filterTable() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const rows = document.querySelectorAll('#tableBody tr[data-search]');
@@ -354,7 +444,6 @@
         filterTable();
     }
 
-    // Event listeners
     document.getElementById('btnAddIdentity').addEventListener('click', openAddModal);
     document.getElementById('closeModal').addEventListener('click', closeModalWindow);
     document.getElementById('cancelModal').addEventListener('click', closeModalWindow);
@@ -362,6 +451,15 @@
 
     identityModal.addEventListener('click', e => { if (e.target === identityModal) closeModalWindow(); });
     deleteModal.addEventListener('click', e => { if (e.target === deleteModal) closeDeleteModal(); });
+
+    var flash = document.getElementById('flash');
+    if (flash) {
+        setTimeout(function () {
+            flash.style.transition = 'opacity 0.4s';
+            flash.style.opacity = '0';
+            setTimeout(function () { flash.remove(); }, 400);
+        }, 4000);
+    }
 
     renderTable();
 </script>
