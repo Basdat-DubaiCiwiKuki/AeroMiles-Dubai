@@ -1,50 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- Full-page background (different from klaim - city/airport night vibe) -->
-<div class="relative min-h-screen">
+<div class="relative min-h-screen transfer-contrast-page">
     <img src="https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1920&q=80"
         alt="Airport" class="fixed inset-0 w-full h-full object-cover">
     <div class="fixed inset-0 bg-black bg-opacity-60"></div>
-    <!-- Subtle color tint untuk beda feel -->
     <div class="fixed inset-0" style="background: linear-gradient(135deg, rgba(30,58,138,0.25) 0%, rgba(0,0,0,0) 60%);"></div>
+
+    <!-- Ambient orbs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="t-orb t-orb-1"></div>
+        <div class="t-orb t-orb-2"></div>
+    </div>
 
     <!-- Content -->
     <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
         <div class="max-w-5xl mx-auto">
 
             <!-- Page Header -->
-            <div class="mb-10">
-                <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
-                <h1 class="text-5xl font-bold text-white">Transfer<br><span class="opacity-40">Miles</span></h1>
-                <p class="text-white opacity-40 text-sm mt-3">Kirim award miles ke sesama member AeroMiles</p>
+            <div class="mb-10 flex items-end justify-between" style="animation: tFadeDown 0.55s ease both;">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2 flex items-center gap-2">
+                        Member
+                    </p>
+                    <h1 class="text-5xl font-bold text-white leading-tight">Transfer<br><span class="opacity-40">Miles</span></h1>
+                    <p class="text-white opacity-40 text-sm mt-3">Kirim award miles ke sesama member AeroMiles</p>
+                </div>
+                <!-- Live miles badge -->
+                <div class="miles-badge border border-white border-opacity-20 rounded-2xl px-6 py-4 backdrop-blur-sm text-right"
+                     style="background: rgba(255,255,255,0.05);">
+                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Award Miles Tersedia</p>
+                    <p class="text-2xl font-bold text-white count-up display-number" data-target="{{ award_miles|default:'0' }}">0</p>
+                    <p class="text-xs text-blue-300 opacity-60 mt-1">siap ditransfer</p>
+                </div>
             </div>
 
             <!-- Flash Messages -->
             {% if success_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✓ {{ success_msg }}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm flash-msg flex items-center gap-3" id="flash">
+                <span class="w-6 h-6 rounded-full bg-blue-400 bg-opacity-20 border border-blue-400 border-opacity-40 flex items-center justify-center flex-shrink-0 text-blue-300 text-xs"><i class="ph-bold ph-check"></i></span>
+                {{ success_msg }}
             </div>
             {% endif %}
             {% if error_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✕ {{ error_msg }}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm flash-msg flex items-center gap-3" id="flash">
+                <span class="w-6 h-6 rounded-full bg-red-400 bg-opacity-20 border border-red-400 border-opacity-40 flex items-center justify-center flex-shrink-0 text-red-300 text-xs"><i class="ph-bold ph-x"></i></span>
+                {{ error_msg }}
             </div>
             {% endif %}
 
             <!-- Stats Row -->
             <div class="grid grid-cols-3 gap-4 mb-8">
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm col-span-1">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Award Miles Tersedia</p>
-                    <p class="text-4xl font-bold text-white">{{ award_miles|default:"32,000" }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: tFadeUp 0.5s ease both; animation-delay: 0ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Award Miles Tersedia</p>
+                        <span class="text-lg"><i class="ph-bold ph-airplane-takeoff"></i></span>
+                    </div>
+                    <p class="text-4xl font-bold text-white count-up display-number" data-target="{{ award_miles|default:'0' }}">0</p>
+                    <div class="mt-3 h-0.5 rounded-full bg-white bg-opacity-10 overflow-hidden">
+                        <div class="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-300 stat-bar"></div>
+                    </div>
                 </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Keluar</p>
-                    <p class="text-4xl font-bold text-red-300">{{ stats.total_keluar|default:"0" }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: tFadeUp 0.5s ease both; animation-delay: 80ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Keluar</p>
+                        <span class="text-lg"><i class="ph-bold ph-arrow-up"></i></span>
+                    </div>
+                    <p class="text-4xl font-bold text-red-300 count-up display-number" data-target="{{ stats.total_keluar|default:'0' }}">0</p>
+                    <p class="text-xs text-white opacity-30 mt-3">miles dikirim</p>
                 </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Masuk</p>
-                    <p class="text-4xl font-bold text-blue-300">{{ stats.total_masuk|default:"0" }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: tFadeUp 0.5s ease both; animation-delay: 160ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Masuk</p>
+                        <span class="text-lg"><i class="ph-bold ph-arrow-down"></i></span>
+                    </div>
+                    <p class="text-4xl font-bold text-blue-300 count-up display-number" data-target="{{ stats.total_masuk|default:'0' }}">0</p>
+                    <p class="text-xs text-white opacity-30 mt-3">miles diterima</p>
                 </div>
             </div>
 
@@ -52,70 +86,128 @@
             <div class="grid grid-cols-5 gap-6">
 
                 <!-- Form Transfer (2/5) -->
-                <div class="col-span-2 border border-white border-opacity-20 rounded-3xl p-8 backdrop-blur-sm h-fit" style="background: rgba(255,255,255,0.03);">
+                <div class="col-span-2 border border-white border-opacity-20 rounded-3xl p-8 backdrop-blur-sm h-fit form-card"
+                     style="background: rgba(255,255,255,0.03); animation: tFadeUp 0.5s ease both; animation-delay: 220ms;">
+
                     <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Kirim Miles</p>
                     <h2 class="text-xl font-bold text-white mb-6">Transfer Baru</h2>
 
-                    <p class="text-xs text-white opacity-40 mb-6 border border-blue-400 border-opacity-20 rounded-xl px-4 py-3 bg-blue-400 bg-opacity-5 leading-relaxed">
-                        Minimum transfer <strong class="text-blue-300 opacity-100">100 miles</strong>.
-                        Transfer bersifat permanen dan tidak dapat dibatalkan.
-                    </p>
+                    <!-- Info notice -->
+                    <div class="notice-box text-xs text-white opacity-40 mb-6 border border-blue-400 border-opacity-20 rounded-xl px-4 py-3 bg-blue-400 bg-opacity-5 leading-relaxed flex items-start gap-2">
+                        <svg class="w-3.5 h-3.5 text-blue-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Masukkan jumlah award miles yang ingin ditransfer.
+                        Transfer bersifat permanen dan tidak dapat dibatalkan.</span>
+                    </div>
 
-                    <form method="post" action="{% url 'transfer_kirim' %}">
+                    <form method="post" action="{% url 'transfer_kirim' %}" id="form-transfer">
                         {% csrf_token %}
                         <div class="space-y-6">
-                            <div>
+                            <div class="input-group">
                                 <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
                                     Email Penerima <span class="text-red-300">*</span>
                                 </label>
-                                <input type="email" name="email_tujuan" placeholder="email@example.com" required
-                                    class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                                <div class="relative">
+                                    <input type="email" name="email_tujuan" id="input-email"
+                                        placeholder="email@example.com" required
+                                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20 pr-6">
+                                    <span class="input-icon absolute right-0 top-2 text-white opacity-20 text-xs transition-opacity"><i class="ph-bold ph-at"></i></span>
+                                </div>
                             </div>
-                            <div>
+                            <div class="input-group">
                                 <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
                                     Jumlah Miles <span class="text-red-300">*</span>
                                 </label>
-                                <input type="number" name="jumlah" placeholder="Minimal 100" min="100" required
-                                    class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                                <div class="relative">
+                                    <input type="number" name="jumlah" id="input-jumlah"
+                                        placeholder="Jumlah miles" min="1" required
+                                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20 pr-12">
+                                    <span class="input-icon absolute right-0 top-2 text-white opacity-20 text-xs transition-opacity">mi</span>
+                                </div>
+                                <!-- Live preview -->
+                                <p id="miles-preview" class="text-xs text-blue-300 opacity-0 mt-2 transition-opacity duration-200"></p>
                             </div>
-                            <div>
+                            <div class="input-group">
                                 <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
                                     Catatan
                                     <span class="normal-case opacity-60 ml-1">(opsional)</span>
                                 </label>
-                                <input type="text" name="catatan" placeholder="cth: untuk perjalanan bareng" maxlength="255"
+                                <input type="text" name="catatan" id="input-catatan"
+                                    placeholder="cth: untuk perjalanan bareng" maxlength="255"
                                     class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                                <p class="text-right text-xs text-white opacity-20 mt-1"><span id="catatan-count">0</span>/255</p>
                             </div>
                         </div>
-                        <button type="submit"
-                            class="w-full mt-8 bg-white text-gray-900 text-xs uppercase tracking-widest py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
-                            Kirim Miles →
+                        <button type="submit" id="btn-transfer"
+                            class="submit-btn w-full mt-8 bg-white text-gray-900 text-xs uppercase tracking-widest py-3 rounded-full font-semibold hover:bg-opacity-90 transition relative overflow-hidden">
+                            <span id="btn-label" class="flex items-center justify-center gap-2">
+                                Kirim Miles
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                            <span id="btn-loading" class="hidden absolute inset-0 flex items-center justify-center">
+                                <svg class="animate-spin w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </span>
                         </button>
                     </form>
                 </div>
 
                 <!-- Riwayat Transfer (3/5) -->
-                <div class="col-span-3 border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background: rgba(255,255,255,0.03);">
-                    <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10">
-                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Histori</p>
-                        <h2 class="text-xl font-bold text-white">Riwayat Transfer</h2>
+                <div class="col-span-3 border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden"
+                     style="background: rgba(255,255,255,0.03); animation: tFadeUp 0.5s ease both; animation-delay: 280ms;">
+
+                    <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Histori</p>
+                            <h2 class="text-xl font-bold text-white">Riwayat Transfer</h2>
+                        </div>
+                        {% if riwayat %}
+                        <div class="flex items-center gap-3">
+                            <!-- Filter tabs -->
+                            <div class="flex gap-1 border border-white border-opacity-10 rounded-full p-1" style="background: rgba(255,255,255,0.03);">
+                                <button onclick="filterRiwayat('semua')" id="tab-semua"
+                                    class="filter-tab active-tab text-xs px-3 py-1 rounded-full transition-all duration-200">
+                                    Semua
+                                </button>
+                                <button onclick="filterRiwayat('keluar')" id="tab-keluar"
+                                    class="filter-tab text-xs px-3 py-1 rounded-full transition-all duration-200 text-red-300 opacity-60 hover:opacity-100">
+                                    Keluar
+                                </button>
+                                <button onclick="filterRiwayat('masuk')" id="tab-masuk"
+                                    class="filter-tab text-xs px-3 py-1 rounded-full transition-all duration-200 text-blue-300 opacity-60 hover:opacity-100">
+                                    Masuk
+                                </button>
+                            </div>
+                            <span class="text-xs font-mono text-white opacity-30 border border-white border-opacity-10 rounded-full px-3 py-1">
+                                {{ riwayat|length }}
+                            </span>
+                        </div>
+                        {% endif %}
                     </div>
 
                     {% if riwayat %}
-                    <div class="divide-y divide-white divide-opacity-5">
+                    <div class="divide-y divide-white divide-opacity-5" id="riwayat-list">
                         {% for t in riwayat %}
-                        <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition">
+                        <div class="riwayat-row flex items-center justify-between px-8 py-4 transition-all duration-200"
+                             data-tipe="{{ t.tipe }}"
+                             style="animation: tFadeUp 0.4s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
                             <div class="flex items-center gap-4">
-                                <!-- Icon -->
-                                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
+                                <!-- Direction icon -->
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden
                                     {% if t.tipe == 'keluar' %}bg-red-400 bg-opacity-15 border border-red-400 border-opacity-20
                                     {% else %}bg-blue-400 bg-opacity-15 border border-blue-400 border-opacity-20{% endif %}">
+                                    <div class="icon-shimmer"></div>
                                     {% if t.tipe == 'keluar' %}
-                                    <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-red-300 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                                     </svg>
                                     {% else %}
-                                    <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-blue-300 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                                     </svg>
                                     {% endif %}
@@ -127,29 +219,39 @@
                                             {% if t.tipe == 'keluar' %}text-red-300{% else %}text-blue-300{% endif %}">
                                             {% if t.tipe == 'keluar' %}Keluar{% else %}Masuk{% endif %}
                                         </span>
-                                        <span class="text-white opacity-60 text-xs">•</span>
-                                        <span class="text-white opacity-60 text-xs">{{ t.email_lain }}</span>
+                                        <span class="text-white opacity-30 text-xs">•</span>
+                                        <span class="text-white opacity-60 text-xs truncate max-w-32">{{ t.nama_lain }}</span>
                                     </div>
+                                    <p class="text-white opacity-30 text-xs">{{ t.email_lain }}</p>
                                     {% if t.catatan %}
-                                    <p class="text-white opacity-30 text-xs italic">{{ t.catatan }}</p>
+                                    <p class="text-white opacity-25 text-xs italic mt-0.5">"{{ t.catatan }}"</p>
                                     {% endif %}
                                 </div>
                             </div>
                             <!-- Amount + time -->
-                            <div class="text-right flex-shrink-0">
-                                <p class="font-bold text-sm
-                                    {% if t.tipe == 'keluar' %}text-red-300{% else %}text-blue-300{% endif %}">
-                                    {% if t.tipe == 'keluar' %}−{% else %}+{% endif %}{{ t.jumlah }} mi
-                                </p>
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <div class="flex items-center gap-1.5 justify-end">
+                                    <p class="font-bold text-sm
+                                        {% if t.tipe == 'keluar' %}text-red-300{% else %}text-blue-300{% endif %}">
+                                        {% if t.tipe == 'keluar' %}−{% else %}+{% endif %}{{ t.jumlah }} mi
+                                    </p>
+                                    <span class="w-1.5 h-1.5 rounded-full {% if t.tipe == 'keluar' %}bg-red-400{% else %}bg-blue-400{% endif %} opacity-60 animate-pulse"></span>
+                                </div>
                                 <p class="text-white opacity-30 text-xs mt-0.5">{{ t.timestamp }}</p>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+                    <!-- Empty state after filter -->
+                    <div id="filter-empty" class="hidden py-16 text-center">
+                        <p class="text-3xl mb-4 opacity-30"><i class="ph-bold ph-magnifying-glass"></i></p>
+                        <p class="text-white opacity-40 text-sm">Tidak ada transaksi untuk filter ini.</p>
+                    </div>
                     {% else %}
                     <div class="py-24 text-center">
-                        <p class="text-5xl mb-6 opacity-30">↔️</p>
+                        <p class="text-5xl mb-6 opacity-30"><i class="ph-bold ph-arrows-left-right"></i></p>
                         <p class="text-white opacity-40 text-sm">Belum ada riwayat transfer.</p>
+                        <p class="text-white opacity-20 text-xs mt-2">Mulai transfer pertamamu di sebelah kiri</p>
                     </div>
                     {% endif %}
                 </div>
@@ -161,47 +263,212 @@
 </div>
 
 <style>
+/* ── Contrast overrides (preserved from original) ── */
+.transfer-contrast-page > .fixed.bg-black { --tw-bg-opacity: 0.66; }
+.transfer-contrast-page .rounded-3xl.backdrop-blur-sm {
+    border-color: rgba(255,255,255,0.20);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035)),
+        rgba(255,255,255,0.045) !important;
+    backdrop-filter: blur(30px) saturate(1.18);
+    -webkit-backdrop-filter: blur(30px) saturate(1.18);
+}
+.transfer-contrast-page .opacity-20 { opacity: 0.36; }
+.transfer-contrast-page .opacity-30 { opacity: 0.46; }
+.transfer-contrast-page .opacity-40 { opacity: 0.56; }
+.transfer-contrast-page .opacity-50 { opacity: 0.66; }
+.transfer-contrast-page .opacity-60 { opacity: 0.72; }
+.transfer-contrast-page .opacity-70 { opacity: 0.80; }
+.transfer-contrast-page .text-white { text-shadow: 0 1px 18px rgba(0,0,0,0.18); }
+.display-number,
+.count-up {
+    font-family: var(--font-display-title, "Zalando Sans Expanded", var(--font-body));
+    letter-spacing: -0.03em;
+}
+
+/* ── Keyframes ── */
+@keyframes tFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tFadeDown {
+    from { opacity: 0; transform: translateY(-14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes navFadeUp {
     from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes navFadeOut {
     from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 0; transform: translateY(12px); }
+}
+@keyframes orbDrift {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%       { transform: translateY(-28px) scale(1.04); }
+}
+@keyframes barGrow {
+    from { width: 0; }
+}
+@keyframes iconShimmer {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+}
+@keyframes borderPulse {
+    0%, 100% { border-color: rgba(96,165,250,0.2); }
+    50%       { border-color: rgba(96,165,250,0.5); }
 }
 
-.nav-fade-up {
-    animation: navFadeUp 0.5s ease both;
+/* ── Ambient orbs ── */
+.t-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.10;
+    animation: orbDrift 9s ease-in-out infinite;
+}
+.t-orb-1 {
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, #3b82f6, transparent);
+    top: 8%; right: 6%;
+    animation-delay: 0s;
+}
+.t-orb-2 {
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, #6366f1, transparent);
+    bottom: 20%; left: 10%;
+    animation-delay: 4s;
 }
 
-.nav-fade-out {
-    animation: navFadeOut 0.18s ease both;
+/* ── Miles badge ── */
+.miles-badge {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.miles-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(96,165,250,0.15);
+}
+
+/* ── Stat cards ── */
+.stat-card {
+    background: rgba(255,255,255,0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+}
+.stat-bar {
+    width: 55%;
+    animation: barGrow 1.2s ease both;
+    animation-delay: 0.7s;
+}
+
+/* ── Form card ── */
+.form-card {
+    transition: box-shadow 0.3s ease;
+}
+.form-card:focus-within {
+    box-shadow: 0 0 0 1px rgba(96,165,250,0.2), 0 16px 40px rgba(0,0,0,0.25);
+}
+
+/* ── Input groups ── */
+.input-group input:focus ~ .input-icon,
+.input-group input:not(:placeholder-shown) ~ .input-icon {
+    opacity: 0.6 !important;
+}
+.input-group input {
+    transition: border-color 0.2s ease;
+}
+.input-group input:focus {
+    border-color: rgba(96,165,250,0.7);
+}
+
+/* ── Notice box ── */
+.notice-box {
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+.notice-box:hover {
+    border-color: rgba(96,165,250,0.35);
+    background: rgba(96,165,250,0.08) !important;
+}
+
+/* ── Submit button ── */
+.submit-btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+}
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Riwayat rows ── */
+.riwayat-row:hover {
+    background: rgba(255,255,255,0.04);
+}
+.riwayat-row.hidden-row {
+    display: none;
+}
+
+/* ── Icon shimmer on row hover ── */
+.icon-shimmer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.icon-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 50%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+}
+.riwayat-row:hover .icon-shimmer::after {
+    animation: iconShimmer 0.5s ease forwards;
+}
+
+/* ── Filter tabs ── */
+.filter-tab {
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s ease;
+}
+.filter-tab:hover {
+    color: rgba(255,255,255,0.8);
+}
+.active-tab {
+    background: rgba(255,255,255,0.12);
+    color: white !important;
+    opacity: 1 !important;
+}
+
+/* ── Flash message ── */
+.flash-msg {
+    animation: tFadeUp 0.4s ease both;
+}
+
+/* ── Nav transitions (preserved from original) ── */
+.nav-fade-up  { animation: navFadeUp  0.5s ease both; }
+.nav-fade-out { animation: navFadeOut 0.18s ease both; }
 </style>
 
 <script>
+/* ── Page entrance ── */
 var pageContent = document.querySelector('.relative.z-10');
-if (pageContent) {
-    pageContent.classList.add('nav-fade-up');
-}
+if (pageContent) pageContent.classList.add('nav-fade-up');
 
-document.querySelectorAll('nav a[href]').forEach(function (link) {
-    link.addEventListener('click', function (event) {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-            return;
-        }
-
+/* ── Nav transition (preserved from original) ── */
+document.querySelectorAll('nav a[href]').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         var url = new URL(link.href, window.location.href);
-        if (url.origin !== window.location.origin) {
-            return;
-        }
-
+        if (url.origin !== window.location.origin) return;
         var content = document.querySelector('.relative.z-10');
-        if (!content) {
-            return;
-        }
-
+        if (!content) return;
         if (url.pathname === window.location.pathname) {
             event.preventDefault();
             content.classList.remove('nav-fade-up');
@@ -209,21 +476,96 @@ document.querySelectorAll('nav a[href]').forEach(function (link) {
             content.classList.add('nav-fade-up');
             return;
         }
-
         event.preventDefault();
         content.classList.add('nav-fade-out');
-        window.setTimeout(function () {
-            window.location.href = link.href;
-        }, 160);
+        window.setTimeout(function() { window.location.href = link.href; }, 160);
     });
 });
 
+/* ── Count-up animation ── */
+function animateCountUp(el) {
+    var target = parseInt((el.dataset.target || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    var duration = 1100, start = null;
+    function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString('id-ID');
+    }
+    requestAnimationFrame(step);
+}
+var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) { animateCountUp(e.target); observer.unobserve(e.target); }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.count-up').forEach(function(el) { observer.observe(el); });
+
+/* ── Miles live preview ── */
+var inputJumlah  = document.getElementById('input-jumlah');
+var milesPreview = document.getElementById('miles-preview');
+if (inputJumlah && milesPreview) {
+    inputJumlah.addEventListener('input', function() {
+        var val = parseInt(this.value, 10);
+        if (val > 0) {
+            milesPreview.textContent = val.toLocaleString('id-ID') + ' miles akan dikirim';
+            milesPreview.style.opacity = '1';
+        } else {
+            milesPreview.style.opacity = '0';
+        }
+    });
+}
+
+/* ── Catatan character counter ── */
+var inputCatatan  = document.getElementById('input-catatan');
+var catatanCount  = document.getElementById('catatan-count');
+if (inputCatatan && catatanCount) {
+    inputCatatan.addEventListener('input', function() {
+        catatanCount.textContent = this.value.length;
+    });
+}
+
+/* ── Submit loading state ── */
+document.getElementById('form-transfer').addEventListener('submit', function() {
+    document.getElementById('btn-label').classList.add('invisible');
+    document.getElementById('btn-loading').classList.remove('hidden');
+    document.getElementById('btn-transfer').disabled = true;
+});
+
+/* ── Riwayat filter ── */
+function filterRiwayat(tipe) {
+    var rows = document.querySelectorAll('#riwayat-list .riwayat-row');
+    var visible = 0;
+    rows.forEach(function(row) {
+        if (tipe === 'semua' || row.dataset.tipe === tipe) {
+            row.classList.remove('hidden-row');
+            visible++;
+        } else {
+            row.classList.add('hidden-row');
+        }
+    });
+    var emptyEl = document.getElementById('filter-empty');
+    if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
+
+    /* Update active tab */
+    document.querySelectorAll('.filter-tab').forEach(function(tab) {
+        tab.classList.remove('active-tab');
+    });
+    var activeTab = document.getElementById('tab-' + tipe);
+    if (activeTab) activeTab.classList.add('active-tab');
+}
+
+/* ── Flash auto-dismiss ── */
 var flash = document.getElementById('flash');
 if (flash) {
-    setTimeout(function () {
-        flash.style.transition = 'opacity 0.4s';
+    setTimeout(function() {
+        flash.style.transition = 'opacity 0.5s, transform 0.5s';
         flash.style.opacity = '0';
-        setTimeout(function () { flash.remove(); }, 400);
+        flash.style.transform = 'translateY(-8px)';
+        setTimeout(function() { flash.remove(); }, 500);
     }, 4000);
 }
 </script>

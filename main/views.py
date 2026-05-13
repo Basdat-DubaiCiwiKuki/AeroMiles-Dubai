@@ -51,6 +51,19 @@ def _row_exists(cur, table, column, value):
     return cur.fetchone() is not None
 
 
+def _next_prefixed_id(cur, table, column, prefix, width):
+    start = len(prefix) + 1
+    cur.execute(f"LOCK TABLE {table} IN SHARE ROW EXCLUSIVE MODE")
+    cur.execute(f"""
+        SELECT COALESCE(MAX(CAST(SUBSTRING({column} FROM %s) AS INTEGER)), 0)
+        FROM {table}
+        WHERE {column} LIKE %s
+          AND SUBSTRING({column} FROM %s) ~ '^[0-9]+$'
+    """, [start, f'{prefix}%', start])
+    next_number = cur.fetchone()[0] + 1
+    return f"{prefix}{next_number:0{width}d}"
+
+
 def _fetch_identity_types(cur):
     try:
         cur.execute("SELECT nama FROM jenis_identitas ORDER BY urutan, nama")
@@ -349,21 +362,23 @@ def register(request):
                             "SELECT id_tier FROM tier ORDER BY minimal_tier_miles ASC LIMIT 1"
                         )
                         tier_id = cur.fetchone()[0]
+                        nomor_member = _next_prefixed_id(cur, 'member', 'nomor_member', 'M', 4)
 
                         cur.execute("""
-                            INSERT INTO member (email, tanggal_bergabung, id_tier,
+                            INSERT INTO member (email, nomor_member, tanggal_bergabung, id_tier,
                                                 award_miles, total_miles)
-                            VALUES (%s, %s, %s, 0, 0)
+                            VALUES (%s, %s, %s, %s, 0, 0)
                             RETURNING nomor_member
-                        """, [email, date.today(), tier_id])
+                        """, [email, nomor_member, date.today(), tier_id])
                         nomor_member = cur.fetchone()[0]
 
                     elif role == 'staf':
+                        id_staf = _next_prefixed_id(cur, 'staf', 'id_staf', 'S', 4)
                         cur.execute("""
-                            INSERT INTO staf (email, kode_maskapai)
-                            VALUES (%s, %s)
+                            INSERT INTO staf (email, id_staf, kode_maskapai)
+                            VALUES (%s, %s, %s)
                             RETURNING id_staf
-                        """, [email, kode_maskapai])
+                        """, [email, id_staf, kode_maskapai])
                         id_staf = cur.fetchone()[0]
 
         except Exception as e:
@@ -559,10 +574,14 @@ def profil(request):
 
         if role == 'member':
             cur.execute(
-                "SELECT nomor_member, tanggal_bergabung FROM member WHERE email = %s", [email]
+                "SELECT nomor_member, tanggal_bergabung, award_miles FROM member WHERE email = %s", [email]
             )
             m = cur.fetchone()
-            member = {'nomor_member': m[0], 'tanggal_bergabung': m[1]} if m else None
+            member = {
+                'nomor_member': m[0],
+                'tanggal_bergabung': m[1],
+                'award_miles': m[2],
+            } if m else None
             return render(request, 'profil.html', {
                 'role': 'member', 'user': user, 'member': member,
                 'success_msg': request.session.pop('success_msg', None),
@@ -679,6 +698,28 @@ def profil_ubah_password(request):
 
 # ─── TIER ─────────────────────────────────────────────────────────────────────
 
+def _tier_visual_data(nama):
+    tier_name = (nama or '').lower()
+    colors = {
+        'bronze': 'orange',
+        'silver': 'gray',
+        'gold': 'amber',
+        'diamond': 'indigo',
+        'platinum': 'indigo',
+    }
+    benefits = {
+        'bronze': ['Akses fitur dasar AeroMiles', 'Redeem dan transfer award miles'],
+        'silver': ['Prioritas promo member', 'Akses benefit Silver'],
+        'gold': ['Benefit perjalanan lebih luas', 'Prioritas layanan Gold'],
+        'diamond': ['Benefit tier tertinggi', 'Prioritas layanan Diamond'],
+        'platinum': ['Benefit tier tertinggi', 'Prioritas layanan Platinum'],
+    }
+    return {
+        'warna': colors.get(tier_name, 'default'),
+        'benefits': benefits.get(tier_name, ['Benefit mengikuti ketentuan AeroMiles']),
+    }
+
+
 def tier(request):
     role = request.session.get('role')
     if not role:
@@ -719,20 +760,25 @@ def tier(request):
     semua_tier = []
     tier_saat_ini_data = None
     tier_berikutnya    = None
+    current_tier_index  = 0
 
     for i, t_row in enumerate(semua_tier_raw):
         tid, tnama, tmin_miles, tmin_frek = t_row
         is_current = (tid == id_tier_saat_ini)
+        visual_data = _tier_visual_data(tnama)
         tier_data = {
             'id_tier':                   tid,
             'nama':                      tnama,
             'minimal_tier_miles':        tmin_miles,
             'minimal_frekuensi_terbang': tmin_frek,
             'is_current':                is_current,
+            'warna':                     visual_data['warna'],
+            'benefits':                  visual_data['benefits'],
         }
         semua_tier.append(tier_data)
         if is_current:
             tier_saat_ini_data = tier_data
+            current_tier_index = i
             if i + 1 < len(semua_tier_raw):
                 nxt = semua_tier_raw[i + 1]
                 tier_berikutnya = {
@@ -758,6 +804,7 @@ def tier(request):
             'progress_percentage': progress_pct,
         },
         'semua_tier': semua_tier,
+        'current_tier_index': current_tier_index,
     }
     return render(request, 'tier.html', context)
 
@@ -1478,6 +1525,26 @@ def transfer_kirim(request):
 
 # ─── REDEEM HADIAH ────────────────────────────────────────────────────────────
 
+def _reward_image_url(nama):
+    name = (nama or '').lower()
+    reward_images = (
+        (('upgrade',), 'https://images.unsplash.com/photo-1540339832862-474599807836?w=600&q=80'),
+        (('lounge',), 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'),
+        (('hotel',), 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80'),
+        (('dining', 'food', 'makan'), 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80'),
+        (('shopping', 'belanja'), 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80'),
+        (('car', 'sewa', 'rent'), 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80'),
+        (('baggage', 'bagasi'), 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80'),
+        (('seat', 'kursi'), 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80'),
+        (('travel', 'tiket'), 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80'),
+        (('priority', 'boarding'), 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=600&q=80'),
+    )
+    for keywords, image_url in reward_images:
+        if any(keyword in name for keyword in keywords):
+            return image_url
+    return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80'
+
+
 def redeem_hadiah(request):
     role = request.session.get('role')
     if not role or role != 'member':
@@ -1500,7 +1567,7 @@ def redeem_hadiah(request):
             hadiah_list.append({
                 'kode_hadiah': r[0], 'nama': r[1], 'miles': r[2],
                 'deskripsi': r[3], 'valid_start_date': r[4], 'program_end': r[5],
-                'id_penyedia': r[6],
+                'id_penyedia': r[6], 'image_url': _reward_image_url(r[1]),
             })
 
         cur.execute("""
@@ -1811,13 +1878,14 @@ def member_tambah(request):
                     "SELECT id_tier FROM tier ORDER BY minimal_tier_miles ASC LIMIT 1"
                 )
                 tier_id = cur.fetchone()[0]
+                nomor_member = _next_prefixed_id(cur, 'member', 'nomor_member', 'M', 4)
 
                 cur.execute("""
-                    INSERT INTO member (email, tanggal_bergabung, id_tier,
+                    INSERT INTO member (email, nomor_member, tanggal_bergabung, id_tier,
                                         award_miles, total_miles)
-                    VALUES (%s,%s,%s,0,0)
+                    VALUES (%s,%s,%s,%s,0,0)
                     RETURNING nomor_member
-                """, [email, date.today(), tier_id])
+                """, [email, nomor_member, date.today(), tier_id])
                 nomor_member = cur.fetchone()[0]
 
         request.session['success_msg'] = f'Member {nomor_member} berhasil ditambahkan.'
@@ -2049,13 +2117,14 @@ def hadiah_tambah(request):
                 if not _row_exists(cur, 'penyedia', 'id', id_penyedia_int):
                     request.session['error_msg'] = 'Penyedia tidak valid.'
                     return redirect('kelola_hadiah')
+                kode_hadiah = _next_prefixed_id(cur, 'hadiah', 'kode_hadiah', 'RWD-', 3)
 
                 cur.execute("""
-                    INSERT INTO hadiah (nama, miles, deskripsi,
+                    INSERT INTO hadiah (kode_hadiah, nama, miles, deskripsi,
                                         valid_start_date, program_end, id_penyedia)
-                    VALUES (%s,%s,%s,%s,%s,%s)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s)
                     RETURNING kode_hadiah
-                """, [nama, miles_int, deskripsi, valid_start_date, program_end_date, id_penyedia_int])
+                """, [kode_hadiah, nama, miles_int, deskripsi, valid_start_date, program_end_date, id_penyedia_int])
                 kode = cur.fetchone()[0]
 
         request.session['success_msg'] = f'Hadiah {kode} berhasil ditambahkan.'
@@ -2186,11 +2255,39 @@ def kelola_mitra(request):
 
         cur.execute("SELECT COUNT(*) FROM mitra")
         total = cur.fetchone()[0]
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM hadiah h
+            JOIN mitra mt ON mt.id_penyedia = h.id_penyedia
+        """)
+        hadiah_total = cur.fetchone()[0]
+        cur.execute("""
+            SELECT mt.nama_mitra, mt.email_mitra, mt.tanggal_kerja_sama, COUNT(h.kode_hadiah) AS total_hadiah
+            FROM mitra mt
+            LEFT JOIN hadiah h ON h.id_penyedia = mt.id_penyedia
+            GROUP BY mt.nama_mitra, mt.email_mitra, mt.tanggal_kerja_sama
+            ORDER BY mt.tanggal_kerja_sama DESC, mt.nama_mitra
+            LIMIT 1
+        """)
+        latest_row = cur.fetchone()
+        latest_mitra = None
+        if latest_row:
+            latest_mitra = {
+                'nama': latest_row[0],
+                'email': latest_row[1],
+                'tanggal_kerja_sama': latest_row[2],
+                'total_hadiah': latest_row[3],
+            }
 
     return render(request, 'kelola_mitra.html', {
         'role': 'staf', 'mitra_list': mitra_list,
         'search': search,
-        'stats': {'total': total},
+        'stats': {
+            'total': total,
+            'hadiah': hadiah_total,
+            'ditampilkan': len(mitra_list),
+            'latest_mitra': latest_mitra,
+        },
         'success_msg': request.session.pop('success_msg', None),
         'error_msg':   request.session.pop('error_msg', None),
     })
@@ -2461,6 +2558,61 @@ def laporan_transaksi(request):
         )
         klaim_disetujui = cur.fetchone()[0]
 
+        cur.execute("""
+            WITH months AS (
+                SELECT generate_series(
+                    date_trunc('month', CURRENT_DATE) - INTERVAL '11 months',
+                    date_trunc('month', CURRENT_DATE),
+                    INTERVAL '1 month'
+                ) AS month_start
+            ),
+            monthly AS (
+                SELECT date_trunc('month', timestamp) AS month_start, COUNT(*) AS total
+                FROM claim_missing_miles
+                GROUP BY 1
+                UNION ALL
+                SELECT date_trunc('month', timestamp) AS month_start, COUNT(*) AS total
+                FROM transfer
+                GROUP BY 1
+                UNION ALL
+                SELECT date_trunc('month', timestamp) AS month_start, COUNT(*) AS total
+                FROM redeem
+                GROUP BY 1
+                UNION ALL
+                SELECT date_trunc('month', timestamp) AS month_start, COUNT(*) AS total
+                FROM member_award_miles_package
+                GROUP BY 1
+            )
+            SELECT months.month_start::date,
+                   COALESCE(SUM(monthly.total), 0)::int AS total
+            FROM months
+            LEFT JOIN monthly ON monthly.month_start = months.month_start
+            GROUP BY months.month_start
+            ORDER BY months.month_start
+        """)
+        monthly_rows = cur.fetchall()
+        month_labels = {
+            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr',
+            5: 'Mei', 6: 'Jun', 7: 'Jul', 8: 'Agu',
+            9: 'Sep', 10: 'Okt', 11: 'Nov', 12: 'Des',
+        }
+        max_monthly_total = max([row[1] for row in monthly_rows] or [0])
+        bar_colors = [
+            'rgba(103, 232, 249, 0.72)',
+            'rgba(196, 181, 253, 0.70)',
+            'rgba(251, 191, 36, 0.70)',
+            'rgba(74, 222, 128, 0.70)',
+        ]
+        bar_data = [
+            {
+                'label': month_labels[row[0].month],
+                'val': row[1],
+                'pct': round((row[1] / max_monthly_total) * 100) if max_monthly_total else 0,
+                'color': bar_colors[i % len(bar_colors)],
+            }
+            for i, row in enumerate(monthly_rows)
+        ]
+
         # ── TOP 5 ──────────────────────────────────────────────────────────
         try:
             cur.execute("SELECT * FROM get_top5_member_by_miles()")
@@ -2502,7 +2654,8 @@ def laporan_transaksi(request):
         'redeem_list':   redeem_list,
         'beli_list':     beli_list,
         'top5_list':     top5_list,
-        'success_msg':   request.session.pop('success_msg', None),
+        'bar_data':      bar_data,
+        'success_msg':   request.session.pop('success_msg', None) or request.session.pop('success_msg_laporan', None),
         'error_msg':     request.session.pop('error_msg', None),
     })
 

@@ -1,426 +1,983 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- Full-page background — data/analytics feel, deep midnight-blue tint -->
-<div class="relative min-h-screen">
-  <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1920&q=80"
-       alt="Analytics" class="fixed inset-0 w-full h-full object-cover">
-  <div class="fixed inset-0 bg-black bg-opacity-75"></div>
-  <div class="fixed inset-0"
-       style="background: linear-gradient(135deg, rgba(5,15,40,0.60) 0%, rgba(10,30,60,0.35) 100%);"></div>
+<div class="relative min-h-screen overflow-hidden report-admin">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&q=88"
+       alt="Analytics dashboard" class="fixed inset-0 h-full w-full object-cover report-photo">
+  <div class="fixed inset-0 bg-slate-950 bg-opacity-45"></div>
+  <div class="fixed inset-0 report-light"></div>
 
-  <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
-    <div class="max-w-7xl mx-auto">
+  <div class="relative z-10 min-h-screen px-5 pb-14 pt-28 md:px-8">
+    <div class="mx-auto max-w-7xl">
+      <section class="mb-6 grid gap-5 lg:grid-cols-[1.3fr_0.9fr]" style="animation: sdFadeUp 0.5s ease both;">
+        <div class="liquid-panel hero-panel sd-shimmer-host p-7 md:p-9">
+          <div class="mb-6 flex flex-wrap items-center gap-3">
+            <span class="status-pill">
+              <span class="pulse-dot"></span>
+              Transaction Monitor
+            </span>
+            <span class="text-xs uppercase tracking-widest text-white text-opacity-55">{{ stats.total_miles_beredar|floatformat:0 }} total miles</span>
+          </div>
 
-      <!-- HEADER -->
-      <div class="mb-10 flex items-end justify-between">
-        <div>
-          <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
-          <h1 class="text-5xl font-bold text-white">Laporan<br><span class="opacity-40">Transaksi</span></h1>
-        </div>
-        <button onclick="window.print()"
-          class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
-          ⬇ Export / Print
-        </button>
-      </div>
+          <p class="mb-3 text-xs uppercase tracking-widest text-white text-opacity-55">Staf · Laporan</p>
+          <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <h1 class="text-3xl font-bold leading-tight text-white md:text-5xl">
+              Laporan<br>
+              <span class="text-2xl text-white text-opacity-55 md:text-4xl">Transaksi</span>
+            </h1>
 
-      <!-- STATS -->
-      <div class="grid grid-cols-4 gap-4 mb-8">
-        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Klaim</p>
-          <p class="text-4xl font-bold" style="color:#60a5fa;">{{ stats.total_klaim|default:"8" }}</p>
-        </div>
-        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Transfer</p>
-          <p class="text-4xl font-bold" style="color:#a78bfa;">{{ stats.total_transfer|default:"15" }}</p>
-        </div>
-        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Redeem</p>
-          <p class="text-4xl font-bold" style="color:#fbbf24;">{{ stats.total_redeem|default:"20" }}</p>
-        </div>
-        <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Beli Package</p>
-          <p class="text-4xl font-bold" style="color:#34d399;">{{ stats.total_beli|default:"20" }}</p>
-        </div>
-      </div>
+            <button type="button" onclick="window.print()" class="primary-link">
+              Export / Print
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8V4h10v4m-9 8H6a2 2 0 01-2-2v-4a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2h-2m-8 0h8v4H8v-4z"/>
+              </svg>
+            </button>
+          </div>
 
-      <!-- CHART + SUMMARY ROW -->
-      <div class="grid grid-cols-3 gap-4 mb-8">
+          <div class="ops-pulse">
+            <div>
+              <p>Total Klaim</p>
+              <strong class="count-up" data-target="{{ stats.total_klaim }}">{{ stats.total_klaim }}</strong>
+            </div>
+            <div>
+              <p>Total Transfer</p>
+              <strong class="count-up" data-target="{{ stats.total_transfer }}">{{ stats.total_transfer }}</strong>
+            </div>
+            <div>
+              <p>Total Redeem</p>
+              <strong class="count-up" data-target="{{ stats.total_redeem }}">{{ stats.total_redeem }}</strong>
+            </div>
+            <div>
+              <p>Beli Package</p>
+              <strong class="count-up" data-target="{{ stats.total_beli }}">{{ stats.total_beli }}</strong>
+            </div>
+          </div>
+        </div>
 
-        <!-- Bar Chart — spans 2 cols -->
-        <div class="col-span-2 border border-white border-opacity-20 rounded-3xl p-7 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-          <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-6">Volume Transaksi per Bulan (2024)</p>
-          <div id="barChart" style="display:flex; align-items:flex-end; gap:10px; height:120px;">
-            {% for b in bar_data %}
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;">
-              <div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">{{ b.val }}</div>
-              <div style="flex:1;display:flex;align-items:flex-end;width:100%;">
-                <div style="width:100%;border-radius:6px 6px 0 0;height:{{ b.pct }}%;background:{{ b.color|default:'rgba(96,165,250,0.7)' }};min-height:4px;"></div>
+        <aside class="liquid-panel insight-panel sd-shimmer-host p-7" style="animation: sdFadeUp 0.5s ease 0.08s both;">
+          <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-50">Snapshot Database</p>
+          {% if top5_list %}
+          <div class="top-member-card">
+            <span>Peringkat Teratas</span>
+            <strong>{{ top5_list.0.nama }}</strong>
+            <p>{{ top5_list.0.email }} · {{ top5_list.0.total_miles|floatformat:0 }} miles</p>
+          </div>
+          {% else %}
+          <div class="top-member-card">
+            <span>Leaderboard</span>
+            <strong>Belum ada member</strong>
+            <p>Data ranking akan muncul setelah data member tersedia.</p>
+          </div>
+          {% endif %}
+
+          <div class="report-meter">
+            <div class="flex items-end justify-between gap-4">
+              <div>
+                <p class="count-up text-6xl font-bold leading-none text-cyan-100" data-target="{{ stats.redeem_bulan_ini }}">{{ stats.redeem_bulan_ini }}</p>
+                <p class="mt-2 text-sm text-white text-opacity-62">redeem tercatat bulan ini</p>
               </div>
-              <div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">{{ b.label }}</div>
+              <span class="meter-icon">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 19V5m0 14h16M8 16V9m4 7V7m4 9v-4"/>
+                </svg>
+              </span>
             </div>
-            {% empty %}
-            <!-- Fallback dummy bars -->
-            {% for item in "12"|make_list %}{% endfor %}
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">42</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:45%;background:rgba(96,165,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jan</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">58</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:62%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Feb</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">33</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:35%;background:rgba(96,165,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Mar</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">71</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:75%;background:rgba(251,191,36,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Apr</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">52</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:55%;background:rgba(52,211,153,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Mei</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">85</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:90%;background:rgba(96,165,250,0.8);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jun</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">64</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:67%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Jul</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">90</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:95%;background:rgba(52,211,153,0.7);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Agu</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">47</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:50%;background:rgba(251,191,36,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Sep</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">73</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:77%;background:rgba(96,165,250,0.7);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Okt</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">60</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:63%;background:rgba(167,139,250,0.6);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Nov</div></div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;height:100%;"><div style="font-size:.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">95</div><div style="flex:1;display:flex;align-items:flex-end;width:100%;"><div style="width:100%;border-radius:6px 6px 0 0;height:100%;background:rgba(52,211,153,0.8);"></div></div><div style="font-size:.65rem;color:rgba(255,255,255,0.35);margin-top:6px;">Des</div></div>
-            {% endfor %}
+            <div class="mt-6 h-2 overflow-hidden rounded-full bg-white bg-opacity-15">
+              <div class="h-full rounded-full bg-cyan-100 progress-glow sd-bar" style="width: {% if stats.total_redeem %}{% widthratio stats.redeem_bulan_ini stats.total_redeem 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+            <p class="mt-3 text-xs uppercase tracking-widest text-white text-opacity-45">{{ stats.klaim_disetujui }} klaim disetujui</p>
           </div>
-        </div>
+        </aside>
+      </section>
 
-        <!-- Summary cards — 1 col -->
-        <div class="flex flex-col gap-4">
-          <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm flex-1" style="background:rgba(255,255,255,0.03);">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-4">Ringkasan Miles</p>
-            <div class="space-y-3">
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Diklaim</span><span class="text-white font-semibold">+{{ stats.miles_klaim|default:"125,000" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Ditransfer</span><span class="text-white font-semibold">{{ stats.miles_transfer|default:"28,550" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Diredeem</span><span style="color:#fbbf24;" class="font-semibold">-{{ stats.miles_redeem|default:"87,000" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Dibeli</span><span style="color:#34d399;" class="font-semibold">+{{ stats.miles_dibeli|default:"510,000" }}</span></div>
-            </div>
-          </div>
-          <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm flex-1" style="background:rgba(255,255,255,0.03);">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-4">Keuangan</p>
-            <div class="space-y-3">
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Pendapatan</span><span class="text-white font-semibold">Rp {{ stats.revenue|default:"45,350,000" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Redeem Terbanyak</span><span class="text-white font-semibold">{{ stats.redeem_top|default:"Upgrade Business" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Paket Terlaris</span><span class="text-white font-semibold">{{ stats.paket_top|default:"AMP-003" }}</span></div>
-              <div class="flex justify-between text-sm"><span class="text-white opacity-40">Klaim Disetujui</span><span style="color:#34d399;" class="font-semibold">{{ stats.klaim_setuju|default:"7 klaim" }}</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {% if success_msg %}
+      <div class="liquid-panel mb-5 px-5 py-4 text-sm text-white" id="flash">{{ success_msg }}</div>
+      {% endif %}
+      {% if error_msg %}
+      <div class="liquid-panel mb-5 border-red-200 border-opacity-45 px-5 py-4 text-sm text-red-100" id="flash">{{ error_msg }}</div>
+      {% endif %}
 
-     
-      
-      <!-- TOP 10 MEMBER -->
-      <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden mb-8" style="background:rgba(255,255,255,0.03);">
-      
-        <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
+      <section class="liquid-panel mb-6 p-5 md:p-6" style="animation: sdFadeUp 0.5s ease 0.14s both;">
+        <form method="get" class="grid gap-4 xl:grid-cols-[1fr_11rem_11rem_auto] xl:items-end">
           <div>
-            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Leaderboard</p>
-            <h2 class="text-white font-semibold text-lg">Top 5 Member Teraktif</h2>
+            <label class="field-label">Cari Member</label>
+            <input type="text" name="search" value="{{ search|default:'' }}" placeholder="nama atau email member" class="glass-input">
           </div>
-          <span class="text-xs uppercase tracking-widest text-white opacity-30">Total Miles</span>
+          <div>
+            <label class="field-label">Dari</label>
+            <input type="date" name="tgl_dari" value="{{ tgl_dari|default:'' }}" class="glass-input" style="color-scheme: dark;">
+          </div>
+          <div>
+            <label class="field-label">Sampai</label>
+            <input type="date" name="tgl_sampai" value="{{ tgl_sampai|default:'' }}" class="glass-input" style="color-scheme: dark;">
+          </div>
+          <input type="hidden" name="tab" id="activeTabInput" value="{{ active_tab|default:'klaim' }}">
+          <div class="flex gap-3">
+            <button type="submit" class="primary-link justify-center">Filter</button>
+            <a href="{% url 'laporan_transaksi' %}" class="secondary-link">Reset</a>
+          </div>
+        </form>
+      </section>
+
+      <section class="liquid-panel mb-6 p-6 md:p-7" style="animation: sdFadeUp 0.5s ease 0.20s both;">
+        <div class="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Volume Transaksi</p>
+            <h2 class="text-2xl font-bold text-white">Pergerakan 12 Bulan Terakhir</h2>
+          </div>
+          <span class="text-xs uppercase tracking-widest text-white text-opacity-50">Klaim · Transfer · Redeem · Package</span>
         </div>
-      
+
+        <div class="bar-chart">
+          {% for b in bar_data %}
+          <div class="bar-item" title="{{ b.label }}: {{ b.val }} transaksi">
+            <div class="bar-value">{{ b.val }}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="height:{{ b.pct }}%; background:{{ b.color }};"></div>
+            </div>
+            <div class="bar-label">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="mb-6 grid gap-5 lg:grid-cols-[1fr_1fr]" style="animation: sdFadeUp 0.5s ease 0.26s both;">
+        <div class="liquid-panel p-6">
+          <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-50">Komposisi Transaksi</p>
+          <div class="space-y-4">
+            <div class="mix-row">
+              <span>Klaim</span>
+              <strong>{{ stats.total_klaim }}</strong>
+            </div>
+            <div class="mix-row">
+              <span>Transfer</span>
+              <strong>{{ stats.total_transfer }}</strong>
+            </div>
+            <div class="mix-row">
+              <span>Redeem</span>
+              <strong>{{ stats.total_redeem }}</strong>
+            </div>
+            <div class="mix-row">
+              <span>Beli Package</span>
+              <strong>{{ stats.total_beli }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="liquid-panel p-6">
+          <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-50">Ringkasan Miles</p>
+          <div class="summary-grid">
+            <div>
+              <span>Total Miles Beredar</span>
+              <strong>{{ stats.total_miles_beredar|floatformat:0 }}</strong>
+            </div>
+            <div>
+              <span>Klaim Disetujui</span>
+              <strong>{{ stats.klaim_disetujui }}</strong>
+            </div>
+            <div>
+              <span>Redeem Bulan Ini</span>
+              <strong>{{ stats.redeem_bulan_ini }}</strong>
+            </div>
+            <div>
+              <span>Member Top 5</span>
+              <strong>{{ top5_list|length }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="liquid-panel mb-6 overflow-hidden">
+        <div class="flex flex-col gap-4 border-b border-white border-opacity-10 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8">
+          <div>
+            <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Leaderboard</p>
+            <h2 class="text-2xl font-bold text-white">Top 5 Member Berdasarkan Total Miles</h2>
+          </div>
+          <div class="text-xs uppercase tracking-widest text-white text-opacity-50">Stored Procedure</div>
+        </div>
+
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full min-w-[720px] text-sm">
             <thead>
               <tr class="border-b border-white border-opacity-10">
-                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal w-12">#</th>
-                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                <th class="text-right px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Total Miles</th>
+                <th class="table-head pl-8">Peringkat</th>
+                <th class="table-head">Member</th>
+                <th class="table-head pr-8 text-right">Total Miles</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white divide-opacity-5">
               {% for m in top5_list %}
-              <tr class="hover:bg-white hover:bg-opacity-5 transition">
-      
-                <!-- Rank badge -->
-                <td class="px-8 py-4">
-                  {% if m.rank == 1 %}
-                    <span class="text-lg">🥇</span>
-                  {% elif m.rank == 2 %}
-                    <span class="text-lg">🥈</span>
-                  {% elif m.rank == 3 %}
-                    <span class="text-lg">🥉</span>
-                  {% else %}
-                    <span class="text-white opacity-30 font-semibold text-sm">{{ m.rank }}</span>
-                  {% endif %}
+              <tr class="report-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                <td class="table-cell pl-8">
+                  <span class="rank-pill">#{{ m.rank }}</span>
                 </td>
-      
-                <!-- Nama & Email -->
-                <td class="px-4 py-4">
-                  <div class="text-white font-medium">{{ m.nama }}</div>
-                  <div class="text-white opacity-30 text-xs">{{ m.email }}</div>
+                <td class="table-cell">
+                  <p class="font-semibold text-white">{{ m.nama }}</p>
+                  <p class="mt-1 text-xs text-white text-opacity-48">{{ m.email }}</p>
                 </td>
-      
-                <!-- Total Miles (progress bar mini) -->
-                <td class="px-8 py-4 text-right">
+                <td class="table-cell pr-8 text-right">
                   <div class="flex items-center justify-end gap-3">
-                    <div class="w-20 h-1.5 rounded-full" style="background:rgba(255,255,255,0.08);">
-                      <div class="h-1.5 rounded-full"
-                           style="width:{% widthratio m.total_miles top5_list.0.total_miles 100 %}%;
-                                  background: linear-gradient(90deg,#60a5fa,#a78bfa);"></div>
+                    <div class="hidden h-1.5 w-24 overflow-hidden rounded-full bg-white bg-opacity-10 sm:block">
+                      <div class="h-full rounded-full bg-cyan-100" style="width:{% widthratio m.total_miles top5_list.0.total_miles 100 %}%;"></div>
                     </div>
-                    <span class="text-white font-bold text-sm">{{ m.total_miles }}</span>
+                    <span class="miles-pill">{{ m.total_miles|floatformat:0 }} mi</span>
                   </div>
                 </td>
-      
               </tr>
               {% empty %}
               <tr>
-                <td colspan="3" class="py-16 text-center text-white opacity-30 text-sm">
-                  Belum ada data transaksi.
+                <td colspan="3" class="px-8 py-20 text-center">
+                  <p class="text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada data member.</p>
                 </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- TABS -->
-      <div class="flex gap-2 mb-6">
-        <button id="tab-btn-klaim" onclick="switchTab('klaim')"
-          class="tab-btn active-tab text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
-          ✈️ Klaim ({{ stats.total_klaim|default:"8" }})
-        </button>
-        <button id="tab-btn-transfer" onclick="switchTab('transfer')"
-          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
-          ↔️ Transfer ({{ stats.total_transfer|default:"15" }})
-        </button>
-        <button id="tab-btn-redeem" onclick="switchTab('redeem')"
-          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
-          🎁 Redeem ({{ stats.total_redeem|default:"20" }})
-        </button>
-        <button id="tab-btn-beli" onclick="switchTab('beli')"
-          class="tab-btn text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold transition">
-          📦 Beli Package ({{ stats.total_beli|default:"20" }})
-        </button>
-      </div>
-
-      <!-- FILTER BAR -->
-      <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm" style="background:rgba(255,255,255,0.03);">
-        <form method="get" class="flex gap-6 items-end flex-wrap">
-          <div class="flex-1 min-w-48 flex flex-col gap-1.5">
-            <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Member</label>
-            <input type="text" name="search" value="{{ search|default:'' }}" placeholder="nama atau email..."
-              class="w-full bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs uppercase tracking-widest text-white opacity-40">Dari</label>
-            <input type="date" name="tgl_dari" value="{{ tgl_dari|default:'' }}"
-              class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition" style="color-scheme:dark;">
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs uppercase tracking-widest text-white opacity-40">Sampai</label>
-            <input type="date" name="tgl_sampai" value="{{ tgl_sampai|default:'' }}"
-              class="bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition" style="color-scheme:dark;">
-          </div>
-          <input type="hidden" name="tab" id="activeTabInput" value="{{ active_tab|default:'klaim' }}">
-          <button type="submit"
-            class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition pb-2.5">
-            Filter
+      <div class="liquid-panel mb-6 p-2">
+        <div class="grid gap-2 md:grid-cols-4">
+          <button id="tab-btn-klaim" type="button" onclick="switchTab('klaim')" class="tab-btn active-tab">
+            Klaim <span>{{ stats.total_klaim }}</span>
           </button>
-          <a href="{% url 'laporan_transaksi' %}"
-            class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition pb-2.5">
-            Reset
-          </a>
-        </form>
+          <button id="tab-btn-transfer" type="button" onclick="switchTab('transfer')" class="tab-btn">
+            Transfer <span>{{ stats.total_transfer }}</span>
+          </button>
+          <button id="tab-btn-redeem" type="button" onclick="switchTab('redeem')" class="tab-btn">
+            Redeem <span>{{ stats.total_redeem }}</span>
+          </button>
+          <button id="tab-btn-beli" type="button" onclick="switchTab('beli')" class="tab-btn">
+            Beli Package <span>{{ stats.total_beli }}</span>
+          </button>
+        </div>
       </div>
 
-      <!-- TAB: KLAIM -->
       <div id="tab-klaim" class="tab-panel">
-        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
-          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Klaim Miles</p>
+        <section class="liquid-panel overflow-hidden">
+          <div class="table-title">
+            <div>
+              <p>Riwayat Klaim</p>
+              <h2>Klaim Missing Miles</h2>
+            </div>
+            <span>{{ klaim_list|length }} baris</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[1180px] text-sm">
               <thead>
                 <tr class="border-b border-white border-opacity-10">
-                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Klaim</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Maskapai</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Rute</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kelas</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Diproses Oleh</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                  <th class="table-head pl-8">No. Klaim</th>
+                  <th class="table-head">Member</th>
+                  <th class="table-head">Maskapai</th>
+                  <th class="table-head">Rute</th>
+                  <th class="table-head">Kelas</th>
+                  <th class="table-head">Status</th>
+                  <th class="table-head">Diproses Oleh</th>
+                  <th class="table-head pr-8">Waktu</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for k in klaim_list %}
-                <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white font-semibold">{{ k.nomor_klaim }}</td>
-                  <td class="px-4 py-4">
-                    <div class="text-white font-medium">{{ k.nama_member }}</div>
-                    <div class="text-white opacity-30 text-xs">{{ k.email_member }}</div>
+                <tr class="report-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                  <td class="table-cell pl-8"><span class="rank-pill">CL-{{ k.id }}</span></td>
+                  <td class="table-cell">
+                    <p class="font-semibold text-white">{{ k.nama_member }}</p>
+                    <p class="mt-1 text-xs text-white text-opacity-48">{{ k.email_member }}</p>
                   </td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ k.maskapai }}</td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ k.rute }}</td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ k.kelas_kabin }}</td>
-                  <td class="px-4 py-4">
+                  <td class="table-cell text-white text-opacity-58">{{ k.maskapai }}</td>
+                  <td class="table-cell"><span class="soft-pill">{{ k.rute }}</span></td>
+                  <td class="table-cell text-white text-opacity-58">{{ k.kelas_kabin }}</td>
+                  <td class="table-cell">
                     {% if k.status == 'Disetujui' %}
-                    <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Disetujui</span>
+                    <span class="status-chip status-ok">Disetujui</span>
                     {% elif k.status == 'Ditolak' %}
-                    <span style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">Ditolak</span>
+                    <span class="status-chip status-no">Ditolak</span>
                     {% else %}
-                    <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);" class="text-xs px-3 py-1 rounded-full font-semibold">Menunggu</span>
+                    <span class="status-chip status-wait">Menunggu</span>
                     {% endif %}
                   </td>
-                  <td class="px-4 py-4 text-white opacity-50 text-xs">{{ k.email_staf|default:"—" }}</td>
-                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ k.timestamp }}</td>
+                  <td class="table-cell text-white text-opacity-50">{{ k.email_staf|default:"-" }}</td>
+                  <td class="table-cell pr-8 text-white text-opacity-45">{{ k.timestamp|date:"d M Y" }} · {{ k.timestamp|time:"H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data klaim.</td></tr>
+                <tr><td colspan="8" class="px-8 py-20 text-center text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada data klaim.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
 
-      <!-- TAB: TRANSFER -->
       <div id="tab-transfer" class="tab-panel hidden">
-        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
-          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Transfer Miles</p>
+        <section class="liquid-panel overflow-hidden">
+          <div class="table-title">
+            <div>
+              <p>Riwayat Transfer</p>
+              <h2>Transfer Miles</h2>
+            </div>
+            <span>{{ transfer_list|length }} baris</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[980px] text-sm">
               <thead>
                 <tr class="border-b border-white border-opacity-10">
-                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Pengirim</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Penerima</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Jumlah Miles</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Catatan</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                  <th class="table-head pl-8">Pengirim</th>
+                  <th class="table-head">Penerima</th>
+                  <th class="table-head">Jumlah Miles</th>
+                  <th class="table-head">Catatan</th>
+                  <th class="table-head pr-8">Waktu</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for t in transfer_list %}
-                <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ t.email_dari }}</td>
-                  <td class="px-4 py-4 text-white opacity-80">{{ t.email_ke }}</td>
-                  <td class="px-4 py-4">
-                    <span style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">{{ t.jumlah }} mi</span>
+                <tr class="report-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                  <td class="table-cell pl-8">
+                    <p class="font-semibold text-white">{{ t.nama_dari }}</p>
+                    <p class="mt-1 text-xs text-white text-opacity-48">{{ t.email_dari }}</p>
                   </td>
-                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ t.catatan|default:"—" }}</td>
-                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ t.timestamp }}</td>
+                  <td class="table-cell">
+                    <p class="font-semibold text-white">{{ t.nama_ke }}</p>
+                    <p class="mt-1 text-xs text-white text-opacity-48">{{ t.email_ke }}</p>
+                  </td>
+                  <td class="table-cell"><span class="transfer-pill">{{ t.jumlah|floatformat:0 }} mi</span></td>
+                  <td class="table-cell text-white text-opacity-48">{{ t.catatan|default:"-" }}</td>
+                  <td class="table-cell pr-8 text-white text-opacity-45">{{ t.timestamp|date:"d M Y" }} · {{ t.timestamp|time:"H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data transfer.</td></tr>
+                <tr><td colspan="5" class="px-8 py-20 text-center text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada data transfer.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
 
-      <!-- TAB: REDEEM -->
       <div id="tab-redeem" class="tab-panel hidden">
-        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
-          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Redeem Hadiah</p>
+        <section class="liquid-panel overflow-hidden">
+          <div class="table-title">
+            <div>
+              <p>Riwayat Redeem</p>
+              <h2>Redeem Hadiah</h2>
+            </div>
+            <span>{{ redeem_list|length }} baris</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[980px] text-sm">
               <thead>
                 <tr class="border-b border-white border-opacity-10">
-                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kode Hadiah</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama Hadiah</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Miles Digunakan</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                  <th class="table-head pl-8">Member</th>
+                  <th class="table-head">Kode Hadiah</th>
+                  <th class="table-head">Nama Hadiah</th>
+                  <th class="table-head">Miles Digunakan</th>
+                  <th class="table-head pr-8">Waktu</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for r in redeem_list %}
-                <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ r.email }}</td>
-                  <td class="px-4 py-4 text-white font-mono text-xs opacity-70">{{ r.kode_hadiah }}</td>
-                  <td class="px-4 py-4 text-white opacity-80">{{ r.nama_hadiah|default:"—" }}</td>
-                  <td class="px-4 py-4">
-                    <span style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">{{ r.miles|default:"0" }} mi</span>
+                <tr class="report-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                  <td class="table-cell pl-8">
+                    <p class="font-semibold text-white">{{ r.nama }}</p>
+                    <p class="mt-1 text-xs text-white text-opacity-48">{{ r.email }}</p>
                   </td>
-                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ r.timestamp }}</td>
+                  <td class="table-cell"><span class="rank-pill">{{ r.kode_hadiah }}</span></td>
+                  <td class="table-cell text-white text-opacity-68">{{ r.nama_hadiah|default:"-" }}</td>
+                  <td class="table-cell"><span class="redeem-pill">{{ r.miles|default:"0"|floatformat:0 }} mi</span></td>
+                  <td class="table-cell pr-8 text-white text-opacity-45">{{ r.timestamp|date:"d M Y" }} · {{ r.timestamp|time:"H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data redeem.</td></tr>
+                <tr><td colspan="5" class="px-8 py-20 text-center text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada data redeem.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
 
-      <!-- TAB: BELI PACKAGE -->
       <div id="tab-beli" class="tab-panel hidden">
-        <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden" style="background:rgba(255,255,255,0.03);">
-          <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10">
-            <p class="text-xs uppercase tracking-widest text-white opacity-40">Riwayat Pembelian Paket Miles</p>
+        <section class="liquid-panel overflow-hidden">
+          <div class="table-title">
+            <div>
+              <p>Riwayat Pembelian</p>
+              <h2>Pembelian Paket Miles</h2>
+            </div>
+            <span>{{ beli_list|length }} baris</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[980px] text-sm">
               <thead>
                 <tr class="border-b border-white border-opacity-10">
-                  <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Member</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Paket</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Miles Diterima</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Harga</th>
-                  <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Waktu</th>
+                  <th class="table-head pl-8">Member</th>
+                  <th class="table-head">Paket</th>
+                  <th class="table-head">Miles Diterima</th>
+                  <th class="table-head">Harga</th>
+                  <th class="table-head pr-8">Waktu</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white divide-opacity-5">
                 {% for b in beli_list %}
-                <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                  <td class="px-8 py-4 text-white opacity-80">{{ b.email }}</td>
-                  <td class="px-4 py-4 text-white opacity-70">{{ b.id_paket }}</td>
-                  <td class="px-4 py-4">
-                    <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);" class="text-xs px-3 py-1 rounded-full font-semibold">+{{ b.jumlah_miles|default:"0" }} mi</span>
+                <tr class="report-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                  <td class="table-cell pl-8">
+                    <p class="font-semibold text-white">{{ b.nama }}</p>
+                    <p class="mt-1 text-xs text-white text-opacity-48">{{ b.email }}</p>
                   </td>
-                  <td class="px-4 py-4 text-white opacity-70">Rp {{ b.harga|default:"0" }}</td>
-                  <td class="px-4 py-4 text-white opacity-40 text-xs">{{ b.timestamp }}</td>
+                  <td class="table-cell"><span class="rank-pill">{{ b.id_paket }}</span></td>
+                  <td class="table-cell"><span class="buy-pill">+{{ b.jumlah_miles|default:"0"|floatformat:0 }} mi</span></td>
+                  <td class="table-cell text-white text-opacity-68">Rp {{ b.harga|default:"0"|floatformat:0 }}</td>
+                  <td class="table-cell pr-8 text-white text-opacity-45">{{ b.timestamp|date:"d M Y" }} · {{ b.timestamp|time:"H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="py-20 text-center text-white opacity-30 text-sm">Belum ada data pembelian paket.</td></tr>
+                <tr><td colspan="5" class="px-8 py-20 text-center text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada data pembelian paket.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
-
     </div>
   </div>
 </div>
 
 <style>
-  .tab-btn {
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.45);
-    background: transparent;
-    cursor: pointer;
+.report-admin {
+  color: white;
+}
+
+.report-photo {
+  filter: saturate(1.05) contrast(1.05) blur(0.5px);
+  object-position: center center;
+  transform: scale(1.01);
+}
+
+.report-light {
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.78) 0%, rgba(15, 23, 42, 0.55) 48%, rgba(12, 74, 110, 0.15) 100%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, rgba(2, 6, 23, 0.68) 100%),
+    radial-gradient(circle at 18% 12%, rgba(207, 250, 254, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(196, 181, 253, 0.12), transparent 25%);
+}
+
+.liquid-panel {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 2.25rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.065)),
+    rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  box-shadow:
+    0 24px 80px rgba(2, 6, 23, 0.34),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-panel {
+  min-height: 18.5rem;
+}
+
+.insight-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-pill,
+.primary-link,
+.secondary-link,
+.meter-icon,
+.tab-btn {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.58rem 0.85rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pulse-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #cffafe;
+  box-shadow: 0 0 18px rgba(207, 250, 254, 0.95);
+  animation: sdPulseDot 2.2s ease-in-out infinite;
+}
+
+.primary-link,
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.82rem 1.08rem;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.primary-link {
+  background: rgba(255, 255, 255, 0.19);
+}
+
+.secondary-link {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.primary-link:hover,
+.secondary-link:hover,
+.tab-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.ops-pulse > div,
+.top-member-card,
+.report-meter,
+.mix-row,
+.summary-grid > div {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse > div,
+.top-member-card,
+.report-meter,
+.mix-row,
+.summary-grid > div {
+  padding: 1rem;
+}
+
+.ops-pulse p,
+.top-member-card span,
+.mix-row span,
+.summary-grid span {
+  margin-bottom: 0.35rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.ops-pulse strong,
+.top-member-card strong,
+.mix-row strong,
+.summary-grid strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.top-member-card p {
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.report-meter {
+  margin-top: 1.5rem;
+}
+
+.meter-icon {
+  display: inline-flex;
+  height: 3.4rem;
+  width: 3.4rem;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.progress-glow {
+  box-shadow: 0 0 26px rgba(207, 250, 254, 0.8);
+}
+
+.field-label,
+.table-head {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.65rem;
+}
+
+.glass-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.85rem 1rem;
+  color: white;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-input:focus {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-height: 10.5rem;
+  padding-top: 0.35rem;
+}
+
+.bar-item {
+  display: flex;
+  flex: 1;
+  min-width: 2.3rem;
+  height: 10.5rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bar-value {
+  margin-bottom: 0.4rem;
+  min-height: 1rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.bar-track {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 1rem 1rem 0.45rem 0.45rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(2, 6, 23, 0.3);
+}
+
+.bar-fill {
+  width: 100%;
+  min-height: 0.25rem;
+  border-radius: 1rem 1rem 0.45rem 0.45rem;
+  box-shadow:
+    0 0 24px rgba(207, 250, 254, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  animation: barRise 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: bottom;
+}
+
+.bar-label {
+  margin-top: 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.table-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.table-title p {
+  margin-bottom: 0.25rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.table-title h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: white;
+}
+
+.table-title span {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.table-head {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.table-cell {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.report-row {
+  animation: riseIn 0.42s ease both;
+  transition: background 0.2s ease;
+}
+
+.report-row:hover {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.rank-pill,
+.soft-pill,
+.miles-pill,
+.transfer-pill,
+.redeem-pill,
+.buy-pill,
+.status-chip {
+  display: inline-flex;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.38rem 0.72rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.72rem;
+}
+
+.rank-pill {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.miles-pill,
+.transfer-pill {
+  color: #cffafe;
+  border-color: rgba(103, 232, 249, 0.26);
+  background: rgba(6, 182, 212, 0.14);
+  font-weight: 800;
+}
+
+.redeem-pill {
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(245, 158, 11, 0.15);
+  font-weight: 800;
+}
+
+.buy-pill,
+.status-ok {
+  color: #bbf7d0;
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(34, 197, 94, 0.15);
+  font-weight: 800;
+}
+
+.status-no {
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(239, 68, 68, 0.15);
+  font-weight: 800;
+}
+
+.status-wait {
+  color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.09);
+  font-weight: 800;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.35rem;
+  padding: 0.95rem 1.2rem;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.tab-btn span {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.tab-btn.active-tab {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.tab-btn.active-tab span {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  .tab-btn:hover {
-    background: rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.75);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .tab-btn.active-tab {
-    background: white;
-    color: #111827;
-    border-color: white;
+}
+
+@keyframes barRise {
+  from {
+    opacity: 0;
+    transform: scaleY(0.35) translateY(8px);
   }
+  to {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .table-title {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .ops-pulse,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bar-chart {
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .bar-item {
+    flex: 0 0 3rem;
+  }
+
+  .primary-link,
+  .secondary-link {
+    justify-content: center;
+  }
+}
+
+/* ── Dynamic additions ── */
+@keyframes sdFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sdShimmer {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+}
+@keyframes sdBarGrow {
+    from { width: 0 !important; }
+}
+@keyframes sdPulseDot {
+    0%, 100% { box-shadow: 0 0 18px rgba(207,250,254,0.9); }
+    50%       { box-shadow: 0 0 28px rgba(207,250,254,1), 0 0 8px rgba(207,250,254,0.6); }
+}
+.pulse-dot { animation: sdPulseDot 2.2s ease-in-out infinite; }
+.sd-shimmer-host { position: relative; overflow: hidden; }
+.sd-shimmer-host::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.045), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+    pointer-events: none;
+}
+.sd-shimmer-host:hover::after { animation: sdShimmer 0.75s ease forwards; }
+.sd-bar {
+    animation: sdBarGrow 1.1s cubic-bezier(0.34,1.2,0.64,1) both;
+    animation-delay: 0.5s;
+}
+.report-row:hover { transform: translateY(-1px); }
 </style>
 
 <script>
-  function switchTab(tab) {
-    const tabs = ['klaim', 'transfer', 'redeem', 'beli'];
-    tabs.forEach(t => {
-      document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-      const btn = document.getElementById('tab-btn-' + t);
-      btn.classList.toggle('active-tab', t === tab);
+function sdCountUp(el) {
+    var target = parseInt((el.dataset.target || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    var duration = 900, start = null;
+    function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString('id-ID');
+    }
+    requestAnimationFrame(step);
+}
+var sdObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) { sdCountUp(e.target); sdObs.unobserve(e.target); }
     });
-    const inp = document.getElementById('activeTabInput');
-    if (inp) inp.value = tab;
-  }
+}, { threshold: 0.3 });
+document.querySelectorAll('.count-up').forEach(function(el) { sdObs.observe(el); });
+</script>
 
-  // Set active tab from URL param on load
-  const urlTab = new URLSearchParams(window.location.search).get('tab');
-  if (urlTab) switchTab(urlTab);
+<script>
+function switchTab(tab) {
+  const tabs = ['klaim', 'transfer', 'redeem', 'beli'];
+  tabs.forEach(function (t) {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-btn-' + t);
+    btn.classList.toggle('active-tab', t === tab);
+  });
+  const inp = document.getElementById('activeTabInput');
+  if (inp) inp.value = tab;
+}
+
+switchTab('{{ active_tab|default:"klaim" }}');
+
+var flash = document.getElementById('flash');
+if (flash) {
+  setTimeout(function () {
+    flash.style.transition = 'opacity 0.4s';
+    flash.style.opacity = '0';
+    setTimeout(function () { flash.remove(); }, 400);
+  }, 4000);
+}
 </script>
 
 {% endblock %}

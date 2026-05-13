@@ -7,7 +7,6 @@
         alt="Premium travel rewards" class="fixed inset-0 h-full w-full object-cover reward-photo">
     <div class="fixed inset-0 bg-slate-950 bg-opacity-40"></div>
     <div class="fixed inset-0 reward-light"></div>
-    <div class="fixed inset-0 reward-grid opacity-20"></div>
 
     <div class="relative z-10 min-h-screen px-5 pb-14 pt-28 md:px-8">
         <div class="mx-auto max-w-7xl">
@@ -200,6 +199,7 @@
                                     <div class="flex items-center gap-2">
                                         <button
                                             data-kode="{{ h.kode_hadiah }}"
+                                            data-edit-url="{% url 'hadiah_edit' h.kode_hadiah %}"
                                             data-nama="{{ h.nama }}"
                                             data-desk="{{ h.deskripsi|default:'' }}"
                                             data-pen="{{ h.id_penyedia }}"
@@ -208,17 +208,27 @@
                                             data-end="{{ h.program_end|date:'Y-m-d' }}"
                                             onclick="openEdit(this)"
                                             class="action-button edit-button"
+                                            aria-label="Edit {{ h.nama }}"
+                                            title="Edit"
                                             type="button">
-                                            Edit
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.862 4.487l1.651-1.651a1.875 1.875 0 112.652 2.652L9 17.653 5.25 18.75 6.347 15 16.862 4.487z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19.5 7.125L16.875 4.5"/>
+                                            </svg>
                                         </button>
                                         {% if not h.is_active %}
                                         <button
                                             data-kode="{{ h.kode_hadiah }}"
+                                            data-hapus-url="{% url 'hadiah_hapus' h.kode_hadiah %}"
                                             data-nama="{{ h.nama }}"
                                             onclick="openHapus(this)"
                                             class="action-button delete-button"
+                                            aria-label="Hapus {{ h.nama }}"
+                                            title="Hapus"
                                             type="button">
-                                            Hapus
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166M19.228 5.79L18.16 19.673A2.25 2.25 0 0115.916 21.75H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .563c.34-.059.68-.114 1.022-.166m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a49.175 49.175 0 00-7.5 0"/>
+                                            </svg>
                                         </button>
                                         {% else %}
                                         <span class="locked-action">Aktif</span>
@@ -401,14 +411,6 @@
         radial-gradient(circle at 84% 22%, rgba(253, 230, 138, 0.14), transparent 24%);
 }
 
-.reward-grid {
-    background-image:
-        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-    background-size: 74px 74px;
-    mask-image: linear-gradient(to bottom, transparent, black 20%, black 70%, transparent);
-}
-
 .liquid-panel {
     border: 1px solid rgba(255, 255, 255, 0.26);
     border-radius: 2.25rem;
@@ -551,7 +553,7 @@
 }
 
 .reward-meter {
-    margin-top: auto;
+    margin-top: 1.5rem;
 }
 
 .meter-icon {
@@ -711,7 +713,12 @@
 }
 
 .action-button {
-    padding: 0.58rem 0.82rem;
+    display: inline-flex;
+    height: 2.35rem;
+    width: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -829,7 +836,7 @@ function setSel(id, val) {
 
 function openEdit(btn) {
     var kode = btn.getAttribute('data-kode');
-    document.getElementById('f-edit').action = '/kelola-hadiah/edit/' + kode + '/';
+    document.getElementById('f-edit').action = btn.getAttribute('data-edit-url');
     document.getElementById('e-kode').value = kode;
     document.getElementById('e-nama').value = btn.getAttribute('data-nama');
     document.getElementById('e-desk').value = btn.getAttribute('data-desk');
@@ -841,7 +848,7 @@ function openEdit(btn) {
 }
 
 function openHapus(btn) {
-    document.getElementById('f-hapus').action = '/kelola-hadiah/hapus/' + btn.getAttribute('data-kode') + '/';
+    document.getElementById('f-hapus').action = btn.getAttribute('data-hapus-url');
     document.getElementById('h-kode').textContent = btn.getAttribute('data-kode');
     document.getElementById('h-nama').textContent = btn.getAttribute('data-nama');
     openModal('m-hapus');

@@ -1,184 +1,262 @@
 {% extends 'base.html' %}
-
 {% block content %}
 
-<!-- Full-page background -->
-<div class="relative min-h-screen">
+<!-- Phosphor Icons -->
+<div class="relative min-h-screen klaim-contrast-page">
     <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80"
         alt="Travel" class="fixed inset-0 w-full h-full object-cover">
     <div class="fixed inset-0 bg-black bg-opacity-55"></div>
 
-    <!-- Content -->
+    <!-- Ambient orbs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="k-orb k-orb-1"></div>
+        <div class="k-orb k-orb-2"></div>
+        <div class="k-orb k-orb-3"></div>
+    </div>
+
     <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
         <div class="max-w-6xl mx-auto">
 
             <!-- Page Header -->
-            <div class="mb-10 flex items-end justify-between">
+            <div class="mb-10 flex items-end justify-between" style="animation: kFadeDown 0.55s ease both;">
                 <div>
-                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member</p>
-                    <h1 class="text-5xl font-bold text-white">Klaim Missing<br><span class="opacity-40">Miles</span></h1>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2 flex items-center gap-2">
+                        Member
+                    </p>
+                    <h1 class="text-5xl font-bold text-white leading-tight">Klaim Missing<br><span class="opacity-40">Miles</span></h1>
+                    <p class="text-white opacity-40 text-sm mt-3">Ajukan klaim untuk penerbangan yang milesnya belum tercatat</p>
                 </div>
                 <button onclick="openModal('m-ajukan')"
-                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
-                    + Ajukan Klaim
+                    class="ajukan-btn bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Ajukan Klaim
                 </button>
             </div>
 
             <!-- Flash Messages -->
             {% if success_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✓ {{ success_msg }}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm flash-msg flex items-center gap-3" id="flash">
+                <span class="w-6 h-6 rounded-full bg-emerald-400 bg-opacity-20 border border-emerald-400 border-opacity-40 flex items-center justify-center flex-shrink-0 text-emerald-300 text-xs"><i class="ph-bold ph-check"></i></span>
+                {{ success_msg }}
             </div>
             {% endif %}
             {% if error_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✕ {{ error_msg }}
+            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm flash-msg flex items-center gap-3" id="flash">
+                <span class="w-6 h-6 rounded-full bg-red-400 bg-opacity-20 border border-red-400 border-opacity-40 flex items-center justify-center flex-shrink-0 text-red-300 text-xs"><i class="ph-bold ph-x"></i></span>
+                {{ error_msg }}
             </div>
             {% endif %}
 
-            <!-- Stats Row -->
+            <!-- Stats Row — 4 cards with count-up + mini progress bar -->
             <div class="grid grid-cols-4 gap-4 mb-8">
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Klaim</p>
-                    <p class="text-4xl font-bold text-white">{{ stats.total }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: kFadeUp 0.5s ease both; animation-delay: 0ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Klaim</p>
+                        <i class="ph ph-list-checks text-white" style="font-size:1rem; opacity:0.45;"></i>
+                    </div>
+                    <p class="text-4xl font-bold text-white count-up display-number" data-target="{{ stats.total }}">0</p>
                 </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Menunggu</p>
-                    <p class="text-4xl font-bold text-amber-300">{{ stats.menunggu }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: kFadeUp 0.5s ease both; animation-delay: 70ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Menunggu</p>
+                        <i class="ph ph-clock text-amber-300" style="font-size:1rem; opacity:0.7;"></i>
+                    </div>
+                    <p class="text-4xl font-bold text-amber-300 count-up display-number" data-target="{{ stats.menunggu }}">0</p>
+                    <p class="text-xs text-white opacity-30 mt-3">sedang diproses</p>
                 </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Disetujui</p>
-                    <p class="text-4xl font-bold text-emerald-300">{{ stats.disetujui }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: kFadeUp 0.5s ease both; animation-delay: 140ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Disetujui</p>
+                        <i class="ph ph-check-circle text-emerald-300" style="font-size:1rem; opacity:0.7;"></i>
+                    </div>
+                    <p class="text-4xl font-bold text-emerald-300 count-up display-number" data-target="{{ stats.disetujui }}">0</p>
+                    <p class="text-xs text-white opacity-30 mt-3">miles dikreditkan</p>
                 </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Ditolak</p>
-                    <p class="text-4xl font-bold text-red-300">{{ stats.ditolak }}</p>
+                <div class="stat-card border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm"
+                     style="animation: kFadeUp 0.5s ease both; animation-delay: 210ms;">
+                    <div class="flex items-start justify-between mb-3">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Ditolak</p>
+                        <i class="ph ph-x-circle text-red-300" style="font-size:1rem; opacity:0.7;"></i>
+                    </div>
+                    <p class="text-4xl font-bold text-red-300 count-up display-number" data-target="{{ stats.ditolak }}">0</p>
+                    <p class="text-xs text-white opacity-30 mt-3">tidak memenuhi syarat</p>
                 </div>
             </div>
 
-            <!-- Table Card -->
-            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden">
+            <!-- Main content card -->
+            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden"
+                 style="animation: kFadeUp 0.5s ease both; animation-delay: 280ms;">
 
-                <!-- Status Tabs -->
-                <div class="flex border-b border-white border-opacity-10 px-8 pt-6">
-                    <a href="?status=semua"
-                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
-                        {% if status_filter == 'semua' %}text-white border-white{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
-                        Semua
-                    </a>
-                    <a href="?status=Menunggu"
-                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
-                        {% if status_filter == 'Menunggu' %}text-amber-300 border-amber-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
-                        Menunggu
-                    </a>
-                    <a href="?status=Disetujui"
-                        class="text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
-                        {% if status_filter == 'Disetujui' %}text-emerald-300 border-emerald-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
-                        Disetujui
-                    </a>
-                    <a href="?status=Ditolak"
-                        class="text-xs uppercase tracking-widest pb-4 transition border-b-2
-                        {% if status_filter == 'Ditolak' %}text-red-300 border-red-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
-                        Ditolak
-                    </a>
+                <!-- Status Tabs + count badge -->
+                <div class="flex items-center justify-between border-b border-white border-opacity-10 px-8 pt-6">
+                    <div class="flex">
+                        <a href="?status=semua"
+                            class="tab-link text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                            {% if status_filter == 'semua' %}text-white border-white{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                            Semua
+                            {% if stats.total %}<span class="ml-1.5 text-white opacity-30 font-mono normal-case">{{ stats.total }}</span>{% endif %}
+                        </a>
+                        <a href="?status=Menunggu"
+                            class="tab-link text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                            {% if status_filter == 'Menunggu' %}text-amber-300 border-amber-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                            Menunggu
+                            {% if stats.menunggu %}<span class="ml-1.5 text-amber-300 opacity-50 font-mono normal-case">{{ stats.menunggu }}</span>{% endif %}
+                        </a>
+                        <a href="?status=Disetujui"
+                            class="tab-link text-xs uppercase tracking-widest pb-4 mr-8 transition border-b-2
+                            {% if status_filter == 'Disetujui' %}text-emerald-300 border-emerald-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                            Disetujui
+                            {% if stats.disetujui %}<span class="ml-1.5 text-emerald-300 opacity-50 font-mono normal-case">{{ stats.disetujui }}</span>{% endif %}
+                        </a>
+                        <a href="?status=Ditolak"
+                            class="tab-link text-xs uppercase tracking-widest pb-4 transition border-b-2
+                            {% if status_filter == 'Ditolak' %}text-red-300 border-red-300{% else %}text-white opacity-40 border-transparent hover:opacity-70{% endif %}">
+                            Ditolak
+                            {% if stats.ditolak %}<span class="ml-1.5 text-red-300 opacity-50 font-mono normal-case">{{ stats.ditolak }}</span>{% endif %}
+                        </a>
+                    </div>
+                    {% if klaim_list %}
+                    <span class="text-xs font-mono text-white opacity-25 pb-6">{{ klaim_list|length }} ditampilkan</span>
+                    {% endif %}
                 </div>
 
                 {% if klaim_list %}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-white border-opacity-10">
-                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">No. Klaim</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Maskapai</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Rute</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tgl. Terbang</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Flight</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Kelas</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Status</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Pengajuan</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white divide-opacity-5">
-                            {% for k in klaim_list %}
-                            <tr class="hover:bg-white hover:bg-opacity-5 transition">
-                                <td class="px-8 py-4">
-                                    <span class="text-white text-xs font-mono font-semibold opacity-70">{{ k.nomor_klaim }}</span>
-                                </td>
-                                <td class="px-4 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-white bg-white bg-opacity-15 px-2 py-1 rounded-lg">{{ k.maskapai }}</span>
-                                        <span class="text-white opacity-50 text-xs hidden xl:block">{{ k.nama_maskapai }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-4">
-                                    <div class="flex items-center gap-2 text-white">
-                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_asal }}</span>
-                                        <span class="opacity-30 text-xs">→</span>
-                                        <span class="font-mono font-semibold text-xs">{{ k.bandara_tujuan }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ k.tanggal_penerbangan }}</td>
-                                <td class="px-4 py-4">
-                                    <span class="text-white font-mono text-xs bg-white bg-opacity-10 px-2 py-1 rounded">{{ k.flight_number }}</span>
-                                </td>
-                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ k.kelas_kabin }}</td>
-                                <td class="px-4 py-4">
-                                    {% if k.status_penerimaan == 'Menunggu' %}
-                                    <span class="inline-block bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Menunggu</span>
-                                    {% elif k.status_penerimaan == 'Disetujui' %}
-                                    <span class="inline-block bg-emerald-400 bg-opacity-20 text-emerald-300 border border-emerald-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Disetujui</span>
-                                    {% else %}
-                                    <span class="inline-block bg-red-400 bg-opacity-20 text-red-300 border border-red-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Ditolak</span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-4 py-4 text-white opacity-40 text-xs">{{ k.timestamp }}</td>
-                                <td class="px-4 py-4">
-                                    {% if k.status_penerimaan == 'Menunggu' %}
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-white opacity-50 hover:opacity-100 transition"
-                                            title="Edit"
-                                            data-id="{{ k.id }}"
-                                            data-msk="{{ k.maskapai }}"
-                                            data-asl="{{ k.bandara_asal }}"
-                                            data-tuj="{{ k.bandara_tujuan }}"
-                                            data-tgl="{{ k.tanggal_penerbangan }}"
-                                            data-flt="{{ k.flight_number }}"
-                                            data-tkt="{{ k.nomor_tiket }}"
-                                            data-kls="{{ k.kelas_kabin }}"
-                                            data-pnr="{{ k.pnr }}"
-                                            onclick="openEdit(this)">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                <!-- Card-based list instead of table — more creative, mobile-friendly -->
+                <div class="divide-y divide-white divide-opacity-5" id="klaim-list">
+                    {% for k in klaim_list %}
+                    <div class="klaim-row group px-8 py-5 transition-all duration-200 hover:bg-white hover:bg-opacity-4"
+                         style="animation: kFadeUp 0.4s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
+
+                        <div class="flex items-start justify-between gap-4">
+
+                            <!-- Left: route + flight info -->
+                            <div class="flex items-start gap-4 min-w-0 flex-1">
+
+                                <!-- Airline badge -->
+                                <div class="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center border border-white border-opacity-15 bg-white bg-opacity-8 relative overflow-hidden">
+                                    <div class="row-shimmer"></div>
+                                    <span class="text-white font-bold text-xs relative z-10">{{ k.maskapai }}</span>
+                                </div>
+
+                                <!-- Main info -->
+                                <div class="min-w-0 flex-1">
+                                    <!-- Route — prominent -->
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <span class="text-white font-bold font-mono text-base">{{ k.bandara_asal }}</span>
+                                        <div class="flex items-center gap-1 text-white opacity-30">
+                                            <div class="w-6 h-px bg-white opacity-30"></div>
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
                                             </svg>
-                                        </button>
-                                        <button class="text-red-300 opacity-50 hover:opacity-100 transition"
-                                            title="Batalkan"
-                                            data-id="{{ k.id }}"
-                                            data-nom="{{ k.nomor_klaim }}"
-                                            data-rut="{{ k.bandara_asal }} → {{ k.bandara_tujuan }}"
-                                            onclick="openBatal(this)">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </button>
+                                        </div>
+                                        <span class="text-white font-bold font-mono text-base">{{ k.bandara_tujuan }}</span>
+                                        <span class="text-white opacity-25 text-xs hidden sm:inline">{{ k.nama_asal }} → {{ k.nama_tujuan }}</span>
                                     </div>
-                                    {% else %}
-                                    <span class="text-white opacity-20 text-xs">—</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+
+                                    <!-- Meta row -->
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                        <span class="text-white opacity-50 text-xs font-mono bg-white bg-opacity-8 px-2 py-0.5 rounded">{{ k.flight_number }}</span>
+                                        <span class="text-white opacity-40 text-xs">{{ k.tanggal_penerbangan }}</span>
+                                        <span class="text-white opacity-40 text-xs">{{ k.kelas_kabin }}</span>
+                                        <span class="text-white opacity-25 text-xs font-mono">{{ k.nama_maskapai }}</span>
+                                    </div>
+
+                                    <!-- Ticket + PNR — subtle -->
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <span class="text-white opacity-25 text-xs">Tiket: <span class="font-mono">{{ k.nomor_tiket }}</span></span>
+                                        <span class="text-white opacity-15 text-xs">•</span>
+                                        <span class="text-white opacity-25 text-xs">PNR: <span class="font-mono">{{ k.pnr }}</span></span>
+                                        <span class="text-white opacity-15 text-xs">•</span>
+                                        <span class="text-white opacity-20 text-xs font-mono">#{{ k.id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: status + timestamp + actions -->
+                            <div class="flex-shrink-0 flex flex-col items-end gap-2">
+                                <!-- Status badge -->
+                                {% if k.status_penerimaan == 'Menunggu' %}
+                                <span class="status-badge inline-flex items-center gap-1.5 bg-amber-400 bg-opacity-15 text-amber-300 border border-amber-400 border-opacity-25 text-xs px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                    Menunggu
+                                </span>
+                                {% elif k.status_penerimaan == 'Disetujui' %}
+                                <span class="status-badge inline-flex items-center gap-1.5 bg-emerald-400 bg-opacity-15 text-emerald-300 border border-emerald-400 border-opacity-25 text-xs px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Disetujui
+                                </span>
+                                {% else %}
+                                <span class="status-badge inline-flex items-center gap-1.5 bg-red-400 bg-opacity-15 text-red-300 border border-red-400 border-opacity-25 text-xs px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Ditolak
+                                </span>
+                                {% endif %}
+
+                                <!-- Timestamp -->
+                                <p class="text-white opacity-25 text-xs">{{ k.timestamp }}</p>
+
+                                <!-- Actions — only for Menunggu -->
+                                {% if k.status_penerimaan == 'Menunggu' %}
+                                <div class="flex items-center gap-1 mt-1">
+                                    <button class="action-btn edit-btn text-white opacity-40 hover:opacity-90 transition p-1.5 rounded-lg hover:bg-white hover:bg-opacity-10"
+                                        title="Edit klaim"
+                                        data-id="{{ k.id }}"
+                                        data-msk="{{ k.maskapai }}"
+                                        data-asl="{{ k.bandara_asal }}"
+                                        data-tuj="{{ k.bandara_tujuan }}"
+                                        data-tgl="{{ k.tanggal_penerbangan }}"
+                                        data-flt="{{ k.flight_number }}"
+                                        data-tkt="{{ k.nomor_tiket }}"
+                                        data-kls="{{ k.kelas_kabin }}"
+                                        data-pnr="{{ k.pnr }}"
+                                        data-edit-url="{% url 'klaim_edit' k.id %}"
+                                        onclick="openEdit(this)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn delete-btn text-red-300 opacity-40 hover:opacity-90 transition p-1.5 rounded-lg hover:bg-red-400 hover:bg-opacity-10"
+                                        title="Batalkan klaim"
+                                        data-id="{{ k.id }}"
+                                        data-nom="{{ k.id }}"
+                                        data-rut="{{ k.bandara_asal }} → {{ k.bandara_tujuan }}"
+                                        data-batal-url="{% url 'klaim_batalkan' k.id %}"
+                                        onclick="openBatal(this)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                {% else %}
+                                <div class="h-7 mt-1"></div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
+
                 {% else %}
+                <!-- Empty state -->
                 <div class="py-24 text-center">
-                    <p class="text-5xl mb-6 opacity-30">✈️</p>
-                    <p class="text-white opacity-40 text-sm mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl border border-white border-opacity-10 mb-6" style="background: rgba(255,255,255,0.04);">
+                        <i class="ph ph-airplane-takeoff text-white" style="font-size:2rem; opacity:0.3;"></i>
+                    </div>
+                    <p class="text-white opacity-40 text-sm mb-2">
                         Belum ada klaim{% if status_filter != 'semua' %} dengan status <strong class="opacity-70">{{ status_filter }}</strong>{% endif %}.
                     </p>
                     {% if status_filter == 'semua' %}
+                    <p class="text-white opacity-25 text-xs mb-8">Ajukan klaim untuk penerbangan yang milesnya belum masuk</p>
                     <button onclick="openModal('m-ajukan')"
                         class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
                         Ajukan Klaim Pertama
@@ -187,7 +265,7 @@
                 </div>
                 {% endif %}
 
-            </div><!-- /table card -->
+            </div><!-- /main card -->
 
         </div>
     </div>
@@ -196,24 +274,26 @@
 
 <!-- ── MODAL: AJUKAN ──────────────────────────────────────────── -->
 <div id="m-ajukan" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+    <div class="modal-inner border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
         style="background: rgba(255,255,255,0.05);">
         <div class="flex justify-between items-start mb-8">
             <div>
                 <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Klaim Baru</p>
                 <h2 class="text-xl font-bold text-white">Ajukan Klaim Miles</h2>
             </div>
-            <button onclick="closeModal('m-ajukan')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button onclick="closeModal('m-ajukan')" class="modal-close text-white opacity-30 hover:opacity-70 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-10"><i class="ph-bold ph-x"></i></button>
         </div>
-        <p class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3">
-            Status klaim akan otomatis diset <strong class="text-amber-300 opacity-100">Menunggu</strong>.
-            Klaim duplikat (flight + tanggal + nomor tiket sama) tidak diizinkan.
-        </p>
-        <form method="post" action="{% url 'klaim_ajukan' %}">
+        <div class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3 flex items-start gap-2">
+            <svg class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Status klaim akan otomatis diset <strong class="text-amber-300 opacity-100">Menunggu</strong>.
+            Klaim duplikat (flight + tanggal + nomor tiket sama) tidak diizinkan.</span>
+        </div>
+        <form method="post" action="{% url 'klaim_ajukan' %}" id="f-ajukan">
             {% csrf_token %}
             <div class="grid grid-cols-2 gap-6">
-                <!-- Maskapai -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Maskapai <span class="text-red-300">*</span></label>
                     <select name="maskapai" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
@@ -224,8 +304,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <!-- Kelas Kabin -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Kelas Kabin <span class="text-red-300">*</span></label>
                     <select name="kelas_kabin" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
@@ -234,8 +313,7 @@
                         {% for k in kelas_list %}<option value="{{ k }}" class="text-gray-900">{{ k }}</option>{% endfor %}
                     </select>
                 </div>
-                <!-- Bandara Asal -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Asal <span class="text-red-300">*</span></label>
                     <select name="bandara_asal" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
@@ -244,8 +322,7 @@
                         {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
                     </select>
                 </div>
-                <!-- Bandara Tujuan -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Tujuan <span class="text-red-300">*</span></label>
                     <select name="bandara_tujuan" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none cursor-pointer"
@@ -254,29 +331,25 @@
                         {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
                     </select>
                 </div>
-                <!-- Tanggal Penerbangan -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tanggal Penerbangan <span class="text-red-300">*</span></label>
                     <input type="date" name="tanggal_penerbangan" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
                         style="color-scheme: dark;">
                 </div>
-                <!-- Flight Number -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Flight Number <span class="text-red-300">*</span></label>
                     <input type="text" name="flight_number" placeholder="cth: GA404" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
                 </div>
-                <!-- Nomor Tiket -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nomor Tiket <span class="text-red-300">*</span></label>
                     <input type="text" name="nomor_tiket" placeholder="cth: 001-1234567001" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
                 </div>
-                <!-- PNR -->
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">PNR <span class="text-red-300">*</span></label>
-                    <input type="text" name="pnr" placeholder="cth: ABX101" maxlength="10" required
+                    <input type="text" name="pnr" placeholder="cth: ABC123" maxlength="10" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
                 </div>
             </div>
@@ -285,9 +358,15 @@
                     class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
                     Batal
                 </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
-                    Ajukan Klaim
+                <button type="submit" id="btn-ajukan"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition relative overflow-hidden">
+                    <span id="lbl-ajukan">Ajukan Klaim</span>
+                    <span id="spin-ajukan" class="hidden absolute inset-0 flex items-center justify-center">
+                        <svg class="animate-spin w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                    </span>
                 </button>
             </div>
         </form>
@@ -297,22 +376,25 @@
 
 <!-- ── MODAL: EDIT ────────────────────────────────────────────── -->
 <div id="m-edit" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
+    <div class="modal-inner border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-2xl mx-4 backdrop-blur-md overflow-y-auto max-h-[90vh]"
         style="background: rgba(255,255,255,0.05);">
         <div class="flex justify-between items-start mb-8">
             <div>
                 <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Edit Klaim</p>
                 <h2 class="text-xl font-bold text-white">Ubah Data Klaim</h2>
             </div>
-            <button onclick="closeModal('m-edit')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button onclick="closeModal('m-edit')" class="modal-close text-white opacity-30 hover:opacity-70 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-10"><i class="ph-bold ph-x"></i></button>
         </div>
-        <p class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5">
-            Hanya klaim berstatus <strong class="text-amber-300 opacity-100">Menunggu</strong> yang dapat diedit.
-        </p>
+        <div class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5 flex items-start gap-2">
+            <svg class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Hanya klaim berstatus <strong class="text-amber-300 opacity-100">Menunggu</strong> yang dapat diedit.</span>
+        </div>
         <form method="post" id="f-edit" action="">
             {% csrf_token %}
             <div class="grid grid-cols-2 gap-6">
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Maskapai <span class="text-red-300">*</span></label>
                     <select name="maskapai" id="e-msk" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
@@ -320,7 +402,7 @@
                         {% for kode,nama in maskapai_list %}<option value="{{ kode }}" class="text-gray-900">{{ kode }} – {{ nama }}</option>{% endfor %}
                     </select>
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Kelas Kabin <span class="text-red-300">*</span></label>
                     <select name="kelas_kabin" id="e-kls" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
@@ -328,7 +410,7 @@
                         {% for k in kelas_list %}<option value="{{ k }}" class="text-gray-900">{{ k }}</option>{% endfor %}
                     </select>
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Asal <span class="text-red-300">*</span></label>
                     <select name="bandara_asal" id="e-asl" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
@@ -336,7 +418,7 @@
                         {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
                     </select>
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Bandara Tujuan <span class="text-red-300">*</span></label>
                     <select name="bandara_tujuan" id="e-tuj" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition appearance-none"
@@ -344,23 +426,23 @@
                         {% for iata,nama in bandara_list %}<option value="{{ iata }}" class="text-gray-900">{{ iata }} – {{ nama }}</option>{% endfor %}
                     </select>
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Tanggal Penerbangan <span class="text-red-300">*</span></label>
                     <input type="date" name="tanggal_penerbangan" id="e-tgl" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
                         style="color-scheme: dark;">
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Flight Number <span class="text-red-300">*</span></label>
                     <input type="text" name="flight_number" id="e-flt" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Nomor Tiket <span class="text-red-300">*</span></label>
                     <input type="text" name="nomor_tiket" id="e-tkt" required
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
                 </div>
-                <div>
+                <div class="form-field">
                     <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">PNR <span class="text-red-300">*</span></label>
                     <input type="text" name="pnr" id="e-pnr" required maxlength="10"
                         class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
@@ -371,9 +453,15 @@
                     class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
                     Batal
                 </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
-                    Simpan Perubahan
+                <button type="submit" id="btn-edit"
+                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition relative overflow-hidden">
+                    <span id="lbl-edit">Simpan Perubahan</span>
+                    <span id="spin-edit" class="hidden absolute inset-0 flex items-center justify-center">
+                        <svg class="animate-spin w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                    </span>
                 </button>
             </div>
         </form>
@@ -383,17 +471,17 @@
 
 <!-- ── MODAL: BATALKAN ───────────────────────────────────────── -->
 <div id="m-batal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
+    <div class="modal-inner border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
         style="background: rgba(255,255,255,0.05);">
         <div class="flex justify-between items-start mb-6">
             <div>
                 <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
                 <h2 class="text-xl font-bold text-white">Batalkan Klaim?</h2>
             </div>
-            <button onclick="closeModal('m-batal')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button onclick="closeModal('m-batal')" class="modal-close text-white opacity-30 hover:opacity-70 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-10"><i class="ph-bold ph-x"></i></button>
         </div>
         <p class="text-sm text-white opacity-60 mb-6">Klaim akan dihapus secara permanen dan tidak dapat dikembalikan.</p>
-        <div class="border border-white border-opacity-10 rounded-2xl p-4 mb-6 space-y-2">
+        <div class="border border-white border-opacity-10 rounded-2xl p-4 mb-6 space-y-2" style="background: rgba(255,255,255,0.03);">
             <div class="flex items-center justify-between">
                 <span class="text-xs uppercase tracking-widest text-white opacity-40">No. Klaim</span>
                 <span class="text-white text-sm font-mono font-semibold" id="b-nom"></span>
@@ -404,7 +492,10 @@
             </div>
             <div class="flex items-center justify-between">
                 <span class="text-xs uppercase tracking-widest text-white opacity-40">Status</span>
-                <span class="inline-block bg-amber-400 bg-opacity-20 text-amber-300 border border-amber-400 border-opacity-30 text-xs px-3 py-1 rounded-full uppercase tracking-wider">Menunggu</span>
+                <span class="inline-flex items-center gap-1.5 bg-amber-400 bg-opacity-15 text-amber-300 border border-amber-400 border-opacity-25 text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    Menunggu
+                </span>
             </div>
         </div>
         <form method="post" id="f-batal" action="">
@@ -412,11 +503,17 @@
             <div class="flex gap-3">
                 <button type="button" onclick="closeModal('m-batal')"
                     class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
+                    Kembali
                 </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
-                    Hapus Klaim
+                <button type="submit" id="btn-batal"
+                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition relative overflow-hidden">
+                    <span id="lbl-batal">Ya, Batalkan</span>
+                    <span id="spin-batal" class="hidden absolute inset-0 flex items-center justify-center">
+                        <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                    </span>
                 </button>
             </div>
         </form>
@@ -425,47 +522,199 @@
 
 
 <style>
+/* ── Contrast overrides (preserved) ── */
+.klaim-contrast-page > .fixed.bg-black { --tw-bg-opacity: 0.64; }
+.klaim-contrast-page .rounded-3xl.backdrop-blur-sm,
+.klaim-contrast-page .rounded-3xl.backdrop-blur-md {
+    border-color: rgba(255,255,255,0.20);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035)),
+        rgba(255,255,255,0.045) !important;
+    backdrop-filter: blur(30px) saturate(1.18);
+    -webkit-backdrop-filter: blur(30px) saturate(1.18);
+    box-shadow: none;
+}
+.klaim-contrast-page .opacity-20 { opacity: 0.36; }
+.klaim-contrast-page .opacity-30 { opacity: 0.46; }
+.klaim-contrast-page .opacity-40 { opacity: 0.56; }
+.klaim-contrast-page .opacity-50 { opacity: 0.66; }
+.klaim-contrast-page .opacity-60 { opacity: 0.72; }
+.klaim-contrast-page .opacity-70 { opacity: 0.80; }
+.klaim-contrast-page .text-white { text-shadow: 0 1px 18px rgba(0,0,0,0.18); }
+
+/* ── Keyframes ── */
+@keyframes kFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes kFadeDown {
+    from { opacity: 0; transform: translateY(-14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes navFadeUp {
     from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes navFadeOut {
     from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 0; transform: translateY(12px); }
+}
+@keyframes orbDrift {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%       { transform: translateY(-30px) scale(1.05); }
+}
+@keyframes barGrow {
+    from { width: 0; }
+}
+@keyframes shimmerSweep {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.nav-fade-up {
-    animation: navFadeUp 0.5s ease both;
+/* ── Ambient orbs ── */
+.k-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.09;
+    animation: orbDrift 10s ease-in-out infinite;
+}
+.k-orb-1 {
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, #f59e0b, transparent);
+    top: 5%; right: 5%;
+    animation-delay: 0s;
+}
+.k-orb-2 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #34d399, transparent);
+    bottom: 20%; left: 8%;
+    animation-delay: 4s;
+}
+.k-orb-3 {
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, #6366f1, transparent);
+    top: 50%; left: 45%;
+    animation-delay: 7s;
 }
 
-.nav-fade-out {
-    animation: navFadeOut 0.18s ease both;
+/* ── Stat cards ── */
+.stat-card {
+    background: rgba(255,255,255,0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+}
+.stat-bar {
+    animation: barGrow 1.2s ease both;
+    animation-delay: 0.6s;
+}
+
+/* ── Ajukan button ── */
+.ajukan-btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ajukan-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+}
+
+/* ── Klaim rows ── */
+.klaim-row {
+    position: relative;
+}
+.klaim-row:hover {
+    background: rgba(255,255,255,0.035) !important;
+}
+
+/* ── Airline badge shimmer ── */
+.row-shimmer {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+}
+.row-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 50%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+}
+.klaim-row:hover .row-shimmer::after {
+    animation: shimmerSweep 0.55s ease forwards;
+}
+
+/* ── Status badges ── */
+.status-badge {
+    transition: opacity 0.2s ease;
+}
+
+/* ── Action buttons ── */
+.action-btn {
+    transition: opacity 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ── Tab links ── */
+.tab-link {
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+/* ── Flash ── */
+.flash-msg {
+    animation: kFadeUp 0.4s ease both;
+}
+.display-number,
+.count-up {
+    font-family: var(--font-display-title, "Zalando Sans Expanded", var(--font-body));
+    letter-spacing: -0.03em;
+}
+
+/* ── Modal ── */
+#m-ajukan:not(.hidden) .modal-inner,
+#m-edit:not(.hidden) .modal-inner,
+#m-batal:not(.hidden) .modal-inner {
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* ── Form fields in modal ── */
+.form-field input:focus,
+.form-field select:focus {
+    border-color: rgba(255,255,255,0.6);
+}
+
+/* ── Nav transitions (preserved) ── */
+.nav-fade-up  { animation: navFadeUp  0.5s ease both; }
+.nav-fade-out { animation: navFadeOut 0.18s ease both; }
+
+/* ── Utility ── */
+.bg-white.bg-opacity-8 { background: rgba(255,255,255,0.08); }
+.hover\:bg-white.hover\:bg-opacity-4:hover { background: rgba(255,255,255,0.04); }
 </style>
 
 <script>
+/* ── Page entrance ── */
 var pageContent = document.querySelector('.relative.z-10');
-if (pageContent) {
-    pageContent.classList.add('nav-fade-up');
-}
+if (pageContent) pageContent.classList.add('nav-fade-up');
 
-document.querySelectorAll('nav a[href]').forEach(function (link) {
-    link.addEventListener('click', function (event) {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-            return;
-        }
-
+/* ── Nav transition (preserved) ── */
+document.querySelectorAll('nav a[href]').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         var url = new URL(link.href, window.location.href);
-        if (url.origin !== window.location.origin) {
-            return;
-        }
-
+        if (url.origin !== window.location.origin) return;
         var content = document.querySelector('.relative.z-10');
-        if (!content) {
-            return;
-        }
-
+        if (!content) return;
         if (url.pathname === window.location.pathname) {
             event.preventDefault();
             content.classList.remove('nav-fade-up');
@@ -473,15 +722,35 @@ document.querySelectorAll('nav a[href]').forEach(function (link) {
             content.classList.add('nav-fade-up');
             return;
         }
-
         event.preventDefault();
         content.classList.add('nav-fade-out');
-        window.setTimeout(function () {
-            window.location.href = link.href;
-        }, 160);
+        window.setTimeout(function() { window.location.href = link.href; }, 160);
     });
 });
 
+/* ── Count-up animation ── */
+function animateCountUp(el) {
+    var target = parseInt((el.dataset.target || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    var duration = 900, start = null;
+    function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString('id-ID');
+    }
+    requestAnimationFrame(step);
+}
+var countObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) { animateCountUp(e.target); countObserver.unobserve(e.target); }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.count-up').forEach(function(el) { countObserver.observe(el); });
+
+/* ── Modal helpers ── */
 function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -491,50 +760,69 @@ function closeModal(id) {
     document.body.style.overflow = '';
 }
 
+/* Close on backdrop click */
+['m-ajukan','m-edit','m-batal'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('click', function(e) {
+            if (e.target === el) closeModal(id);
+        });
+    }
+});
+
+/* ── Select helper ── */
 function setSel(id, val) {
     var s = document.getElementById(id);
+    if (!s) return;
     for (var i = 0; i < s.options.length; i++) {
         if (s.options[i].value === val) { s.selectedIndex = i; break; }
     }
 }
 
+/* ── Open edit modal ── */
 function openEdit(btn) {
-    var id  = btn.dataset.id;
-    var msk = btn.dataset.msk;
-    var asl = btn.dataset.asl;
-    var tuj = btn.dataset.tuj;
-    var tgl = btn.dataset.tgl;
-    var flt = btn.dataset.flt;
-    var tkt = btn.dataset.tkt;
-    var kls = btn.dataset.kls;
-    var pnr = btn.dataset.pnr;
-
-    document.getElementById('f-edit').action = '/klaim/edit/' + id + '/';
-    setSel('e-msk', msk);
-    setSel('e-asl', asl);
-    setSel('e-tuj', tuj);
-    setSel('e-kls', kls);
-    document.getElementById('e-tgl').value = tgl;
-    document.getElementById('e-flt').value = flt;
-    document.getElementById('e-tkt').value = tkt;
-    document.getElementById('e-pnr').value = pnr;
+    document.getElementById('f-edit').action = btn.dataset.editUrl;
+    setSel('e-msk', btn.dataset.msk);
+    setSel('e-asl', btn.dataset.asl);
+    setSel('e-tuj', btn.dataset.tuj);
+    setSel('e-kls', btn.dataset.kls);
+    document.getElementById('e-tgl').value = btn.dataset.tgl;
+    document.getElementById('e-flt').value = btn.dataset.flt;
+    document.getElementById('e-tkt').value = btn.dataset.tkt;
+    document.getElementById('e-pnr').value = btn.dataset.pnr;
     openModal('m-edit');
 }
 
+/* ── Open batalkan modal ── */
 function openBatal(btn) {
-    document.getElementById('f-batal').action = '/klaim/batalkan/' + btn.dataset.id + '/';
+    document.getElementById('f-batal').action = btn.dataset.batalUrl;
     document.getElementById('b-nom').textContent = btn.dataset.nom;
     document.getElementById('b-rut').textContent = btn.dataset.rut;
     openModal('m-batal');
 }
 
-// Auto-dismiss flash
+/* ── Submit loading states ── */
+function bindSubmitSpinner(formId, btnId, lblId, spinId) {
+    var form = document.getElementById(formId);
+    if (!form) return;
+    form.addEventListener('submit', function() {
+        document.getElementById(lblId).classList.add('invisible');
+        document.getElementById(spinId).classList.remove('hidden');
+        document.getElementById(btnId).disabled = true;
+    });
+}
+bindSubmitSpinner('f-ajukan', 'btn-ajukan', 'lbl-ajukan', 'spin-ajukan');
+bindSubmitSpinner('f-edit',   'btn-edit',   'lbl-edit',   'spin-edit');
+bindSubmitSpinner('f-batal',  'btn-batal',  'lbl-batal',  'spin-batal');
+
+/* ── Flash auto-dismiss ── */
 var flash = document.getElementById('flash');
 if (flash) {
-    setTimeout(function () {
-        flash.style.transition = 'opacity 0.4s';
+    setTimeout(function() {
+        flash.style.transition = 'opacity 0.5s, transform 0.5s';
         flash.style.opacity = '0';
-        setTimeout(function () { flash.remove(); }, 400);
+        flash.style.transform = 'translateY(-8px)';
+        setTimeout(function() { flash.remove(); }, 500);
     }, 4000);
 }
 </script>

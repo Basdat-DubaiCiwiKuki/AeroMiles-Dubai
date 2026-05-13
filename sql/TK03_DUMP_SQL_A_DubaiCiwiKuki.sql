@@ -77,10 +77,8 @@ CREATE TABLE PENGGUNA (
 );
 
 INSERT INTO PENGGUNA (email, password, salutation, first_mid_name, last_name, country_code, mobile_number, tanggal_lahir, kewarganegaraan) VALUES
--- Akun demo (password: "password123")
 ('john@example.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Mr.', 'John William', 'Doe', '+62', '081234567890', '1990-05-15', 'Indonesia'),
 ('admin@aeromiles.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Mr.', 'Admin', 'Aero', '+62', '081111111111', '1988-01-01', 'Indonesia'),
--- Staf (10 data)
 ('ahmad.rahman@email.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Mr.', 'Ahmad', 'Rahman', '+62', '081234567001', '1990-03-15', 'Indonesia'),
 ('siti.nurhaliza@email.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Mrs.', 'Siti', 'Nurhaliza', '+62', '081234567002', '1992-07-22', 'Indonesia'),
 ('budi.santoso@email.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Mr.', 'Budi', 'Santoso', '+62', '081234567003', '1988-11-10', 'Indonesia'),
@@ -409,27 +407,125 @@ CREATE TABLE CLAIM_MISSING_MILES (
     CONSTRAINT uq_claim_no_duplicate UNIQUE (email_member, flight_number, tanggal_penerbangan, nomor_tiket)
 );
 
-INSERT INTO CLAIM_MISSING_MILES (email_member, email_staf, maskapai, bandara_asal, bandara_tujuan, tanggal_penerbangan, flight_number, nomor_tiket, kelas_kabin, pnr, status_penerimaan, timestamp) VALUES
-('john@example.com', 'admin@aeromiles.com', 'GA', 'CGK', 'DPS', '2024-10-01', 'GA404', 'TKT-001', 'Business', 'ABC123', 'Disetujui', '2024-10-05 18:45:00'),
-('john@example.com', NULL, 'QG', 'CGK', 'SUB', '2024-11-15', 'QG801', 'TKT-002', 'Economy', 'DEF456', 'Menunggu', '2024-11-20 18:45:00'),
-('karina.salsabila@email.com', 'ahmad.rahman@email.com', 'GA', 'CGK', 'DPS', '2024-01-01', 'GA401', '001-1234567001', 'Economy', 'PNR0001', 'Disetujui', '2024-01-02 10:00:00'),
-('luthfi.akbar@email.com', 'siti.nurhaliza@email.com', 'GA', 'DPS', 'CGK', '2024-02-02', 'GA402', '001-1234567002', 'Business', 'PNR0002', 'Disetujui', '2024-02-03 10:00:00'),
-('maya.handoko@email.com', 'budi.santoso@email.com', 'QG', 'CGK', 'SUB', '2024-03-03', 'QG403', '001-1234567003', 'First', 'PNR0003', 'Disetujui', '2024-03-04 10:00:00'),
-('nanda.pratama@email.com', 'dewi.lestari@email.com', 'QG', 'SUB', 'CGK', '2024-04-04', 'QG404', '001-1234567004', 'Economy', 'PNR0004', 'Disetujui', '2024-04-05 10:00:00'),
-('only.wijaya@email.com', 'eka.putra@email.com', 'JT', 'CGK', 'JOG', '2024-05-05', 'JT405', '001-1234567005', 'Business', 'PNR0005', 'Disetujui', '2024-05-06 10:00:00'),
-('prima.sakti@email.com', 'farah.yasmin@email.com', 'GA', 'SIN', 'NRT', '2024-06-06', 'GA406', '001-1234567006', 'First', 'PNR0006', 'Disetujui', '2024-06-07 10:00:00'),
-('qiana.sofia@email.com', 'gunawan.setia@email.com', 'GA', 'KUL', 'BKK', '2024-07-07', 'GA407', '001-1234567007', 'Economy', 'PNR0007', 'Disetujui', '2024-07-08 10:00:00'),
-('ridha.maulana@email.com', 'hana.widya@email.com', 'QG', 'HKG', 'ICN', '2024-08-08', 'QG408', '001-1234567008', 'Business', 'PNR0008', 'Ditolak', '2024-08-09 10:00:00'),
-('sinta.kusuma@email.com', 'indra.kusuma@email.com', 'QG', 'SYD', 'DOH', '2024-09-09', 'QG409', '001-1234567009', 'First', 'PNR0009', 'Ditolak', '2024-09-10 10:00:00'),
-('taufik.mulya@email.com', 'jaka.sinopati@email.com', 'JT', 'BPN', 'PLM', '2024-10-10', 'JT410', '001-1234567010', 'Economy', 'PNR0010', 'Ditolak', '2024-10-11 10:00:00'),
-('ulfa.rahmawati@email.com', 'ahmad.rahman@email.com', 'GA', 'CGK', 'DPS', '2024-11-11', 'GA411', '001-1234567011', 'Business', 'PNR0011', 'Ditolak', '2024-11-12 10:00:00'),
-('viki.pratama@email.com', 'siti.nurhaliza@email.com', 'GA', 'DPS', 'CGK', '2024-12-12', 'GA412', '001-1234567012', 'First', 'PNR0012', 'Ditolak', '2024-12-13 10:00:00'),
-('wulan.sari@email.com', NULL, 'QG', 'CGK', 'SUB', '2024-01-13', 'QG413', '001-1234567013', 'Economy', 'PNR0013', 'Menunggu', '2024-01-14 10:00:00'),
-('xandra.bella@email.com', NULL, 'QG', 'SUB', 'CGK', '2024-02-14', 'QG414', '001-1234567014', 'Business', 'PNR0014', 'Menunggu', '2024-02-15 10:00:00'),
-('yanto.setiadi@email.com', NULL, 'JT', 'CGK', 'JOG', '2024-03-15', 'JT415', '001-1234567015', 'First', 'PNR0015', 'Menunggu', '2024-03-16 10:00:00'),
-('zara.aulia@email.com', NULL, 'GA', 'SIN', 'NRT', '2024-04-16', 'GA416', '001-1234567016', 'Economy', 'PNR0016', 'Menunggu', '2024-04-17 10:00:00'),
-('aldi.wijaya@email.com', NULL, 'GA', 'KUL', 'BKK', '2024-05-17', 'GA417', '001-1234567017', 'Business', 'PNR0017', 'Menunggu', '2024-05-18 10:00:00'),
-('andi.hermawan@email.com', NULL, 'QG', 'HKG', 'ICN', '2024-06-18', 'QG418', '001-1234567018', 'First', 'PNR0018', 'Menunggu', '2024-06-19 10:00:00');
+-- Data awal klaim dirancang konsisten dengan tier member.
+-- approved_claims mengikuti minimal_frekuensi_terbang tier awal:
+-- Bronze 0, Silver 5, Gold 15, Diamond 30.
+-- Beberapa klaim Menunggu/Ditolak tetap disediakan untuk skenario staf.
+-- Trigger TK04 dipasang setelah dump TK03, sehingga data historis ini
+-- tidak mengubah award_miles/total_miles yang sudah ditentukan.
+WITH claim_seed_plan(email_member, approved_claims, member_idx) AS (
+    VALUES
+    ('john@example.com', 15, 1),
+    ('karina.salsabila@email.com', 30, 2),
+    ('luthfi.akbar@email.com', 15, 3),
+    ('maya.handoko@email.com', 15, 4),
+    ('nanda.pratama@email.com', 5, 5),
+    ('only.wijaya@email.com', 5, 6),
+    ('prima.sakti@email.com', 1, 7),
+    ('qiana.sofia@email.com', 1, 8),
+    ('ridha.maulana@email.com', 5, 9),
+    ('sinta.kusuma@email.com', 15, 10),
+    ('taufik.mulya@email.com', 30, 11),
+    ('ulfa.rahmawati@email.com', 30, 12),
+    ('viki.pratama@email.com', 15, 13),
+    ('wulan.sari@email.com', 15, 14),
+    ('xandra.bella@email.com', 5, 15),
+    ('yanto.setiadi@email.com', 5, 16),
+    ('zara.aulia@email.com', 0, 17),
+    ('aldi.wijaya@email.com', 0, 18),
+    ('andi.hermawan@email.com', 5, 19),
+    ('anita.bulan@email.com', 15, 20),
+    ('bambang.irawan@email.com', 30, 21),
+    ('bella.rosita@email.com', 30, 22),
+    ('citra.dewi@email.com', 15, 23),
+    ('danny.wijaya@email.com', 15, 24),
+    ('endang.sari@email.com', 5, 25),
+    ('febri.agustin@email.com', 5, 26),
+    ('gerry.wijaya@email.com', 0, 27),
+    ('hendra.yanto@email.com', 0, 28),
+    ('irene.santoso@email.com', 5, 29),
+    ('joko.setiawan@email.com', 15, 30),
+    ('kartika.wijaya@email.com', 30, 31),
+    ('lina.marliana@email.com', 30, 32),
+    ('meldy.santoso@email.com', 15, 33),
+    ('novi.kusuma@email.com', 15, 34),
+    ('otis.wijaya@email.com', 5, 35),
+    ('pasha.kusuma@email.com', 5, 36),
+    ('qori.yusuf@email.com', 0, 37),
+    ('ratna.wijaya@email.com', 0, 38),
+    ('saiful.anwar@email.com', 5, 39),
+    ('tania.bella@email.com', 15, 40),
+    ('udang.haryo@email.com', 30, 41),
+    ('vanessa.dewi@email.com', 30, 42),
+    ('wahyu.sanusi@email.com', 15, 43),
+    ('xena.wijaya@email.com', 15, 44),
+    ('yuki.suzuki@email.com', 5, 45),
+    ('zulfikar.fahmi@email.com', 5, 46),
+    ('adriana.putri@email.com', 0, 47),
+    ('arif.kusuma@email.com', 0, 48),
+    ('astrid.murni@email.com', 5, 49),
+    ('aziz.irfandi@email.com', 15, 50),
+    ('ayu.citra@email.com', 30, 51)
+),
+approved_claims AS (
+    SELECT
+        plan.email_member, plan.member_idx, gs.n, 'Disetujui'::VARCHAR(20) AS status_penerimaan,
+        'admin@aeromiles.com'::VARCHAR(100) AS email_staf,
+        (DATE '2025-01-01' + ((plan.member_idx * 31 + gs.n) % 300)) AS flight_date,
+        'AP'::TEXT AS claim_prefix
+    FROM claim_seed_plan plan
+    CROSS JOIN LATERAL generate_series(1, plan.approved_claims) AS gs(n)
+),
+pending_claims(email_member, member_idx, n) AS (
+    VALUES
+    ('john@example.com', 1, 1),
+    ('wulan.sari@email.com', 14, 1),
+    ('xandra.bella@email.com', 15, 1),
+    ('yanto.setiadi@email.com', 16, 1),
+    ('zara.aulia@email.com', 17, 1),
+    ('aldi.wijaya@email.com', 18, 1),
+    ('andi.hermawan@email.com', 19, 1)
+),
+rejected_claims(email_member, member_idx, n) AS (
+    VALUES
+    ('ridha.maulana@email.com', 9, 1),
+    ('sinta.kusuma@email.com', 10, 1),
+    ('taufik.mulya@email.com', 11, 1),
+    ('ulfa.rahmawati@email.com', 12, 1),
+    ('viki.pratama@email.com', 13, 1)
+),
+all_claims AS (
+    SELECT * FROM approved_claims
+    UNION ALL
+    SELECT
+        email_member, member_idx, n, 'Menunggu'::VARCHAR(20), NULL::VARCHAR(100),
+        (DATE '2025-11-01' + member_idx) AS flight_date, 'PN'::TEXT AS claim_prefix
+    FROM pending_claims
+    UNION ALL
+    SELECT
+        email_member, member_idx, n, 'Ditolak'::VARCHAR(20), 'admin@aeromiles.com'::VARCHAR(100),
+        (DATE '2025-12-01' + member_idx) AS flight_date, 'RJ'::TEXT AS claim_prefix
+    FROM rejected_claims
+)
+INSERT INTO CLAIM_MISSING_MILES (
+    email_member, email_staf, maskapai, bandara_asal, bandara_tujuan,
+    tanggal_penerbangan, flight_number, nomor_tiket, kelas_kabin, pnr,
+    status_penerimaan, timestamp
+)
+SELECT
+    email_member,
+    email_staf,
+    CASE member_idx % 3 WHEN 0 THEN 'GA' WHEN 1 THEN 'QG' ELSE 'JT' END,
+    CASE member_idx % 4 WHEN 0 THEN 'CGK' WHEN 1 THEN 'DPS' WHEN 2 THEN 'SUB' ELSE 'JOG' END,
+    CASE member_idx % 4 WHEN 0 THEN 'DPS' WHEN 1 THEN 'CGK' WHEN 2 THEN 'JOG' ELSE 'SUB' END,
+    flight_date,
+    claim_prefix || LPAD(member_idx::text, 3, '0') || LPAD(n::text, 2, '0'),
+    'TK4-' || claim_prefix || '-' || LPAD(member_idx::text, 3, '0') || '-' || LPAD(n::text, 2, '0'),
+    CASE n % 3 WHEN 0 THEN 'Business' WHEN 1 THEN 'Economy' ELSE 'First' END,
+    claim_prefix || LPAD(member_idx::text, 3, '0') || LPAD(n::text, 2, '0'),
+    status_penerimaan,
+    flight_date::timestamp + TIME '10:00:00'
+FROM all_claims;
 
 CREATE TABLE TRANSFER (
     email_member_1 VARCHAR(100) NOT NULL REFERENCES MEMBER(email) ON DELETE CASCADE,

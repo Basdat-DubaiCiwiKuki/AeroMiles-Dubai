@@ -6,11 +6,24 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AeroMiles</title>
-    
-        <!-- INTER + PLAYFAIR -->
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Zalando+Sans+Expanded:wght@400;500;600;700&display=swap" rel="stylesheet">
     
         <style>
+            :root {
+                --font-body: "Poppins", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                    "Helvetica Neue", Helvetica, Arial, sans-serif;
+                --font-display-title: "Zalando Sans Expanded", var(--font-body);
+            }
+
+            html {
+                font-family: var(--font-body);
+                text-rendering: optimizeLegibility;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
             .nav-item {
                 color: white;
                 text-transform: uppercase;
@@ -32,19 +45,34 @@
                     inset 0 1px 0 rgba(255,255,255,0.4);
             }
 
-            /* BODY = INTER */
             body {
-                font-family: 'Inter', sans-serif;
+                font-family: var(--font-body);
             }
-    
-            /* HEADING = PLAYFAIR */
+
             h1, h2, h3 {
-                font-family: 'Playfair Display', serif;
-                font-style: italic;
+                font-family: var(--font-display-title);
+                letter-spacing: -0.03em;
+            }
+
+            h4, h5, h6,
+            button, input, select, textarea {
+                font-family: var(--font-body);
             }
         </style>
     
+        <script>
+            tailwind = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Poppins', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+                        }
+                    }
+                }
+            }
+        </script>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/@phosphor-icons/web@2.1.1" defer></script>
     </head>
 
 <body class="bg-gray-50">

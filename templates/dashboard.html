@@ -1,175 +1,438 @@
 {% extends 'base.html' %}
-
 {% block content %}
 
-<!-- Full-page background -->
-<div class="relative min-h-screen">
-    <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80"
+<div class="relative min-h-screen member-contrast-page">
+    <img src="https://images.unsplash.com/photo-1753104125924-f221134882a0?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0"
         alt="City Night" class="fixed inset-0 w-full h-full object-cover">
-    <div class="fixed inset-0 bg-black bg-opacity-55"></div>
-    <!-- Cool blue-indigo tint — cocok untuk city night vibes -->
+    <div class="fixed inset-0 bg-black bg-opacity-30"></div>
     <div class="fixed inset-0" style="background: linear-gradient(160deg, rgba(10,15,40,0.6) 0%, rgba(30,58,138,0.18) 100%);"></div>
 
-    <!-- Content -->
+    <!-- Subtle ambient light -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="db-orb db-orb-1"></div>
+        <div class="db-orb db-orb-2"></div>
+    </div>
+
     <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
         <div class="max-w-5xl mx-auto">
 
             <!-- ── Page Header ── -->
-            <div class="mb-10 flex items-end justify-between" style="animation: fadeUp 0.5s ease both;">
-                <div>
-                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Member Dashboard</p>
+            <div class="mb-10" style="animation: dbFadeUp 0.5s ease both;">
+                <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2 flex items-center gap-2">
+                    Member Dashboard
+                </p>
+                <div class="flex items-center gap-4 flex-wrap">
                     <h1 class="text-5xl font-bold text-white leading-tight">
                         Selamat Datang,<br>
                         <span class="opacity-40">{{ member.nama_lengkap }}</span>
                     </h1>
-                </div>
-                <!-- Tier badge -->
-                <div class="glass-card px-6 py-4 text-right" style="animation: fadeUp 0.5s ease 0.1s both;">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-2">Tier Saat Ini</p>
-                    <!-- Ganti warna badge sesuai tier:
-                        Blue     → bg-blue-400
-                        Silver   → bg-gray-400
-                        Gold     → bg-amber-400
-                        Platinum → bg-slate-400
-                    -->
-                    <span class="inline-block bg-amber-400 text-gray-900 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest">
+                    <span class="tier-badge self-end mb-1">
                         {{ member.tier }}
                     </span>
                 </div>
             </div>
 
-            <!-- ── Stats Row ── -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
-                <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.15s both;">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Nomor Member</p>
-                    <p class="text-3xl font-bold text-white">{{ member.nomor }}</p>
+            <!-- ── Miles Hero — two big numbers side by side ── -->
+            <div class="grid grid-cols-2 gap-4 mb-4" style="animation: dbFadeUp 0.5s ease 0.15s both;">
+
+                <!-- Award Miles -->
+                <div class="glass-card p-8 relative overflow-hidden">
+                    <div class="card-shimmer"></div>
+                    <div class="flex items-start justify-between mb-6">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Award Miles</p>
+                        <div class="icon-box border border-amber-400 border-opacity-25 bg-amber-400 bg-opacity-10">
+                            <i class="ph ph-star text-amber-300" style="font-size:1.1rem;"></i>
+                        </div>
+                    </div>
+                    <p class="text-5xl font-bold text-amber-300 count-up num-font" data-target="{{ member.award_miles }}">0</p>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-30 mt-2">miles tersedia</p>
+                    <!-- Subtle glow line — not a full-width underline -->
+                    <div class="absolute bottom-0 left-8 right-8 h-px" style="background: linear-gradient(90deg, transparent, rgba(251,191,36,0.25), transparent);"></div>
                 </div>
-                <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.2s both;">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Miles</p>
-                    <p class="text-3xl font-bold text-white">{{ member.total_miles }}</p>
-                </div>
-                <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.25s both;">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Award Miles</p>
-                    <p class="text-3xl font-bold text-amber-300">{{ member.award_miles }}</p>
-                </div>
-                <div class="glass-card p-7 flex flex-col justify-between min-h-36" style="animation: fadeUp 0.5s ease 0.3s both;">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Member Sejak</p>
-                    <p class="text-lg font-semibold text-white leading-snug">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
+
+                <!-- Total Miles -->
+                <div class="glass-card p-8 relative overflow-hidden">
+                    <div class="card-shimmer"></div>
+                    <div class="flex items-start justify-between mb-6">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40">Total Miles</p>
+                        <div class="icon-box border border-white border-opacity-15 bg-white bg-opacity-8">
+                            <i class="ph ph-airplane-takeoff text-white" style="font-size:1.1rem; opacity:0.7;"></i>
+                        </div>
+                    </div>
+                    <p class="text-5xl font-bold text-white count-up num-font" data-target="{{ member.total_miles }}">0</p>
+                    <p class="text-xs uppercase tracking-widest text-white opacity-30 mt-2">miles terkumpul</p>
+                    <div class="absolute bottom-0 left-8 right-8 h-px" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);"></div>
                 </div>
             </div>
 
-            <!-- ── Informasi Pribadi ── -->
-            <div class="glass-card p-8 mb-6" style="animation: fadeUp 0.5s ease 0.35s both;">
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-7">Informasi Pribadi</p>
-                <div class="grid grid-cols-3 gap-8 text-sm">
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Nama Lengkap</p>
-                        <p class="font-semibold text-white">{{ member.nama_lengkap }}</p>
+            <!-- ── Secondary stats row ── -->
+            <div class="grid grid-cols-3 gap-4 mb-6" style="animation: dbFadeUp 0.5s ease 0.2s both;">
+                <div class="glass-card px-6 py-5 flex items-center gap-4">
+                    <div class="icon-box border border-white border-opacity-10 bg-white bg-opacity-6 flex-shrink-0">
+                        <i class="ph ph-identification-card text-white" style="font-size:1.1rem; opacity:0.55;"></i>
                     </div>
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Email</p>
-                        <p class="font-semibold text-white">{{ member.email }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Nomor Member</p>
+                        <p class="text-sm font-bold text-white font-mono truncate">{{ member.nomor }}</p>
                     </div>
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Telepon</p>
-                        <p class="font-semibold text-white">{{ member.telepon }}</p>
+                </div>
+                <div class="glass-card px-6 py-5 flex items-center gap-4">
+                    <div class="icon-box border border-white border-opacity-10 bg-white bg-opacity-6 flex-shrink-0">
+                        <i class="ph ph-calendar-check text-white" style="font-size:1.1rem; opacity:0.55;"></i>
                     </div>
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Kewarganegaraan</p>
-                        <p class="font-semibold text-white">{{ member.kewarganegaraan }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Member Sejak</p>
+                        <p class="text-sm font-semibold text-white">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
                     </div>
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Tanggal Lahir</p>
-                        <p class="font-semibold text-white">{{ member.tanggal_lahir|date:"d M Y" }}</p>
+                </div>
+                <div class="glass-card px-6 py-5 flex items-center gap-4">
+                    <div class="icon-box border border-white border-opacity-10 bg-white bg-opacity-6 flex-shrink-0">
+                        <i class="ph ph-globe text-white" style="font-size:1.1rem; opacity:0.55;"></i>
                     </div>
-                    <div>
-                        <p class="text-white opacity-40 mb-1.5 text-xs uppercase tracking-widest">Tanggal Bergabung</p>
-                        <p class="font-semibold text-white">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Kewarganegaraan</p>
+                        <p class="text-sm font-semibold text-white truncate">{{ member.kewarganegaraan }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ── Transaksi Terbaru ── -->
-            <div class="glass-card overflow-hidden" style="animation: fadeUp 0.5s ease 0.4s both;">
-                <div class="px-8 pt-8 pb-5 border-b border-white border-opacity-10">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Aktivitas</p>
-                    <h2 class="text-xl font-bold text-white">5 Transaksi Terbaru</h2>
-                </div>
+            <!-- ── Main content: Profile info + Activity feed ── -->
+            <div class="grid grid-cols-5 gap-4" style="animation: dbFadeUp 0.5s ease 0.25s both;">
 
-                <div class="divide-y divide-white divide-opacity-5">
-                    {% for item in riwayat %}
-                    <div class="flex items-center justify-between px-8 py-4 hover:bg-white hover:bg-opacity-5 transition group">
-                        <div class="flex items-center gap-4">
-                            {% if item.icon_color == 'red' %}
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
-                                border border-red-400 border-opacity-25 bg-red-500 bg-opacity-10">
-                                <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {% elif item.icon_color == 'orange' %}
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
-                                border border-orange-400 border-opacity-25 bg-orange-500 bg-opacity-10">
-                                <svg class="w-4 h-4 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {% elif item.icon_color == 'emerald' %}
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
-                                border border-emerald-400 border-opacity-25 bg-emerald-500 bg-opacity-10">
-                                <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {% else %}
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
-                                border border-blue-400 border-opacity-25 bg-blue-500 bg-opacity-10">
-                                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {% endif %}
-                                    {% if item.label == 'Transfer' and not item.is_credit %}
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
-                                    {% elif item.label == 'Transfer' %}
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                                    {% elif item.label == 'Redeem' %}
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
-                                    {% elif item.label == 'Package' %}
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-                                    {% else %}
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    {% endif %}
-                                </svg>
+                <!-- Profile info (2/5) -->
+                <div class="col-span-2 glass-card p-7 h-fit">
+                    <div class="flex items-center gap-3 mb-6">
+                        <!-- Avatar initials -->
+                        <div class="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 border border-white border-opacity-15 bg-white bg-opacity-8">
+                            <span class="text-white text-sm font-bold opacity-70">
+                                {{ member.nama_lengkap|slice:":1"|upper }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-white opacity-40">Profil</p>
+                            <p class="text-sm font-semibold text-white leading-tight">{{ member.nama_lengkap }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="profile-row">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="ph ph-envelope text-white" style="font-size:0.85rem; opacity:0.35;"></i>
+                                <p class="text-xs uppercase tracking-widest text-white opacity-40">Email</p>
                             </div>
-                            <div>
-                                <p class="text-white text-xs font-medium uppercase tracking-widest mb-0.5">{{ item.label }}</p>
-                                <p class="text-white opacity-30 text-xs">{{ item.timestamp|date:"Y-m-d" }} · {{ item.timestamp|time:"H:i" }}</p>
+                            <p class="text-sm font-medium text-white pl-5 truncate">{{ member.email }}</p>
+                        </div>
+                        <div class="profile-row">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="ph ph-phone text-white" style="font-size:0.85rem; opacity:0.35;"></i>
+                                <p class="text-xs uppercase tracking-widest text-white opacity-40">Telepon</p>
+                            </div>
+                            <p class="text-sm font-medium text-white pl-5">{{ member.telepon }}</p>
+                        </div>
+                        <div class="profile-row">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="ph ph-cake text-white" style="font-size:0.85rem; opacity:0.35;"></i>
+                                <p class="text-xs uppercase tracking-widest text-white opacity-40">Tanggal Lahir</p>
+                            </div>
+                            <p class="text-sm font-medium text-white pl-5">{{ member.tanggal_lahir|date:"d M Y" }}</p>
+                        </div>
+                        <div class="profile-row">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="ph ph-calendar-blank text-white" style="font-size:0.85rem; opacity:0.35;"></i>
+                                <p class="text-xs uppercase tracking-widest text-white opacity-40">Bergabung</p>
+                            </div>
+                            <p class="text-sm font-medium text-white pl-5">{{ member.tanggal_bergabung|date:"d M Y" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick links -->
+                    <div class="mt-7 pt-5 border-t border-white border-opacity-8 grid grid-cols-2 gap-2">
+                        <a href="{% url 'profil' %}" class="quick-link flex items-center gap-2 px-3 py-2 rounded-xl border border-white border-opacity-10 hover:border-opacity-20 transition-all duration-200">
+                            <i class="ph ph-user text-white" style="font-size:0.85rem; opacity:0.45;"></i>
+                            <span class="text-xs uppercase tracking-widest text-white opacity-50">Profil</span>
+                        </a>
+                        <a href="{% url 'tier' %}" class="quick-link flex items-center gap-2 px-3 py-2 rounded-xl border border-white border-opacity-10 hover:border-opacity-20 transition-all duration-200">
+                            <i class="ph ph-medal text-white" style="font-size:0.85rem; opacity:0.45;"></i>
+                            <span class="text-xs uppercase tracking-widest text-white opacity-50">Tier</span>
+                        </a>
+                        <a href="{% url 'beli_package' %}" class="quick-link flex items-center gap-2 px-3 py-2 rounded-xl border border-white border-opacity-10 hover:border-opacity-20 transition-all duration-200">
+                            <i class="ph ph-package text-white" style="font-size:0.85rem; opacity:0.45;"></i>
+                            <span class="text-xs uppercase tracking-widest text-white opacity-50">Package</span>
+                        </a>
+                        <a href="{% url 'redeem_hadiah' %}" class="quick-link flex items-center gap-2 px-3 py-2 rounded-xl border border-white border-opacity-10 hover:border-opacity-20 transition-all duration-200">
+                            <i class="ph ph-gift text-white" style="font-size:0.85rem; opacity:0.45;"></i>
+                            <span class="text-xs uppercase tracking-widest text-white opacity-50">Redeem</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Activity feed (3/5) -->
+                <div class="col-span-3 glass-card overflow-hidden">
+                    <div class="px-7 pt-7 pb-5 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Aktivitas</p>
+                            <h2 class="text-lg font-bold text-white">5 Transaksi Terbaru</h2>
+                        </div>
+                        <a href="{% url 'transfer_miles' %}" class="text-xs uppercase tracking-widest text-white opacity-30 hover:opacity-60 transition flex items-center gap-1">
+                            <span>Lihat semua</span>
+                            <i class="ph ph-arrow-right" style="font-size:0.75rem;"></i>
+                        </a>
+                    </div>
+
+                    <div class="divide-y divide-white divide-opacity-5">
+                        {% for item in riwayat %}
+                        <div class="activity-row flex items-center justify-between px-7 py-4 transition-all duration-200"
+                             style="animation: dbFadeUp 0.4s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
+                            <div class="flex items-center gap-3">
+                                <!-- Icon box -->
+                                <div class="activity-icon w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
+                                    {% if item.icon_color == 'red' %}border border-red-400 border-opacity-25 bg-red-500 bg-opacity-10
+                                    {% elif item.icon_color == 'orange' %}border border-orange-400 border-opacity-25 bg-orange-500 bg-opacity-10
+                                    {% elif item.icon_color == 'emerald' %}border border-emerald-400 border-opacity-25 bg-emerald-500 bg-opacity-10
+                                    {% else %}border border-blue-400 border-opacity-25 bg-blue-500 bg-opacity-10{% endif %}">
+                                    {% if item.label == 'Transfer' and not item.is_credit %}
+                                    <i class="ph ph-arrow-up-right {% if item.icon_color == 'red' %}text-red-300{% else %}text-white{% endif %}" style="font-size:1rem;"></i>
+                                    {% elif item.label == 'Transfer' %}
+                                    <i class="ph ph-arrow-down-left text-blue-300" style="font-size:1rem;"></i>
+                                    {% elif item.label == 'Redeem' %}
+                                    <i class="ph ph-gift text-orange-300" style="font-size:1rem;"></i>
+                                    {% elif item.label == 'Package' %}
+                                    <i class="ph ph-package text-emerald-300" style="font-size:1rem;"></i>
+                                    {% else %}
+                                    <i class="ph ph-check-circle text-blue-300" style="font-size:1rem;"></i>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Label + time -->
+                                <div>
+                                    <p class="text-white text-xs font-semibold uppercase tracking-widest mb-0.5">{{ item.label }}</p>
+                                    <p class="text-white opacity-30 text-xs">{{ item.timestamp|date:"d M Y" }} · {{ item.timestamp|time:"H:i" }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <p class="font-bold text-sm {% if item.is_credit %}text-emerald-300{% else %}text-red-300{% endif %}">
+                                    {% if item.is_credit %}+{% else %}−{% endif %}{{ item.jumlah }} mi
+                                </p>
+                                <span class="w-1.5 h-1.5 rounded-full {% if item.is_credit %}bg-emerald-400{% else %}bg-red-400{% endif %} opacity-50"></span>
                             </div>
                         </div>
-                        <p class="{% if item.is_credit %}text-emerald-300{% else %}text-red-300{% endif %} font-bold text-sm">
-                            {% if item.is_credit %}+{% else %}−{% endif %}{{ item.jumlah }} mi
-                        </p>
+                        {% empty %}
+                        <div class="px-7 py-16 text-center">
+                            <i class="ph ph-clock-clockwise text-white" style="font-size:2rem; opacity:0.2;"></i>
+                            <p class="text-white opacity-40 text-sm mt-3">Belum ada transaksi terbaru.</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="px-8 py-10 text-center">
-                        <p class="text-white opacity-40 text-sm">Belum ada transaksi terbaru.</p>
-                    </div>
-                    {% endfor %}
                 </div>
-            </div>
+
+            </div><!-- /main grid -->
 
         </div>
     </div>
 </div>
 
 <style>
-/* ── Liquid Glass Card ── */
-.glass-card {
-    border-radius: 1.5rem;          /* rounded-3xl */
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+/* ── Tier badge — shiny gold gradient ── */
+.tier-badge {
+    display: inline-block;
+    padding: 0.375rem 1.1rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #3b2a00;
+    background: linear-gradient(
+        105deg,
+        #c8922a 0%,
+        #e8c04a 22%,
+        #f5d96b 38%,
+        #fceea0 50%,
+        #f5d96b 62%,
+        #e8c04a 78%,
+        #c8922a 100%
+    );
+    background-size: 200% 100%;
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.25),
-        inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+        0 1px 0 rgba(255,255,255,0.45) inset,
+        0 -1px 0 rgba(120,70,0,0.3) inset,
+        0 2px 12px rgba(200,146,42,0.35);
+    animation: goldShine 3.5s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+.tier-badge::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -60%;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: skewX(-20deg);
+    animation: badgeSweep 3.5s ease-in-out infinite;
+}
+@keyframes goldShine {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+}
+@keyframes badgeSweep {
+    0%        { left: -60%; }
+    40%, 100% { left: 130%; }
 }
 
-/* ── Entry animation ── */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+/* ── Number font (heading/display) ── */
+.num-font {
+    font-family: var(--font-display-title, "Zalando Sans Expanded", var(--font-body));
+    letter-spacing: -0.03em;
+}
+.count-up,
+.display-number {
+    font-family: var(--font-display-title, "Zalando Sans Expanded", var(--font-body));
+    letter-spacing: -0.03em;
+}
+
+/* ── Glass card (preserved) ── */
+.glass-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.16);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
+        rgba(255,255,255,0.1);
+    backdrop-filter: blur(3px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+
+/* ── Contrast overrides (preserved) ── */
+.member-contrast-page .opacity-30 { opacity: 0.46; }
+.member-contrast-page .opacity-40 { opacity: 0.56; }
+.member-contrast-page .opacity-50 { opacity: 0.66; }
+.member-contrast-page .opacity-60 { opacity: 0.72; }
+.member-contrast-page .glass-card .text-white { text-shadow: 0 1px 18px rgba(0,0,0,0.18); }
+
+/* ── Keyframes ── */
+@keyframes dbFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes orbDrift {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%       { transform: translateY(-24px) scale(1.04); }
+}
+@keyframes shimmerSweep {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+}
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Ambient orbs ── */
+.db-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.07;
+    animation: orbDrift 12s ease-in-out infinite;
+}
+.db-orb-1 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #3b82f6, transparent);
+    top: 10%; right: 5%;
+    animation-delay: 0s;
+}
+.db-orb-2 {
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, #f59e0b, transparent);
+    bottom: 20%; left: 8%;
+    animation-delay: 6s;
+}
+
+/* ── Icon box ── */
+.icon-box {
+    width: 2.25rem; height: 2.25rem;
+    border-radius: 0.625rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+.glass-card:hover .icon-box { transform: scale(1.05); }
+
+/* ── Card shimmer ── */
+.card-shimmer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.card-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+}
+.glass-card:hover .card-shimmer::after {
+    animation: shimmerSweep 0.8s ease forwards;
+}
+
+/* ── Profile rows ── */
+.profile-row {
+    transition: opacity 0.15s ease;
+}
+
+/* ── Quick links ── */
+.quick-link {
+    background: rgba(255,255,255,0.04);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.quick-link:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-1px);
+}
+
+/* ── Activity rows ── */
+.activity-row:hover {
+    background: rgba(255,255,255,0.04);
+}
+.activity-icon {
+    transition: transform 0.2s ease;
+}
+.activity-row:hover .activity-icon {
+    transform: scale(1.08);
+}
+
+/* ── Utility ── */
+.bg-white.bg-opacity-6  { background: rgba(255,255,255,0.06); }
+.bg-white.bg-opacity-8  { background: rgba(255,255,255,0.08); }
+.border-white.border-opacity-8 { border-color: rgba(255,255,255,0.08); }
 </style>
+
+<script>
+/* ── Count-up animation ── */
+function animateCountUp(el) {
+    var target = parseInt((el.dataset.target || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    var duration = 1100, start = null;
+    function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString('id-ID');
+    }
+    requestAnimationFrame(step);
+}
+var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) { animateCountUp(e.target); obs.unobserve(e.target); }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.count-up').forEach(function(el) { obs.observe(el); });
+</script>
 
 {% endblock %}

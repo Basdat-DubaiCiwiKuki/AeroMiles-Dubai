@@ -1,136 +1,174 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- Full-page background — partnership/business feel, teal-slate tint -->
-<div class="relative min-h-screen">
-    <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1920&q=80"
-        alt="Partnership" class="fixed inset-0 w-full h-full object-cover">
-    <div class="fixed inset-0 bg-black bg-opacity-70"></div>
-    <div class="fixed inset-0"
-        style="background: linear-gradient(135deg, rgba(10,40,60,0.50) 0%, rgba(15,23,42,0.35) 100%);"></div>
+<div class="relative min-h-screen overflow-hidden partner-admin">
+    <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1920&q=88"
+        alt="Partnership meeting" class="fixed inset-0 h-full w-full object-cover partner-photo">
+    <div class="fixed inset-0 bg-slate-950 bg-opacity-45"></div>
+    <div class="fixed inset-0 partner-light"></div>
 
-    <div class="relative z-10 min-h-screen pt-28 pb-16 px-8">
-        <div class="max-w-6xl mx-auto">
+    <div class="relative z-10 min-h-screen px-5 pb-14 pt-28 md:px-8">
+        <div class="mx-auto max-w-7xl">
+            <section class="mb-6 grid gap-5 lg:grid-cols-[1.3fr_0.9fr]" style="animation: sdFadeUp 0.5s ease both;">
+                <div class="liquid-panel hero-panel sd-shimmer-host p-7 md:p-9">
+                    <div class="mb-6 flex flex-wrap items-center gap-3">
+                        <span class="status-pill">
+                            <span class="pulse-dot"></span>
+                            Partner Console
+                        </span>
+                        <span class="text-xs uppercase tracking-widest text-white text-opacity-55">{{ stats.ditampilkan }} mitra ditampilkan</span>
+                    </div>
 
-            <!-- HEADER -->
-            <div class="mb-10 flex justify-between items-end">
-                <div>
-                    <p class="text-xs uppercase tracking-widest text-white opacity-50 mb-2">Staf · Manajemen</p>
-                    <h1 class="text-5xl font-bold text-white">
-                        Kelola Mitra<br><span class="opacity-40">&amp; Penyedia</span>
-                    </h1>
+                    <p class="mb-3 text-xs uppercase tracking-widest text-white text-opacity-55">Staf · Manajemen</p>
+                    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                        <h1 class="text-3xl font-bold leading-tight text-white md:text-5xl">
+                            Kelola Mitra<br>
+                            <span class="text-2xl text-white text-opacity-55 md:text-4xl">&amp; Penyedia</span>
+                        </h1>
+
+                        <button type="button" onclick="openModal('m-tambah')" class="primary-link">
+                            Tambah Mitra
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 5v14m7-7H5"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="ops-pulse">
+                        <div>
+                            <p>Total Mitra</p>
+                            <strong class="count-up" data-target="{{ stats.total }}">{{ stats.total }}</strong>
+                        </div>
+                        <div>
+                            <p>Ditampilkan</p>
+                            <strong>{{ stats.ditampilkan }}</strong>
+                        </div>
+                        <div>
+                            <p>Total Hadiah</p>
+                            <strong class="count-up" data-target="{{ stats.hadiah }}">{{ stats.hadiah }}</strong>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="openModal('m-tambah')"
-                    class="bg-white text-gray-900 text-xs uppercase tracking-widest px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
-                    + Tambah Mitra
-                </button>
-            </div>
 
-            <!-- FLASH -->
+                <aside class="liquid-panel insight-panel sd-shimmer-host p-7" style="animation: sdFadeUp 0.5s ease 0.08s both;">
+                    <p class="mb-5 text-xs uppercase tracking-widest text-white text-opacity-50">Snapshot Mitra</p>
+                    {% if stats.latest_mitra %}
+                    <div class="latest-partner">
+                        <span>Mitra Terbaru</span>
+                        <strong>{{ stats.latest_mitra.nama }}</strong>
+                        <p>{{ stats.latest_mitra.email }} · {{ stats.latest_mitra.tanggal_kerja_sama|date:"d M Y" }}</p>
+                    </div>
+                    {% else %}
+                    <div class="latest-partner">
+                        <span>Mitra</span>
+                        <strong>Belum ada mitra</strong>
+                        <p>Data akan muncul setelah mitra dibuat.</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="partner-meter">
+                        <div class="flex items-end justify-between gap-4">
+                            <div>
+                                <p class="text-6xl font-bold leading-none text-emerald-100 count-up" data-target="{{ stats.hadiah }}">{{ stats.hadiah }}</p>
+                                <p class="mt-2 text-sm text-white text-opacity-62">hadiah terhubung ke mitra</p>
+                            </div>
+                            <span class="meter-icon">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m6-4a4 4 0 11-8 0 4 4 0 018 0zm6 1a3 3 0 11-4.5-2.6"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="mt-6 h-2 overflow-hidden rounded-full bg-white bg-opacity-15">
+                            <div class="h-full rounded-full bg-emerald-100 progress-glow sd-bar" style="width: {% if stats.total %}{% widthratio stats.ditampilkan stats.total 100 %}{% else %}0{% endif %}%;"></div>
+                        </div>
+                        <p class="mt-3 text-xs uppercase tracking-widest text-white text-opacity-45">Pencarian aktif mengikuti data mitra di database</p>
+                    </div>
+                </aside>
+            </section>
+
             {% if success_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-white border-opacity-20 bg-white bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✓ {{ success_msg }}
-            </div>
+            <div class="liquid-panel mb-5 px-5 py-4 text-sm text-white" id="flash">{{ success_msg }}</div>
             {% endif %}
             {% if error_msg %}
-            <div class="mb-6 px-5 py-4 rounded-2xl text-sm text-white border border-red-400 border-opacity-40 bg-red-500 bg-opacity-10 backdrop-blur-sm" id="flash">
-                ✕ {{ error_msg }}
-            </div>
+            <div class="liquid-panel mb-5 border-red-200 border-opacity-45 px-5 py-4 text-sm text-red-100" id="flash">{{ error_msg }}</div>
             {% endif %}
 
-            <!-- STATS -->
-            <div class="grid grid-cols-3 gap-4 mb-8">
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Mitra</p>
-                    <p class="text-4xl font-bold text-white">{{ stats.total }}</p>
-                </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Mitra Aktif</p>
-                    <p class="text-4xl font-bold text-teal-300">{{ stats.aktif }}</p>
-                </div>
-                <div class="border border-white border-opacity-20 rounded-3xl p-6 backdrop-blur-sm">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-3">Total Hadiah dari Mitra</p>
-                    <p class="text-4xl font-bold text-cyan-300">{{ stats.hadiah }}</p>
-                </div>
-            </div>
-
-            <!-- FILTER -->
-            <div class="border border-white border-opacity-20 rounded-3xl p-6 mb-6 backdrop-blur-sm"
-                style="background: rgba(255,255,255,0.03);">
-                <form method="get" class="flex gap-4 items-end">
-                    <div class="flex-1 flex flex-col gap-1.5">
-                        <label class="text-xs uppercase tracking-widest text-white opacity-40">Cari Mitra</label>
-                        <input type="text" name="search" value="{{ search }}"
-                            placeholder="nama atau email mitra..."
-                            class="w-full bg-transparent border-b border-white border-opacity-20 text-white text-sm py-2 focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+            <section class="liquid-panel mb-6 p-5 md:p-6" style="animation: sdFadeUp 0.5s ease 0.14s both;">
+                <form method="get" class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+                    <div>
+                        <label class="field-label" for="searchMitra">Cari Mitra</label>
+                        <input id="searchMitra" type="text" name="search" value="{{ search }}"
+                            placeholder="nama atau email mitra" class="glass-input">
                     </div>
-                    <button type="submit"
-                        class="bg-white text-gray-900 text-xs uppercase tracking-widest px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition pb-2.5">
-                        Cari
-                    </button>
-                    <a href="{% url 'kelola_mitra' %}"
-                        class="border border-white border-opacity-20 text-white text-xs uppercase tracking-widest px-6 py-2 rounded-full hover:bg-white hover:bg-opacity-10 transition pb-2.5">
-                        Reset
-                    </a>
+                    <div class="flex gap-3">
+                        <button type="submit" class="primary-link justify-center">Cari</button>
+                        <a href="{% url 'kelola_mitra' %}" class="secondary-link">Reset</a>
+                    </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- TABLE -->
-            <div class="border border-white border-opacity-20 rounded-3xl backdrop-blur-sm overflow-hidden"
-                style="background: rgba(255,255,255,0.03);">
-
-                <div class="px-8 pt-6 pb-4 border-b border-white border-opacity-10 flex items-center justify-between">
-                    <p class="text-xs uppercase tracking-widest text-white opacity-40">Daftar Mitra</p>
-                    <p class="text-xs text-white opacity-30">Hapus mitra akan menghapus hadiah terkait</p>
+            <section class="liquid-panel overflow-hidden" style="animation: sdFadeUp 0.5s ease 0.20s both;">
+                <div class="flex flex-col gap-4 border-b border-white border-opacity-10 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8">
+                    <div>
+                        <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Database Mitra</p>
+                        <h2 class="text-2xl font-bold text-white">Daftar Penyedia Partner</h2>
+                    </div>
+                    <div class="text-xs uppercase tracking-widest text-white text-opacity-50">
+                        {{ mitra_list|length }} dari {{ stats.total }} mitra
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full min-w-[980px] text-sm">
                         <thead>
                             <tr class="border-b border-white border-opacity-10">
-                                <th class="text-left px-8 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">ID Penyedia</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Email</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Nama Mitra</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Tgl. Kerja Sama</th>
-                                <th class="text-left px-4 py-4 text-xs uppercase tracking-widest text-white opacity-40 font-normal">Aksi</th>
+                                <th class="table-head pl-8">ID Penyedia</th>
+                                <th class="table-head">Email</th>
+                                <th class="table-head">Nama Mitra</th>
+                                <th class="table-head">Kerja Sama</th>
+                                <th class="table-head pr-8">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white divide-opacity-5">
                             {% for m in mitra_list %}
-                            <tr class="hover:bg-white hover:bg-opacity-5 transition"
-                                style="animation: fadeIn 0.3s ease both; animation-delay: {{ forloop.counter0 }}0ms;">
-                                <td class="px-8 py-4">
-                                    <span class="text-white text-xs font-mono opacity-50 bg-white bg-opacity-10 px-2 py-1 rounded">P-{{ m.id_penyedia }}</span>
+                            <tr class="partner-row" style="animation-delay: {{ forloop.counter0 }}0ms;">
+                                <td class="table-cell pl-8">
+                                    <span class="partner-number">P-{{ m.id_penyedia }}</span>
                                 </td>
-                                <td class="px-4 py-4 text-white opacity-60 text-xs">{{ m.email_mitra }}</td>
-                                <td class="px-4 py-4">
-                                    <p class="text-white font-semibold text-sm">{{ m.nama_mitra }}</p>
+                                <td class="table-cell text-white text-opacity-58">{{ m.email_mitra }}</td>
+                                <td class="table-cell">
+                                    <p class="font-semibold text-white">{{ m.nama_mitra }}</p>
                                 </td>
-                                <td class="px-4 py-4 text-white opacity-50 text-xs">{{ m.tanggal_kerja_sama }}</td>
-                                <td class="px-4 py-4">
+                                <td class="table-cell text-white text-opacity-52">{{ m.tanggal_kerja_sama|date:"d M Y" }}</td>
+                                <td class="table-cell pr-8">
                                     <div class="flex items-center gap-2">
-                                        <!-- Edit — email & id_penyedia readonly sesuai soal -->
                                         <button
                                             data-email="{{ m.email_mitra }}"
+                                            data-edit-url="{% url 'mitra_edit' m.email_mitra %}"
                                             data-idp="{{ m.id_penyedia }}"
                                             data-nama="{{ m.nama_mitra }}"
-                                            data-tgl="{{ m.tanggal_kerja_sama }}"
+                                            data-tgl="{{ m.tanggal_kerja_sama|date:'Y-m-d' }}"
                                             onclick="openEdit(this)"
-                                            class="text-white opacity-50 hover:opacity-100 transition" title="Edit">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            class="action-button edit-button"
+                                            aria-label="Edit {{ m.nama_mitra }}"
+                                            title="Edit"
+                                            type="button">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.862 4.487l1.651-1.651a1.875 1.875 0 112.652 2.652L9 17.653 5.25 18.75 6.347 15 16.862 4.487z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19.5 7.125L16.875 4.5"/>
                                             </svg>
                                         </button>
-                                        <!-- Hapus -->
                                         <button
                                             data-email="{{ m.email_mitra }}"
+                                            data-hapus-url="{% url 'mitra_hapus' m.email_mitra %}"
                                             data-nama="{{ m.nama_mitra }}"
                                             onclick="openHapus(this)"
-                                            class="text-red-300 opacity-50 hover:opacity-100 transition" title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            class="action-button delete-button"
+                                            aria-label="Hapus {{ m.nama_mitra }}"
+                                            title="Hapus"
+                                            type="button">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166M19.228 5.79L18.16 19.673A2.25 2.25 0 0115.916 21.75H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .563c.34-.059.68-.114 1.022-.166m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a49.175 49.175 0 00-7.5 0"/>
                                             </svg>
                                         </button>
                                     </div>
@@ -138,214 +176,541 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="py-24 text-center">
-                                    <p class="text-5xl mb-6 opacity-30">🤝</p>
-                                    <p class="text-white opacity-40 text-sm">Belum ada mitra terdaftar.</p>
+                                <td colspan="5" class="px-8 py-20 text-center">
+                                    <p class="text-sm uppercase tracking-widest text-white text-opacity-45">Belum ada mitra yang sesuai pencarian.</p>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
-
+            </section>
         </div>
     </div>
 </div>
 
-
-<!-- ── MODAL: TAMBAH MITRA ── -->
-<div id="m-tambah" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
-        style="background: rgba(255,255,255,0.05);">
-        <div class="flex justify-between items-start mb-8">
+<div id="m-tambah" class="modal-backdrop hidden">
+    <div class="liquid-panel modal-panel">
+        <div class="mb-6 flex items-start justify-between gap-5">
             <div>
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Mitra Baru</p>
-                <h2 class="text-xl font-bold text-white">Tambah Mitra</h2>
+                <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Mitra Baru</p>
+                <h2 class="text-2xl font-bold text-white">Tambah Mitra</h2>
             </div>
-            <button onclick="closeModal('m-tambah')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button type="button" onclick="closeModal('m-tambah')" class="icon-close" aria-label="Tutup modal">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <p class="text-xs text-white opacity-40 mb-6 border border-white border-opacity-10 rounded-xl px-4 py-3">
-            ID Penyedia akan di-generate otomatis. Penghapusan mitra akan menghapus hadiah terkait.
-        </p>
+        <p class="mb-6 text-sm leading-6 text-white text-opacity-62">ID penyedia dibuat otomatis dari database saat mitra baru disimpan.</p>
         <form method="post" action="{% url 'mitra_tambah' %}">
             {% csrf_token %}
-            <div class="space-y-6">
+            <div class="grid gap-5">
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
-                        Email Mitra <span class="text-red-300">*</span>
-                    </label>
-                    <input type="email" name="email_mitra" required placeholder="partner@example.com"
-                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    <label class="field-label">Email Mitra</label>
+                    <input type="email" name="email_mitra" required placeholder="partner@example.com" class="glass-input">
                 </div>
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
-                        Nama Mitra <span class="text-red-300">*</span>
-                    </label>
-                    <input type="text" name="nama_mitra" required placeholder="cth: TravelokaPartner"
-                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition placeholder-white placeholder-opacity-20">
+                    <label class="field-label">Nama Mitra</label>
+                    <input type="text" name="nama_mitra" required placeholder="nama mitra" class="glass-input">
                 </div>
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
-                        Tanggal Kerja Sama <span class="text-red-300">*</span>
-                    </label>
-                    <input type="date" name="tanggal_kerja_sama" required
-                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
-                        style="color-scheme: dark;">
+                    <label class="field-label">Tanggal Kerja Sama</label>
+                    <input type="date" name="tanggal_kerja_sama" required class="glass-input" style="color-scheme: dark;">
                 </div>
             </div>
-            <div class="flex gap-3 pt-8">
-                <button type="button" onclick="closeModal('m-tambah')"
-                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
-                    Simpan
-                </button>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal('m-tambah')" class="secondary-link flex-1 justify-center">Batal</button>
+                <button type="submit" class="primary-link flex-1 justify-center">Simpan</button>
             </div>
         </form>
     </div>
 </div>
 
-
-<!-- ── MODAL: EDIT MITRA ── -->
-<!-- Sesuai soal: email mitra (PK) dan ID Penyedia TIDAK bisa diubah -->
-<div id="m-edit" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
-        style="background: rgba(255,255,255,0.05);">
-        <div class="flex justify-between items-start mb-8">
+<div id="m-edit" class="modal-backdrop hidden">
+    <div class="liquid-panel modal-panel">
+        <div class="mb-6 flex items-start justify-between gap-5">
             <div>
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Edit</p>
-                <h2 class="text-xl font-bold text-white">Ubah Informasi Mitra</h2>
+                <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Edit Mitra</p>
+                <h2 class="text-2xl font-bold text-white">Ubah Informasi Mitra</h2>
             </div>
-            <button onclick="closeModal('m-edit')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button type="button" onclick="closeModal('m-edit')" class="icon-close" aria-label="Tutup modal">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <p class="text-xs text-white opacity-40 mb-6 border border-amber-400 border-opacity-20 rounded-xl px-4 py-3 bg-amber-400 bg-opacity-5">
-            Email mitra dan ID Penyedia <strong class="text-amber-300 opacity-100">tidak dapat diubah</strong>.
-        </p>
+        <p class="mb-6 text-sm leading-6 text-white text-opacity-62">Email mitra tidak dapat diubah karena menjadi identitas utama partner.</p>
         <form method="post" id="f-edit" action="">
             {% csrf_token %}
-            <div class="space-y-6">
-                <!-- Email readonly -->
+            <div class="grid gap-5">
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">Email Mitra</label>
-                    <input type="text" id="e-email" disabled
-                        class="w-full bg-transparent border-b border-white border-opacity-10 px-0 py-2 text-white opacity-30 text-sm cursor-not-allowed">
+                    <label class="field-label">Email Mitra</label>
+                    <input type="text" id="e-email" disabled class="glass-input muted-input">
                 </div>
-                <!-- Nama (bisa diubah) -->
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
-                        Nama Mitra <span class="text-red-300">*</span>
-                    </label>
-                    <input type="text" name="nama_mitra" id="e-nama" required
-                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition">
+                    <label class="field-label">Nama Mitra</label>
+                    <input type="text" name="nama_mitra" id="e-nama" required class="glass-input">
                 </div>
-                <!-- Tanggal (bisa diubah) -->
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-white opacity-40 block mb-3">
-                        Tanggal Kerja Sama <span class="text-red-300">*</span>
-                    </label>
-                    <input type="date" name="tanggal_kerja_sama" id="e-tgl" required
-                        class="w-full bg-transparent border-b border-white border-opacity-20 px-0 py-2 text-white text-sm focus:outline-none focus:border-white transition"
-                        style="color-scheme: dark;">
+                    <label class="field-label">Tanggal Kerja Sama</label>
+                    <input type="date" name="tanggal_kerja_sama" id="e-tgl" required class="glass-input" style="color-scheme: dark;">
                 </div>
             </div>
-            <div class="flex gap-3 pt-8">
-                <button type="button" onclick="closeModal('m-edit')"
-                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-white text-gray-900 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-90 transition">
-                    Simpan Perubahan
-                </button>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal('m-edit')" class="secondary-link flex-1 justify-center">Batal</button>
+                <button type="submit" class="primary-link flex-1 justify-center">Simpan Perubahan</button>
             </div>
         </form>
     </div>
 </div>
 
-
-<!-- ── MODAL: HAPUS MITRA ── -->
-<div id="m-hapus" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="border border-white border-opacity-20 rounded-3xl p-8 w-full max-w-md mx-4 backdrop-blur-md"
-        style="background: rgba(255,255,255,0.05);">
-        <div class="flex justify-between items-start mb-6">
+<div id="m-hapus" class="modal-backdrop hidden">
+    <div class="liquid-panel modal-panel">
+        <div class="mb-6 flex items-start justify-between gap-5">
             <div>
-                <p class="text-xs uppercase tracking-widest text-white opacity-40 mb-1">Konfirmasi</p>
-                <h2 class="text-xl font-bold text-white">Hapus Mitra?</h2>
+                <p class="mb-1 text-xs uppercase tracking-widest text-white text-opacity-50">Konfirmasi</p>
+                <h2 class="text-2xl font-bold text-white">Hapus Mitra?</h2>
             </div>
-            <button onclick="closeModal('m-hapus')" class="text-white opacity-30 hover:opacity-70 transition text-xl">✕</button>
+            <button type="button" onclick="closeModal('m-hapus')" class="icon-close" aria-label="Tutup modal">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <p class="text-sm text-white opacity-60 mb-6">
-            Penghapusan mitra akan menghapus seluruh hadiah yang disediakan oleh mitra ini.
-        </p>
-        <div class="border border-red-400 border-opacity-20 rounded-2xl p-4 mb-6 space-y-3 bg-red-400 bg-opacity-5">
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Email</span>
-                <span class="text-white text-xs font-mono" id="h-email"></span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-widest text-white opacity-40">Nama</span>
-                <span class="text-white text-sm font-semibold" id="h-nama"></span>
-            </div>
+        <p class="mb-6 text-sm leading-6 text-white text-opacity-62">Penghapusan mitra akan menghapus seluruh hadiah yang disediakan oleh mitra ini.</p>
+        <div class="modal-summary reject-summary">
+            <div><span>Email</span><strong id="h-email"></strong></div>
+            <div><span>Nama</span><strong id="h-nama"></strong></div>
         </div>
         <form method="post" id="f-hapus" action="">
             {% csrf_token %}
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal('m-hapus')"
-                    class="flex-1 py-3 border border-white border-opacity-20 rounded-full text-white text-xs uppercase tracking-widest hover:bg-white hover:bg-opacity-10 transition">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="flex-1 py-3 bg-red-500 bg-opacity-80 text-white rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-opacity-100 transition">
-                    Hapus Mitra
-                </button>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal('m-hapus')" class="secondary-link flex-1 justify-center">Batal</button>
+                <button type="submit" class="danger-submit flex-1 justify-center">Hapus Mitra</button>
             </div>
         </form>
     </div>
 </div>
 
-
 <style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-6px); }
-    to   { opacity: 1; transform: translateX(0); }
+.partner-admin {
+    color: white;
 }
+
+.partner-photo {
+    filter: saturate(1.05) contrast(1.04) blur(0.5px);
+    object-position: center 44%;
+    transform: scale(1.01);
+}
+
+.partner-light {
+    background:
+        linear-gradient(90deg, rgba(2, 6, 23, 0.78) 0%, rgba(15, 23, 42, 0.54) 48%, rgba(6, 78, 59, 0.16) 100%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.14) 0%, rgba(2, 6, 23, 0.66) 100%),
+        radial-gradient(circle at 18% 12%, rgba(167, 243, 208, 0.16), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(125, 211, 252, 0.13), transparent 24%);
+}
+
+.liquid-panel {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 2.25rem;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.065)),
+        rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    box-shadow:
+        0 24px 80px rgba(2, 6, 23, 0.34),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.48),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-panel {
+    min-height: 18.5rem;
+}
+
+.insight-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-pill,
+.primary-link,
+.secondary-link,
+.danger-submit,
+.icon-close,
+.meter-icon {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.58rem 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.pulse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #a7f3d0;
+    box-shadow: 0 0 18px rgba(167, 243, 208, 0.95);
+}
+
+.primary-link,
+.secondary-link,
+.danger-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.82rem 1.08rem;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.primary-link {
+    background: rgba(255, 255, 255, 0.19);
+}
+
+.secondary-link {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.danger-submit {
+    justify-content: center;
+    background: rgba(248, 113, 113, 0.32);
+    color: #fee2e2;
+}
+
+.primary-link:hover,
+.secondary-link:hover,
+.danger-submit:hover,
+.icon-close:hover,
+.action-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.42);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.ops-pulse > div,
+.latest-partner,
+.partner-meter,
+.modal-summary {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1.65rem;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.ops-pulse > div,
+.latest-partner,
+.partner-meter {
+    padding: 1rem;
+}
+
+.ops-pulse p,
+.latest-partner span,
+.modal-summary span {
+    margin-bottom: 0.35rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.46);
+}
+
+.ops-pulse strong,
+.latest-partner strong,
+.modal-summary strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.latest-partner p {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.partner-meter {
+    margin-top: 1.5rem;
+}
+
+.meter-icon {
+    display: inline-flex;
+    height: 3.4rem;
+    width: 3.4rem;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.progress-glow {
+    box-shadow: 0 0 26px rgba(167, 243, 208, 0.8);
+}
+
+.field-label,
+.table-head {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.65rem;
+}
+
+.glass-input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.85rem 1rem;
+    color: white;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-input:focus {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.36);
+}
+
+.muted-input {
+    color: rgba(255, 255, 255, 0.36);
+    cursor: not-allowed;
+}
+
+.table-head {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.table-cell {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.partner-row {
+    animation: riseIn 0.42s ease both;
+    transition: background 0.2s ease;
+}
+
+.partner-row:hover {
+    background: rgba(255, 255, 255, 0.075);
+}
+
+.partner-number,
+.action-button {
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.partner-number {
+    display: inline-flex;
+    padding: 0.38rem 0.72rem;
+    color: rgba(255, 255, 255, 0.76);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+}
+
+.action-button {
+    display: inline-flex;
+    height: 2.35rem;
+    width: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.edit-button {
+    color: #d1fae5;
+    border-color: rgba(110, 231, 183, 0.26);
+    background: rgba(16, 185, 129, 0.13);
+}
+
+.delete-button {
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.26);
+    background: rgba(239, 68, 68, 0.14);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, 0.72);
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-backdrop:not(.hidden) {
+    display: flex;
+}
+
+.modal-panel {
+    width: 100%;
+    max-width: 32rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.75rem;
+    background: rgba(15, 23, 42, 0.76);
+}
+
+.icon-close {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.modal-summary {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem;
+}
+
+.reject-summary {
+    border-color: rgba(248, 113, 113, 0.24);
+    background: rgba(248, 113, 113, 0.1);
+}
+
+@keyframes riseIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 767px) {
+    .ops-pulse {
+        grid-template-columns: 1fr;
+        margin-top: 1.35rem;
+    }
+
+    .primary-link,
+    .secondary-link,
+    .danger-submit {
+        justify-content: center;
+    }
+}
+/* ── Dynamic additions ── */
+@keyframes sdFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sdShimmer {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+}
+@keyframes sdBarGrow {
+    from { width: 0 !important; }
+}
+@keyframes sdPulseDot {
+    0%, 100% { box-shadow: 0 0 18px rgba(167,243,208,0.9); }
+    50%       { box-shadow: 0 0 28px rgba(167,243,208,1), 0 0 8px rgba(167,243,208,0.6); }
+}
+.pulse-dot { animation: sdPulseDot 2.2s ease-in-out infinite; }
+.sd-shimmer-host { position: relative; overflow: hidden; }
+.sd-shimmer-host::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.045), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+    pointer-events: none;
+}
+.sd-shimmer-host:hover::after { animation: sdShimmer 0.75s ease forwards; }
+.sd-bar {
+    animation: sdBarGrow 1.1s cubic-bezier(0.34,1.2,0.64,1) both;
+    animation-delay: 0.5s;
+}
+.partner-row:hover { transform: translateY(-1px); }
 </style>
 
 <script>
 function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
+    var modal = document.getElementById(id);
+    modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
+
 function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
+    var modal = document.getElementById(id);
+    modal.classList.add('hidden');
     document.body.style.overflow = '';
 }
 
 function openEdit(btn) {
     var email = btn.dataset.email;
-    // Action ke URL edit dengan email sebagai identifier
-    document.getElementById('f-edit').action =
-        '/kelola-mitra/edit/' + encodeURIComponent(email) + '/';
-    // Isi field — email & idp readonly, nama & tgl bisa diubah
+    document.getElementById('f-edit').action = btn.dataset.editUrl;
     document.getElementById('e-email').value = email;
-    document.getElementById('e-nama').value  = btn.dataset.nama;
-    document.getElementById('e-tgl').value   = btn.dataset.tgl;
+    document.getElementById('e-nama').value = btn.dataset.nama;
+    document.getElementById('e-tgl').value = btn.dataset.tgl;
     openModal('m-edit');
 }
 
 function openHapus(btn) {
-    var email = btn.dataset.email;
-    document.getElementById('f-hapus').action =
-        '/kelola-mitra/hapus/' + encodeURIComponent(email) + '/';
+    document.getElementById('f-hapus').action = btn.dataset.hapusUrl;
     document.getElementById('h-email').textContent = email;
-    document.getElementById('h-nama').textContent  = btn.dataset.nama;
+    document.getElementById('h-nama').textContent = btn.dataset.nama;
     openModal('m-hapus');
 }
 
-// Auto-dismiss flash
+document.querySelectorAll('.modal-backdrop').forEach(function (modal) {
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closeModal(modal.id);
+        }
+    });
+});
+
 var flash = document.getElementById('flash');
 if (flash) {
     setTimeout(function () {
@@ -354,6 +719,29 @@ if (flash) {
         setTimeout(function () { flash.remove(); }, 400);
     }, 4000);
 }
+</script>
+
+<script>
+function sdCountUp(el) {
+    var target = parseInt((el.dataset.target || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    var duration = 900, start = null;
+    function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString('id-ID');
+    }
+    requestAnimationFrame(step);
+}
+var sdObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) { sdCountUp(e.target); sdObs.unobserve(e.target); }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.count-up').forEach(function(el) { sdObs.observe(el); });
 </script>
 
 {% endblock %}

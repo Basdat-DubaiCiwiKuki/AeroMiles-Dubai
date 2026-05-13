@@ -50,9 +50,7 @@ SECRET_KEY = os.environ.get(
     'django-insecure-tde2*7&o_^@47$c6@1-)j7cqorflns=no8u&+4-d$5097r@vo*'
 )
 
-# TODO: CHANGE TO THIS WHEN READY TO DEPLOY. Debug=True for temporary local production 
-# DEBUG = os.environ.get('DEBUG', 'False') == 'True' 
-DEBUG=True 
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 
 ALLOWED_HOSTS = env_list(
